@@ -2183,8 +2183,15 @@
 
         let restaurantMap, restaurantMarker;
 
+        const ADMIN_KEY ="668e4a2d545ddcdd0a8d40e0cf7a8079fadeeb21872198a1354cd6c4a9b739b6"
+
         async function fetchAPI(endpoint, options = {}) {
             try {
+                options.headers = {
+                    ...options.headers,
+                    'X-Admin-Key': ADMIN_KEY,
+                    'Content-Type': 'application/json'
+                };
                 const response = await fetch(`${API_BASE}${endpoint}`, options);
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.detail || 'Failed');

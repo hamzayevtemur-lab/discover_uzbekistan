@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Security
+from fastapi.security import APIKeyHeader
 from sqlalchemy.orm import Session
 from sqlalchemy import text, func, desc
 from typing import List, Optional
@@ -17,10 +18,18 @@ from models import (
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+API_KEY = os.environ.get("ADMIN_SECRET_KEY")
+api_key_header = APIKeyHeader(name="X-Admin-Key", auto_error=False)
+
+async def verify_admin_key(key: str = Security(api_key_header)):
+    if not key or key != API_KEY:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+
 
 # ==================== IMAGE UPLOAD ====================
 
-@router.post("/upload-image")
+@router.post("/upload-image" , dependencies=[Depends(verify_admin_key)])
 async def upload_image(file: UploadFile = File(...)):
     """Upload an image and return the URL"""
     try:
