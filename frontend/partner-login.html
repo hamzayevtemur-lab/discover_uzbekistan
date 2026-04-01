@@ -148,39 +148,6 @@
             color: #6b7280;
             font-size: 0.875rem;
         }
-
-        .test-accounts {
-            background: #f9fafb;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 1.5rem;
-            font-size: 0.875rem;
-        }
-
-        .test-accounts h3 {
-            font-size: 0.875rem;
-            color: #374151;
-            margin-bottom: 0.75rem;
-            font-weight: 600;
-        }
-
-        .test-account {
-            background: white;
-            padding: 0.75rem;
-            border-radius: 6px;
-            margin-bottom: 0.5rem;
-            border: 1px solid #e5e7eb;
-        }
-
-        .test-account strong {
-            color: #667eea;
-        }
-
-        .test-account small {
-            display: block;
-            color: #6b7280;
-            margin-top: 0.25rem;
-        }
     </style>
 </head>
 
@@ -207,26 +174,6 @@
 
             <button type="submit" class="btn-login">Sign In</button>
         </form>
-
-        <div class="divider">
-            <span>Test Accounts</span>
-        </div>
-
-        <div class="test-accounts">
-            <h3>👇 Use these for testing:</h3>
-
-            <div class="test-account">
-                <strong>🍽️ Restaurant Partner</strong>
-                <small>Email: test@partner.com</small>
-                <small>Password: Test123</small>
-            </div>
-
-            <div class="test-account">
-                <strong>🏨 Hotel Partner</strong>
-                <small>Email: hotel@test.com</small>
-                <small>Password: Test123</small>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -254,8 +201,6 @@
                 });
 
                 const data = await resp.json();
-                console.log('Login response:', data);  // ← add this line
-                alert('Dashboard URL: ' + data.dashboard_url);  // ← add this too
 
                 if (!resp.ok) throw new Error(data.detail || 'Login failed.');
 
