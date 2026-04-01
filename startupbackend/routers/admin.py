@@ -56,7 +56,7 @@ async def upload_image(file: UploadFile = File(...)):
 
 # ==================== DASHBOARD STATS ====================
 
-@router.get("/stats")
+@router.get("/stats", dependencies=[Depends(verify_admin_key)])
 def get_dashboard_stats(db: Session = Depends(get_db)):
     """Get overview statistics for the admin dashboard"""
     # Use raw SQL to avoid ORM mapping issues with likes table
@@ -101,7 +101,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
 
 # ==================== RECENT ACTIVITY ====================
 
-@router.get("/recent-activity")
+@router.get("/recent-activity", dependencies=[Depends(verify_admin_key)])
 def get_recent_activity(limit: int = Query(10, ge=1, le=50), db: Session = Depends(get_db)):
     """Get recent reviews and activities"""
     restaurant_reviews = db.query(Review).order_by(desc(Review.created_at)).limit(limit).all()
@@ -155,7 +155,7 @@ def get_recent_activity(limit: int = Query(10, ge=1, le=50), db: Session = Depen
 
 # ==================== RESTAURANTS ====================
 
-@router.get("/restaurants")
+@router.get("/restaurants", dependencies=[Depends(verify_admin_key)])
 def list_restaurants(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
@@ -207,7 +207,7 @@ def list_restaurants(
     }
 
 
-@router.post("/restaurants")
+@router.post("/restaurants", dependencies=[Depends(verify_admin_key)])
 def create_restaurant(data: dict, db: Session = Depends(get_db)):
     """Create a new restaurant"""
     try:
@@ -244,7 +244,7 @@ def create_restaurant(data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/restaurants/{restaurant_id}")
+@router.put("/restaurants/{restaurant_id}", dependencies=[Depends(verify_admin_key)])
 def update_restaurant(restaurant_id: int, data: dict, db: Session = Depends(get_db)):
     """Update a restaurant"""
     restaurant = db.query(Restaurant).filter(Restaurant.id == restaurant_id).first()
@@ -276,7 +276,7 @@ def delete_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
 
 # ==================== HOTELS ====================
 
-@router.get("/hotels")
+@router.get("/hotels" , dependencies=[Depends(verify_admin_key)])
 def list_hotels(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
@@ -327,7 +327,7 @@ def list_hotels(
     }
 
 
-@router.post("/hotels")
+@router.post("/hotels", dependencies=[Depends(verify_admin_key)])
 def create_hotel(data: dict, db: Session = Depends(get_db)):
     """Create a new hotel"""
     try:
@@ -366,7 +366,7 @@ def create_hotel(data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/hotels/{hotel_id}")
+@router.put("/hotels/{hotel_id}", dependencies=[Depends(verify_admin_key)])
 def update_hotel(hotel_id: int, data: dict, db: Session = Depends(get_db)):
     """Update a hotel"""
     hotel = db.query(Hotel).filter(Hotel.id == hotel_id).first()
@@ -382,7 +382,7 @@ def update_hotel(hotel_id: int, data: dict, db: Session = Depends(get_db)):
     return hotel
 
 
-@router.delete("/hotels/{hotel_id}")
+@router.delete("/hotels/{hotel_id}", dependencies=[Depends(verify_admin_key)])
 def delete_hotel(hotel_id: int, db: Session = Depends(get_db)):
     """Delete a hotel and all related data"""
     hotel = db.query(Hotel).filter(Hotel.id == hotel_id).first()
@@ -398,7 +398,7 @@ def delete_hotel(hotel_id: int, db: Session = Depends(get_db)):
 
 # ==================== ATTRACTIONS ====================
 
-@router.get("/attractions")
+@router.get("/attractions", dependencies=[Depends(verify_admin_key)])
 def list_attractions(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
@@ -462,7 +462,7 @@ def list_attractions(
     }
 
 
-@router.post("/attractions")
+@router.post("/attractions", dependencies=[Depends(verify_admin_key)])
 def create_attraction(data: dict, db: Session = Depends(get_db)):
     """Create a new attraction"""
     try:
@@ -506,7 +506,7 @@ def create_attraction(data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/attractions/{attraction_id}")
+@router.put("/attractions/{attraction_id}" , dependencies=[Depends(verify_admin_key)])
 def update_attraction(attraction_id: int, data: dict, db: Session = Depends(get_db)):
     """Update an attraction"""
     attraction = db.query(Attraction).filter(Attraction.id == attraction_id).first()
@@ -522,7 +522,7 @@ def update_attraction(attraction_id: int, data: dict, db: Session = Depends(get_
     return attraction
 
 
-@router.delete("/attractions/{attraction_id}")
+@router.delete("/attractions/{attraction_id}" , dependencies=[Depends(verify_admin_key)])
 def delete_attraction(attraction_id: int, db: Session = Depends(get_db)):
     """Delete an attraction and all related data"""
     attraction = db.query(Attraction).filter(Attraction.id == attraction_id).first()
@@ -539,7 +539,7 @@ def delete_attraction(attraction_id: int, db: Session = Depends(get_db)):
 
 # ==================== TRAVEL AGENCIES ====================
 
-@router.get("/travel-agencies")
+@router.get("/travel-agencies" , dependencies=[Depends(verify_admin_key)])
 def list_travel_agencies(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
@@ -588,7 +588,7 @@ def list_travel_agencies(
     }
 
 
-@router.post("/travel-agencies")
+@router.post("/travel-agencies" , dependencies=[Depends(verify_admin_key)])
 def create_travel_agency(data: dict, db: Session = Depends(get_db)):
     """Create a new travel agency (CEO creates directly as approved)"""
 
@@ -622,7 +622,7 @@ def create_travel_agency(data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/travel-agencies/{agency_id}")
+@router.put("/travel-agencies/{agency_id}" , dependencies=[Depends(verify_admin_key)])
 def update_travel_agency(agency_id: int, data: dict, db: Session = Depends(get_db)):
     """Update a travel agency"""
 
@@ -645,7 +645,7 @@ def update_travel_agency(agency_id: int, data: dict, db: Session = Depends(get_d
     return {"id": agency.id, "name": agency.name, "message": "Agency updated successfully"}
 
 
-@router.delete("/travel-agencies/{agency_id}")
+@router.delete("/travel-agencies/{agency_id}" , dependencies=[Depends(verify_admin_key)])
 def delete_travel_agency(agency_id: int, db: Session = Depends(get_db)):
     """Delete a travel agency and all related tours/reviews"""
     from models.travel_agency import TravelAgency, Tour, AgencyReview, TourItinerary, TourDestination, ItineraryImage
@@ -670,7 +670,7 @@ def delete_travel_agency(agency_id: int, db: Session = Depends(get_db)):
     return {"message": "Agency and all related data deleted successfully"}
 
 
-@router.delete("/travel-agencies/tours/{tour_id}")
+@router.delete("/travel-agencies/tours/{tour_id}", dependencies=[Depends(verify_admin_key)])
 def delete_tour(tour_id: int, db: Session = Depends(get_db)):
     """Delete a single tour"""
 
@@ -697,7 +697,7 @@ def delete_tour(tour_id: int, db: Session = Depends(get_db)):
 
 # ==================== REVIEWS ====================
 
-@router.get("/reviews")
+@router.get("/reviews", dependencies=[Depends(verify_admin_key)])
 def list_all_reviews(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
@@ -752,7 +752,7 @@ def list_all_reviews(
     return all_reviews
 
 
-@router.delete("/reviews/{review_type}/{review_id}")
+@router.delete("/reviews/{review_type}/{review_id}", dependencies=[Depends(verify_admin_key)])
 def delete_review(review_type: str, review_id: int, db: Session = Depends(get_db)):
     """Delete a review and recalculate ratings"""
     if review_type == "restaurant":
@@ -815,7 +815,7 @@ def delete_review(review_type: str, review_id: int, db: Session = Depends(get_db
 
 # ==================== LIKES ANALYTICS ====================
 
-@router.get("/likes")
+@router.get("/likes", dependencies=[Depends(verify_admin_key)])
 def list_all_likes(db: Session = Depends(get_db)):
     """List all likes sorted by popularity using raw SQL"""
     # Use raw SQL to avoid ORM issues
