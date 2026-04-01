@@ -126,7 +126,7 @@ def create_access_token(data: dict, days: int = 30) -> str:
 
 def dashboard_url_for(business_type: str, record_id: int) -> str:
     page = DASHBOARD_URLS.get(business_type, "partner-portal.html")
-    return f"{FRONTEND_BASE}/{page}?agency={record_id}"  # changed id= to agency=
+    return f"{FRONTEND_BASE}/{page}?id={record_id}"
 
 def login_url_for(business_type: str) -> str:
     return f"{FRONTEND_BASE}/partner-login.html"
@@ -539,7 +539,8 @@ def _create_business_record(app: PartnerApplication, hashed_pw: str, db: Session
             existing.partner_password = hashed_pw
             db.flush()
             return existing.id
-        record = Hotel(
+        
+        record = Hotel(   
             name             = app.business_name,
             partner_email    = app.email,
             phone            = app.phone,
@@ -550,8 +551,10 @@ def _create_business_record(app: PartnerApplication, hashed_pw: str, db: Session
             partner_password = hashed_pw,
             rating           = 0.0,
             review_count     = 0,
+            latitude         = 0.0,
+            longitude        = 0.0,
+            status           = "pending",
         )
-
     else:
         # For unknown/future types, just store minimal info
         # You can replace this with a real model import later

@@ -648,7 +648,7 @@ def update_travel_agency(agency_id: int, data: dict, db: Session = Depends(get_d
 @router.delete("/travel-agencies/{agency_id}" , dependencies=[Depends(verify_admin_key)])
 def delete_travel_agency(agency_id: int, db: Session = Depends(get_db)):
     """Delete a travel agency and all related tours/reviews"""
-    from models.travel_agency import TravelAgency, Tour, AgencyReview, TourItinerary, TourDestination, ItineraryImage
+    from models.travel_agency import TravelAgency, Tour, AgencyReview, TourItinerary, TourDestination
 
     agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first()
     if not agency:
@@ -658,8 +658,7 @@ def delete_travel_agency(agency_id: int, db: Session = Depends(get_db)):
     tours = db.query(Tour).filter(Tour.agency_id == agency_id).all()
     for tour in tours:
         itinerary_days = db.query(TourItinerary).filter(TourItinerary.tour_id == tour.id).all()
-        for day in itinerary_days:
-            db.query(ItineraryImage).filter(ItineraryImage.itinerary_id == day.id).delete()
+        
         db.query(TourItinerary).filter(TourItinerary.tour_id == tour.id).delete()
         db.query(TourDestination).filter(TourDestination.tour_id == tour.id).delete()
         db.delete(tour)
@@ -680,14 +679,12 @@ def delete_tour(tour_id: int, db: Session = Depends(get_db)):
 
     agency_id = tour.agency_id
     itinerary_days = db.query(TourItinerary).filter(TourItinerary.tour_id == tour_id).all()
-    for day in itinerary_days:
-        db.query(ItineraryImage).filter(ItineraryImage.itinerary_id == day.id).delete()
     db.query(TourItinerary).filter(TourItinerary.tour_id == tour_id).delete()
     db.query(TourDestination).filter(TourDestination.tour_id == tour_id).delete()
     db.delete(tour)
 
     # Update tours count
-    agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first()
+    agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first() 
     if agency:
         agency.tours_count = db.query(Tour).filter(Tour.agency_id == agency_id).count()
 

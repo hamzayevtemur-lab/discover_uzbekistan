@@ -745,8 +745,10 @@
         });
 
         function checkAuth() {
+            
             const token = localStorage.getItem('partner_token');
-            hotelId = localStorage.getItem('hotel_id');
+            const urlParams = new URLSearchParams(window.location.search);
+            hotelId = urlParams.get('id') || localStorage.getItem('hotel_id');
             partnerEmail = localStorage.getItem('partner_email');
 
             if (!token || !hotelId) {

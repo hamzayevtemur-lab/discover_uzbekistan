@@ -1,8 +1,3 @@
-# routers/partner_agency.py
-# Travel Agency Partner Router — same pattern as partner.py
-# Handles agency admin authentication + tour/agency management
-# Add to main.py: app.include_router(partner_agency.router)
-
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session, joinedload
@@ -394,8 +389,6 @@ async def delete_tour(
     if not tour:
         raise HTTPException(status_code=404, detail="Tour not found or not yours")
 
-    for day in db.query(TourItinerary).filter(TourItinerary.tour_id == tour_id).all():
-        db.query(ItineraryImage).filter(ItineraryImage.itinerary_id == day.id).delete()
     db.query(TourItinerary).filter(TourItinerary.tour_id == tour_id).delete()
     db.query(TourDestination).filter(TourDestination.tour_id == tour_id).delete()
     db.delete(tour)
@@ -501,7 +494,6 @@ async def delete_itinerary_day(
     if not day:
         raise HTTPException(status_code=404, detail="Day not found")
 
-    db.query(ItineraryImage).filter(ItineraryImage.itinerary_id == day_id).delete()
     db.delete(day)
     db.commit()
     return {"message": "Day deleted"}

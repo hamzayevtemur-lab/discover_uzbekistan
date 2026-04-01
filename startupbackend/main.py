@@ -4,14 +4,11 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles  
-from routers import(restaurants, hotels, attractions, likes, admin,partner, 
+from routers import(restaurants, hotels, attractions, likes, admin,
             partner_restaurants, partner_auth, admin_approval, partner_hotels, 
             travel_agency,partner_agency, partner_application, admin)  # Import all routers
 
 app = FastAPI()
-
-app.mount("/static", StaticFiles(directory="static"), name="static_assets")
-
 
 # CORS
 app.add_middleware(
@@ -28,7 +25,6 @@ app.include_router(hotels.router)
 app.include_router(attractions.router)
 app.include_router(likes.router)
 app.include_router(admin.router)
-app.include_router(partner.router)
 app.include_router(partner_restaurants.router)
 app.include_router(partner_auth.router)
 app.include_router(admin_approval.router)
@@ -36,6 +32,10 @@ app.include_router(partner_hotels.router)
 app.include_router(travel_agency.router)
 app.include_router(partner_agency.router)
 app.include_router(partner_application.router)
+
+
+app.mount("/static", StaticFiles(directory="static"), name="static_assets")
+app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
 
 
 
