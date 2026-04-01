@@ -1,0 +1,232 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     STEP 1: Paste this MODAL anywhere before </body> in admin.html
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div id="galleryModal" class="modal">
+    <div class="modal-content" style="max-width:760px;">
+        <div class="modal-header">
+            <h2 id="galleryModalTitle">Manage Photos</h2>
+            <button class="modal-close" onclick="closeGalleryModal()">×</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Current photos grid -->
+            <div id="galleryCurrentPhotos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:24px;min-height:60px;">
+                <p style="color:#9ca3af;grid-column:1/-1;">Loading photos…</p>
+            </div>
+
+            <!-- Upload new photo -->
+            <div style="border-top:1px solid #e5e7eb;padding-top:20px;">
+                <div class="form-group">
+                    <label style="font-weight:600;color:#374151;display:block;margin-bottom:8px;">Add New Photo</label>
+                    <div class="file-upload-wrapper">
+                        <label for="gallery-upload-input" class="file-upload-button">
+                            📸 Choose Photo to Upload
+                        </label>
+                        <input type="file" id="gallery-upload-input" accept="image/*" onchange="handleGalleryUpload(this)">
+                    </div>
+                    <div class="upload-progress" id="gallery-upload-progress">Uploading…</div>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight:600;color:#374151;display:block;margin-bottom:8px;">Caption (optional)</label>
+                    <input type="text" id="gallery-caption-input" placeholder="Describe this photo"
+                        style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;font-size:1rem;">
+                </div>
+                <div class="image-preview-container" id="gallery-new-preview-container">
+                    <img id="gallery-new-preview" class="image-preview">
+                </div>
+                <input type="hidden" id="gallery-new-image-url">
+                <button type="button" class="btn-primary" onclick="saveGalleryPhoto()" style="margin-top:12px;">
+                    ➕ Add Photo to Gallery
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STEP 2: Add this CSS inside your <style> block
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+
+.gallery-photo-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f3f4f6;
+    aspect-ratio: 1;
+}
+.gallery-photo-card img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.gallery-photo-card .delete-overlay {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: rgba(239,68,68,0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.gallery-photo-card:hover .delete-overlay { opacity: 1; }
+.gallery-photo-card .caption-badge {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    font-size: 11px;
+    padding: 4px 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+</style>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STEP 3: Add this JavaScript inside your <script> block
+     (paste BEFORE the closing </script> tag)
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+
+let _galleryAttractionId = null;
+
+// Called from the Edit button in attraction details panel
+// Replace your existing editAttraction() or add this alongside it
+
+function openGalleryManager(attractionId) {
+    _galleryAttractionId = attractionId;
+    document.getElementById('galleryModalTitle').textContent = 'Manage Gallery Photos';
+    document.getElementById('gallery-new-image-url').value = '';
+    document.getElementById('gallery-caption-input').value = '';
+    document.getElementById('gallery-new-preview-container').classList.remove('active');
+    document.getElementById('galleryModal').classList.add('active');
+    loadGalleryPhotos(attractionId);
+}
+
+function closeGalleryModal() {
+    document.getElementById('galleryModal').classList.remove('active');
+    _galleryAttractionId = null;
+}
+
+async function loadGalleryPhotos(attractionId) {
+    const container = document.getElementById('galleryCurrentPhotos');
+    container.innerHTML = '<p style="color:#9ca3af;grid-column:1/-1;">Loading…</p>';
+    try {
+        const res = await fetch(`${API_BASE}/attractions/${attractionId}/gallery`);
+        const photos = await res.json();
+
+        if (!photos.length) {
+            container.innerHTML = '<p style="color:#9ca3af;grid-column:1/-1;">No photos yet — upload the first one below.</p>';
+            return;
+        }
+
+        container.innerHTML = photos.map(p => `
+            <div class="gallery-photo-card">
+                <img src="${p.image_url}" alt="${p.caption || ''}">
+                <button class="delete-overlay" onclick="deleteGalleryPhoto(${p.id})" title="Delete">×</button>
+                ${p.caption ? `<div class="caption-badge">${p.caption}</div>` : ''}
+            </div>
+        `).join('');
+    } catch(e) {
+        container.innerHTML = '<p style="color:#ef4444;grid-column:1/-1;">Failed to load photos.</p>';
+    }
+}
+
+async function handleGalleryUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('gallery-new-preview').src = e.target.result;
+        document.getElementById('gallery-new-preview-container').classList.add('active');
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    document.getElementById('gallery-upload-progress').classList.add('active');
+    document.getElementById('gallery-upload-progress').textContent = 'Uploading…';
+
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch(`${API_BASE}/admin/upload-image`, { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail);
+
+        document.getElementById('gallery-new-image-url').value = data.url;
+        document.getElementById('gallery-upload-progress').textContent = '✅ Uploaded!';
+        setTimeout(() => document.getElementById('gallery-upload-progress').classList.remove('active'), 2000);
+    } catch(e) {
+        alert('Upload failed: ' + e.message);
+        document.getElementById('gallery-upload-progress').classList.remove('active');
+    }
+}
+
+async function saveGalleryPhoto() {
+    const imageUrl = document.getElementById('gallery-new-image-url').value;
+    const caption = document.getElementById('gallery-caption-input').value.trim();
+
+    if (!imageUrl) { alert('Please upload a photo first.'); return; }
+    if (!_galleryAttractionId) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/attractions/${_galleryAttractionId}/gallery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image_url: imageUrl, caption: caption || null })
+        });
+        if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
+
+        // Clear form
+        document.getElementById('gallery-new-image-url').value = '';
+        document.getElementById('gallery-caption-input').value = '';
+        document.getElementById('gallery-new-preview-container').classList.remove('active');
+        document.getElementById('gallery-upload-input').value = '';
+
+        // Reload grid
+        await loadGalleryPhotos(_galleryAttractionId);
+        alert('✅ Photo added to gallery!');
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+async function deleteGalleryPhoto(photoId) {
+    if (!confirm('Remove this photo from the gallery?')) return;
+    try {
+        const res = await fetch(`${API_BASE}/attractions/gallery/${photoId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Delete failed');
+        await loadGalleryPhotos(_galleryAttractionId);
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STEP 4: In your viewAttractionDetails() function, find the
+     "Edit Attraction" button HTML inside the content.innerHTML
+     and ADD a "Manage Photos" button next to it, like this:
+
+     FIND:
+         <button class="btn-create" onclick="editAttraction(${attraction.id})" style="width: 100%;">
+             ✏️ Edit Attraction
+         </button>
+
+     ADD AFTER IT:
+         <button class="btn-create" onclick="openGalleryManager(${attraction.id})" style="width:100%;background:linear-gradient(135deg,#10b981,#059669);">
+             🖼️ Manage Photos
+         </button>
+     ═══════════════════════════════════════════════════════════════ -->
+</script>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurants - Discover Uzbekistan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: white;
+        }
+
+        /* Header */
+        header {
+            background: #000;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            font-size: 18px;
+            opacity: 0.7;
+        }
+
+        /* Filters */
+        .filters {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .filter-select option {
+            background: #1a1a1a;
+        }
+
+        .results-count {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        /* Restaurant Grid */
+        .restaurants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .restaurant-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .restaurant-image {
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .restaurant-info {
+            padding: 20px;
+        }
+
+        .restaurant-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .restaurant-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            opacity: 0.8;
+        }
+
+        .rating {
+            color: #ffd700;
+        }
+
+        .distance {
+            color: #4CAF50;
+        }
+
+        .partner-badge {
+            background: #9c27b0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .view-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff6b35;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .view-btn:hover {
+            background: #ff5722;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #ff6b35;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 32px;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .restaurants-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">🍽️ Restaurants in Uzbekistan</h1>
+            <p class="page-subtitle">Discover authentic Uzbek cuisine and dining experiences</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <label class="filter-label">City</label>
+                <select class="filter-select" id="cityFilter" onchange="filterRestaurants()">
+                    <option value="all">All Cities</option>
+                    <option value="samarkand">Samarkand</option>
+                    <option value="bukhara">Bukhara</option>
+                    <option value="khiva">Khiva</option>
+                    <option value="tashkent">Tashkent</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Cuisine Type</label>
+                <select class="filter-select" id="cuisineFilter" onchange="filterRestaurants()">
+                    <option value="all">All Cuisines</option>
+                    <option value="uzbek">Traditional Uzbek</option>
+                    <option value="international">International</option>
+                    <option value="asian">Asian</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Sort By</label>
+                <select class="filter-select" id="sortFilter" onchange="filterRestaurants()">
+                    <option value="distance">Distance</option>
+                    <option value="rating">Rating</option>
+                    <option value="name">Name</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="results-count" id="resultsCount">Loading restaurants...</div>
+
+        <!-- Restaurants Grid -->
+        <div class="restaurants-grid" id="restaurantsGrid">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading restaurants...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        let allRestaurants = [];
+        let userPosition = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getUserLocation();
+            loadRestaurants();
+        });
+
+        async function getUserLocation() {
+            if (navigator.geolocation) {
+                try {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject);
+                    });
+                    userPosition = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                } catch (err) {
+                    console.warn('Location not available');
+                }
+            }
+        }
+
+        async function loadRestaurants() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/restaurants`);
+                if (!response.ok) throw new Error('Failed to load restaurants');
+
+                allRestaurants = await response.json();
+
+                // Calculate distances if user location available
+                if (userPosition) {
+                    allRestaurants.forEach(r => {
+                        r.distance = calculateDistance(
+                            userPosition.lat,
+                            userPosition.lng,
+                            r.latitude,
+                            r.longitude
+                        );
+                    });
+                }
+
+                displayRestaurants(allRestaurants);
+            } catch (error) {
+                console.error('Error loading restaurants:', error);
+                document.getElementById('restaurantsGrid').innerHTML = 
+                    '<p style="text-align:center; color:#ff4444;">Failed to load restaurants. Please try again.</p>';
+            }
+        }
+
+        function displayRestaurants(restaurants) {
+            const grid = document.getElementById('restaurantsGrid');
+            const resultsCount = document.getElementById('resultsCount');
+
+            resultsCount.textContent = `Showing ${restaurants.length} restaurant${restaurants.length !== 1 ? 's' : ''}`;
+
+            if (restaurants.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; opacity:0.6;">No restaurants found</p>';
+                return;
+            }
+
+            const gradients = [
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+                'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+            ];
+
+            grid.innerHTML = restaurants.map((r, index) => `
+                <div class="restaurant-card" onclick="window.location.href='restaurants.html?id=${r.id}'">
+                    <div class="restaurant-image" style="background: ${r.image_url ? `url(${r.image_url})` : gradients[index % gradients.length]}; background-size: cover;">
+                        ${!r.image_url ? r.cuisine_type || 'Restaurant' : ''}
+                    </div>
+                    <div class="restaurant-info">
+                        <div class="restaurant-name">${r.name}</div>
+                        <div class="restaurant-meta">
+                            ${r.rating ? `<div class="meta-item rating"><i class="fas fa-star"></i> ${r.rating.toFixed(1)}</div>` : ''}
+                            ${r.distance ? `<div class="meta-item distance"><i class="fas fa-map-marker-alt"></i> ${r.distance.toFixed(1)} km</div>` : ''}
+                            ${r.is_partner ? '<div class="partner-badge"><i class="fas fa-crown"></i> Partner</div>' : ''}
+                        </div>
+                        <div class="meta-item" style="font-size: 13px; opacity: 0.7;">
+                            <i class="fas fa-phone"></i> ${r.phone || 'Not available'}
+                        </div>
+                        <button class="view-btn" onclick="event.stopPropagation(); window.location.href='restaurants.html?id=${r.id}'">
+                            <i class="fas fa-info-circle"></i> View Details & Menu
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterRestaurants() {
+            const cityFilter = document.getElementById('cityFilter').value;
+            const cuisineFilter = document.getElementById('cuisineFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+
+            let filtered = allRestaurants.filter(r => {
+                const cityMatch = cityFilter === 'all' || (r.address && r.address.toLowerCase().includes(cityFilter));
+                const cuisineMatch = cuisineFilter === 'all' || (r.cuisine_type && r.cuisine_type.toLowerCase().includes(cuisineFilter));
+                return cityMatch && cuisineMatch;
+            });
+
+            // Sort
+            if (sortFilter === 'distance' && userPosition) {
+                filtered.sort((a, b) => (a.distance || 999) - (b.distance || 999));
+            } else if (sortFilter === 'rating') {
+                filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            } else if (sortFilter === 'name') {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            displayRestaurants(filtered);
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                     Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+    </script>
+</body>
+</html>

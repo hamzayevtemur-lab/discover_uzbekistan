@@ -1,0 +1,301 @@
+<!-- partner-login-updated.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Login - Discover Uzbekistan</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+            padding: 3rem;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .divider {
+            margin: 2rem 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+            position: relative;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .test-accounts {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .test-accounts h3 {
+            font-size: 0.875rem;
+            color: #374151;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .test-account {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .test-account strong {
+            color: #667eea;
+        }
+
+        .test-account small {
+            display: block;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🏨 Partner Login</h1>
+            <p>Sign in to manage your business</p>
+        </div>
+
+        <div class="alert alert-error" id="error-message"></div>
+        <div class="alert alert-success" id="success-message"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="your@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+
+        <div class="divider">
+            <span>Test Accounts</span>
+        </div>
+
+        <div class="test-accounts">
+            <h3>👇 Use these for testing:</h3>
+
+            <div class="test-account">
+                <strong>🍽️ Restaurant Partner</strong>
+                <small>Email: test@partner.com</small>
+                <small>Password: Test123</small>
+            </div>
+
+            <div class="test-account">
+                <strong>🏨 Hotel Partner</strong>
+                <small>Email: hotel@test.com</small>
+                <small>Password: Test123</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8000';
+
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const email = formData.get('email');
+            const password = formData.get('password');
+
+            document.getElementById('error-message').classList.remove('active');
+            document.getElementById('success-message').classList.remove('active');
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Signing in…';
+
+            try {
+                const resp = await fetch(`${API}/api/partner-applications/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await resp.json();
+                console.log('Login response:', data);  // ← add this line
+                alert('Dashboard URL: ' + data.dashboard_url);  // ← add this too
+
+                if (!resp.ok) throw new Error(data.detail || 'Login failed.');
+
+                // Store token
+                localStorage.setItem('partner_token', data.access_token);
+                localStorage.setItem('partner_email', email);
+                localStorage.setItem('partner_type', data.business_type);
+                localStorage.setItem('partner_name', data.business_name);
+                localStorage.setItem('partner_record_id', data.record_id);
+
+                // Show success
+                const msg = document.getElementById('success-message');
+                msg.textContent = `✅ Welcome back, ${data.business_name}! Redirecting…`;
+                msg.classList.add('active');
+
+                // Redirect to the right dashboard based on business type
+                setTimeout(() => {
+                    window.location.href = data.dashboard_url;
+                }, 1000);
+
+            } catch (err) {
+                const msg = document.getElementById('error-message');
+                msg.textContent = '❌ ' + err.message;
+                msg.classList.add('active');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Sign In';
+            }
+        }
+
+        /* Optional: check application status */
+        async function checkApplicationStatus(email) {
+            try {
+                const resp = await fetch(`${API}/api/partner-applications/status?email=${encodeURIComponent(email)}`);
+                const data = await resp.json();
+                if (!resp.ok) return null;
+                return data;
+            } catch { return null; }
+        }
+    </script>
+</body>
+
+</html>

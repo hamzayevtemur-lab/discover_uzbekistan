@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Become a Partner - Discover Uzbekistan</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg-light);
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .back-link {
+            color: var(--text-gray);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><path d="M0 0L50 50L0 100M50 0L100 50L50 100M100 0L100 100" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            margin-bottom: 2rem;
+        }
+
+        .trust-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .trust-item {
+            text-align: center;
+        }
+
+        .trust-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .trust-label {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: -3rem auto 4rem;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .signup-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Progress Steps */
+        .progress-bar {
+            display: flex;
+            background: var(--bg-light);
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .progress-step {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .progress-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -50%;
+            top: 20px;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .progress-step.completed:not(:last-child)::after {
+            background: var(--success);
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active .step-circle {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .progress-step.completed .step-circle {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .step-label {
+            font-weight: 600;
+            color: var(--text-gray);
+        }
+
+        .progress-step.active .step-label {
+            color: var(--primary);
+        }
+
+        .progress-step.completed .step-label {
+            color: var(--success);
+        }
+
+        /* Step Content */
+        .step-content {
+            display: none;
+            padding: 3rem;
+        }
+
+        .step-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-description {
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-dark);
+        }
+
+        .required {
+            color: var(--danger);
+        }
+
+        input,
+        select,
+        textarea {
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Pricing Cards */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-card {
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            background: white;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .pricing-card.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .pricing-card.popular {
+            border-width: 3px;
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--warning);
+            color: white;
+            padding: 0.375rem 1.25rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .plan-duration {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-gray);
+            margin-bottom: 1rem;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price small {
+            font-size: 1.25rem;
+            color: var(--text-gray);
+        }
+
+        .plan-save {
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-features {
+            list-style: none;
+            text-align: left;
+            margin-top: 1.5rem;
+        }
+
+        .plan-features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .plan-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        /* Payment Summary */
+        .payment-summary {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+            border-top: 2px solid var(--border);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Success Screen */
+        .success-screen {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .success-icon {
+            font-size: 6rem;
+            margin-bottom: 1.5rem;
+            animation: bounce 0.6s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .success-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+            font-size: 1.125rem;
+        }
+
+        .credentials-box {
+            background: var(--bg-light);
+            border: 2px dashed var(--primary);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 2rem auto;
+            max-width: 600px;
+        }
+
+        .credentials-title {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+        }
+
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .credential-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .credential-label {
+            font-weight: 600;
+            color: var(--text-gray);
+        }
+
+        .credential-value {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.125rem;
+        }
+
+        .info-box {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+
+        .info-box p {
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .form-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .progress-step:not(:last-child)::after {
+                display: none;
+            }
+
+            .step-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .trust-indicators {
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">🇺🇿 Discover Uzbekistan</a>
+            <a href="index.html" class="back-link">
+                ← Back to Home
+            </a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Grow Your Business with Us</h1>
+            <p>Join hundreds of successful partners reaching thousands of travelers across Uzbekistan every day</p>
+
+            <div class="trust-indicators">
+                <div class="trust-item">
+                    <div class="trust-number">500+</div>
+                    <div class="trust-label">Active Partners</div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-number">50K+</div>
+                    <div class="trust-label">Monthly Visitors</div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-number">95%</div>
+                    <div class="trust-label">Partner Satisfaction</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="signup-container">
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-step active" id="step1-indicator">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Business Info</div>
+                </div>
+                <div class="progress-step" id="step2-indicator">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Choose Plan</div>
+                </div>
+                <div class="progress-step" id="step3-indicator">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Payment</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Business Information -->
+            <div class="step-content active" id="step1">
+                <h2 class="step-title">Tell us about your business</h2>
+                <p class="step-description">We need some basic information to set up your partner account</p>
+
+                <form id="businessInfoForm">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>What type of business do you have? <span class="required">*</span></label>
+                            <select id="businessType" required>
+                                <option value="">Select your business type</option>
+                                <option value="restaurant">🍽️ Restaurant / Café</option>
+                                <option value="hotel">🏨 Hotel / Guesthouse</option>
+                                <option value="attraction">🏛️ Tourist Attraction / Museum</option>
+                                <option value="travel_agency">🌍 Travel Agency</option>
+                                <option value="multiple">📦 Multiple Businesses</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Business Name <span class="required">*</span></label>
+                            <input type="text" id="businessName" placeholder="Golden Plov Restaurant" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Person <span class="required">*</span></label>
+                            <input type="text" id="contactPerson" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address <span class="required">*</span></label>
+                            <input type="email" id="email" placeholder="contact@business.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number <span class="required">*</span></label>
+                            <input type="tel" id="phone" placeholder="+998 90 123 4567" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Business Address <span class="required">*</span></label>
+                            <input type="text" id="address" placeholder="Registan Street, Samarkand" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Tell us about your business (Optional)</label>
+                            <textarea id="description"
+                                placeholder="What makes your business special? What can travelers expect?"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <a href="index.html" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Next: Choose Plan →</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 2: Pricing Plans -->
+            <div class="step-content" id="step2">
+                <h2 class="step-title">Choose the perfect plan</h2>
+                <p class="step-description">All plans include full access to our partner dashboard and unlimited updates
+                </p>
+
+                <div class="pricing-grid">
+                    <div class="pricing-card" onclick="selectPlan('1month', 49)">
+                        <div class="plan-duration">1 Month</div>
+                        <div class="plan-price">$49<small>/mo</small></div>
+                        <ul class="plan-features">
+                            <li>Full dashboard access</li>
+                            <li>Unlimited updates</li>
+                            <li>Basic analytics</li>
+                            <li>Email support</li>
+                            <li>Mobile app access</li>
+                        </ul>
+                    </div>
+
+                    <div class="pricing-card popular" onclick="selectPlan('3months', 129)">
+                        <span class="popular-badge">Most Popular</span>
+                        <div class="plan-duration">3 Months</div>
+                        <div class="plan-price">$129<small>/3mo</small></div>
+                        <div class="plan-save">Save $18</div>
+                        <ul class="plan-features">
+                            <li>Everything in 1 Month</li>
+                            <li>Advanced analytics</li>
+                            <li>Priority support</li>
+                            <li>Featured listing</li>
+                            <li>Photo gallery</li>
+                        </ul>
+                    </div>
+
+                    <div class="pricing-card" onclick="selectPlan('6months', 239)">
+                        <div class="plan-duration">6 Months</div>
+                        <div class="plan-price">$239<small>/6mo</small></div>
+                        <div class="plan-save">Save $55</div>
+                        <ul class="plan-features">
+                            <li>Everything in 3 Months</li>
+                            <li>Premium placement</li>
+                            <li>24/7 phone support</li>
+                            <li>Custom branding</li>
+                            <li>Marketing campaigns</li>
+                        </ul>
+                    </div>
+
+                    <div class="pricing-card" onclick="selectPlan('1year', 449)">
+                        <div class="plan-duration">1 Year</div>
+                        <div class="plan-price">$449<small>/year</small></div>
+                        <div class="plan-save">Save $139 - Best Value!</div>
+                        <ul class="plan-features">
+                            <li>Everything in 6 Months</li>
+                            <li>Dedicated account manager</li>
+                            <li>Priority placement</li>
+                            <li>Exclusive promotions</li>
+                            <li>Annual business review</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <p>💡 <strong>Tip:</strong> Save more with longer plans! All plans can be cancelled anytime with 30
+                        days notice.</p>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="previousStep()">← Back</button>
+                    <button type="button" class="btn btn-primary" id="continueToPayment" onclick="nextStep()"
+                        disabled>Continue to Payment →</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Payment -->
+            <div class="step-content" id="step3">
+                <h2 class="step-title">Complete your payment</h2>
+                <p class="step-description">Your payment information is secure and encrypted</p>
+
+                <div class="payment-summary">
+                    <div class="summary-title">📋 Order Summary</div>
+                    <div class="summary-row">
+                        <span>Business Name:</span>
+                        <span id="summaryBusinessName">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Email:</span>
+                        <span id="summaryEmail">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Selected Plan:</span>
+                        <span id="summaryPlan">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total Amount:</span>
+                        <span id="summaryAmount">$0</span>
+                    </div>
+                </div>
+
+                <form id="paymentForm">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Card Number <span class="required">*</span></label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Expiry Date <span class="required">*</span></label>
+                            <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label>CVV <span class="required">*</span></label>
+                            <input type="text" id="cvv" placeholder="123" maxlength="4" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Cardholder Name <span class="required">*</span></label>
+                            <input type="text" id="cardholderName" placeholder="John Doe" required>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        🔒 Your payment is processed securely. We never store your card details.
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="previousStep()">← Back</button>
+                        <button type="submit" class="btn btn-primary">💳 Complete Payment</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Success Step -->
+            <div class="step-content" id="stepSuccess">
+                <div class="success-screen">
+                    <div class="success-icon">🎉</div>
+                    <h2 class="success-title">Welcome Aboard!</h2>
+                    <div class="success-message">
+                        <p>Your payment was successful and your partner account is ready!</p>
+                        <p>We've sent your login credentials to <strong id="successEmail"></strong></p>
+                    </div>
+
+                    <div class="credentials-box">
+                        <div class="credentials-title">🔑 Your Login Credentials</div>
+                        <div class="credential-item">
+                            <span class="credential-label">Email:</span>
+                            <span class="credential-value" id="credentialEmail">-</span>
+                        </div>
+                        <div class="credential-item">
+                            <span class="credential-label">Password:</span>
+                            <span class="credential-value" id="credentialPassword">-</span>
+                        </div>
+                        <div class="credential-item">
+                            <span class="credential-label">Portal Link:</span>
+                            <span class="credential-value">partner-portal.html</span>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <p>📧 <strong>Check your email!</strong> We've sent these credentials to your inbox along with a
+                            welcome guide to help you get started.</p>
+                    </div>
+
+                    <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center;">
+                        <a href="partner-portal.html" class="btn btn-primary">
+                            Go to Partner Portal →
+                        </a>
+                        <a href="index.html" class="btn btn-secondary">
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API = 'http://localhost:8000';
+
+        let currentStep = 1;
+        let selectedPlan = null;
+        let selectedPrice = 0;
+        const formData = {};
+
+        /* ── STEP NAVIGATION ── */
+        function nextStep() {
+            if (currentStep < 3) {
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                document.getElementById(`step${currentStep}-indicator`).classList.remove('active');
+                document.getElementById(`step${currentStep}-indicator`).classList.add('completed');
+                currentStep++;
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                document.getElementById(`step${currentStep}-indicator`).classList.add('active');
+                if (currentStep === 3) updatePaymentSummary();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                document.getElementById(`step${currentStep}-indicator`).classList.remove('active');
+                currentStep--;
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                document.getElementById(`step${currentStep}-indicator`).classList.remove('completed');
+                document.getElementById(`step${currentStep}-indicator`).classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function selectPlan(plan, price) {
+            document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            selectedPlan = plan;
+            selectedPrice = price;
+            document.getElementById('continueToPayment').disabled = false;
+        }
+
+        function updatePaymentSummary() {
+            const names = { '1month': '1 Month Plan', '3months': '3 Months Plan', '6months': '6 Months Plan', '1year': '1 Year Plan' };
+            document.getElementById('summaryBusinessName').textContent = formData.business_name;
+            document.getElementById('summaryEmail').textContent = formData.email;
+            document.getElementById('summaryPlan').textContent = names[selectedPlan] || selectedPlan;
+            document.getElementById('summaryAmount').textContent = `$${selectedPrice}`;
+        }
+
+        /* ── STEP 1: BUSINESS INFO → calls real API, sends verification email ── */
+        document.getElementById('businessInfoForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            formData.business_type = document.getElementById('businessType').value;
+            formData.business_name = document.getElementById('businessName').value;
+            formData.contact_name = document.getElementById('contactPerson').value;
+            formData.email = document.getElementById('email').value;
+            formData.phone = document.getElementById('phone').value;
+            formData.address = document.getElementById('address').value;
+            formData.description = document.getElementById('description').value;
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = '⏳ Saving…';
+
+            try {
+                const resp = await fetch(`${API}/api/partner-applications/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        business_type: formData.business_type,
+                        business_name: formData.business_name,
+                        contact_name: formData.contact_name,
+                        email: formData.email,
+                        phone: formData.phone,
+                        address: formData.address,
+                        description: formData.description,
+                        // plan will be set on payment step
+                    })
+                });
+
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    alert('❌ ' + (data.detail || 'Something went wrong.'));
+                    btn.disabled = false;
+                    btn.textContent = 'Next: Choose Plan →';
+                    return;
+                }
+
+                // Application saved + verification email sent → proceed to plan selection
+                nextStep();
+
+            } catch (err) {
+                alert('❌ Could not connect to server. Is it running?');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Next: Choose Plan →';
+            }
+        });
+
+        /* ── STEP 3: PAYMENT (simulated) → on success shows email-check screen ── */
+        document.getElementById('paymentForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Processing Payment...';
+
+            // Simulate payment processing (replace with real payment gateway later)
+            await new Promise(r => setTimeout(r, 2000));
+
+            // Mark plan on the application
+            try {
+                await fetch(`${API}/api/partner-applications/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...formData,
+                        plan: selectedPlan,
+                        plan_amount: selectedPrice,
+                    })
+                });
+                // (This may return 400 "already under review" which is fine — 
+                //  we just want to store the plan. You can add a PATCH endpoint later.)
+            } catch (_) { }
+
+            // Show success screen — tell user to verify email
+            document.getElementById('step3').classList.remove('active');
+            document.getElementById('step3-indicator').classList.remove('active');
+            document.getElementById('step3-indicator').classList.add('completed');
+            document.getElementById('stepSuccess').classList.add('active');
+
+            document.getElementById('successEmail').textContent = formData.email;
+
+            // Update success screen to reflect the new flow
+            // (verification email was already sent at step 1)
+            const credBox = document.querySelector('.credentials-box');
+            if (credBox) {
+                credBox.innerHTML = `
+            <div class="credentials-title">📬 Check Your Email</div>
+            <div class="credential-item">
+                <span class="credential-label">Email sent to:</span>
+                <span class="credential-value">${formData.email}</span>
+            </div>
+            <div class="credential-item">
+                <span class="credential-label">Next step:</span>
+                <span class="credential-value" style="font-size:.95rem">Click the link in your email to verify your address</span>
+            </div>
+            <div class="credential-item">
+                <span class="credential-label">Then:</span>
+                <span class="credential-value" style="font-size:.95rem">Admin reviews your application (1–2 business days)</span>
+            </div>
+            <div class="credential-item">
+                <span class="credential-label">Finally:</span>
+                <span class="credential-value" style="font-size:.95rem">Login credentials sent automatically by email</span>
+            </div>`;
+            }
+
+            // Update success message
+            const successMsg = document.querySelector('.success-message');
+            if (successMsg) {
+                successMsg.innerHTML = `
+            <p>Your application has been submitted and a verification email was sent to <strong>${formData.email}</strong>.</p>
+            <p>Once you verify your email, our team will review your application within 1–2 business days.</p>`;
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        /* ── CARD NUMBER FORMATTING ── */
+        document.getElementById('cardNumber').addEventListener('input', function (e) {
+            let v = e.target.value.replace(/\s/g, '');
+            e.target.value = v.match(/.{1,4}/g)?.join(' ') || v;
+        });
+        document.getElementById('expiryDate').addEventListener('input', function (e) {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length >= 2) v = v.slice(0, 2) + '/' + v.slice(2, 4);
+            e.target.value = v;
+        });
+        document.getElementById('cvv').addEventListener('input', function (e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+    </script>
+</body>
+
+</html>

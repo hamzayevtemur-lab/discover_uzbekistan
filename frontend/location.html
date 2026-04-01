@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Route Planner - Discover Uzbekistan</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJHCVBY91E"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-KJHCVBY91E');
+    </script>
+
+    <style>
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0a0a0a;
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: #000;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6b35;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b35;
+            /* Fallback color */
+            background: linear-gradient(45deg, #ff6b35, #ffa726);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 40px;
+        }
+
+        /* Two Column Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+            height: calc(100vh - 200px);
+        }
+
+        /* Left Panel - Controls */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ff6b35;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .location-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .location-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .location-value {
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .location-icon {
+            width: 10px;
+            height: 10px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+            opacity: 0.9;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #ff6b35;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .plan-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #ff6b35, #ff8a50);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .plan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .plan-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .route-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .route-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #ff6b35;
+        }
+
+        .route-card.selected {
+            border-color: #ff6b35;
+            background: rgba(255, 107, 53, 0.15);
+        }
+
+        .route-method {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .method-icon {
+            font-size: 24px;
+        }
+
+        .method-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .route-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .route-time {
+            color: #00ff88;
+        }
+
+        .route-price {
+            color: #ffd700;
+        }
+
+        /* Right Panel - Map/Info Display */
+        .display-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Map */
+        #map {
+            width: 100%;
+            height: 400px;
+            /* Smaller as you requested */
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Leaflet customization */
+        .leaflet-container {
+            background: #1a1a1a !important;
+            font-family: 'Arial', sans-serif !important;
+        }
+
+        .leaflet-control-zoom a {
+            background: rgba(30, 30, 30, 0.95) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: rgba(50, 50, 50, 0.95) !important;
+            border-color: #ff6b35 !important;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: rgba(20, 20, 20, 0.95) !important;
+            color: white !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(255, 107, 53, 0.3) !important;
+        }
+
+        .leaflet-popup-content {
+            font-family: 'Arial', sans-serif !important;
+            font-size: 14px !important;
+        }
+
+        /* Nearby Places Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .tab.active {
+            background: #ff6b35;
+        }
+
+        /* Place Cards */
+        /* Places Header with Navigation */
+        .places-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .places-header .section-header {
+            margin-bottom: 0;
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            color: #ff6b35;
+        }
+
+        /* Navigation Buttons */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 10;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .nav-btn:hover {
+            background: #ff6b35;
+            border-color: #ff6b35;
+            transform: translateY(-2px);
+        }
+
+        /* Horizontal scrolling places */
+        .places-list {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 10px 5px 20px 5px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .places-list::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .places-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .places-list::-webkit-scrollbar-thumb {
+            background: #ff6b35;
+            border-radius: 10px;
+        }
+
+        .place-card {
+            min-width: 280px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .place-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #ff6b35;
+        }
+
+        /*--------------*/
+        .place-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            opacity: 0.8;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .place-image:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.5));
+        }
+
+        .place-image span {
+            position: relative;
+            z-index: 1;
+            font-weight: bold;
+        }
+
+        .place-info {
+            padding: 20px;
+        }
+
+        .place-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .place-distance {
+            font-size: 12px;
+            color: #00ff88;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .place-contact {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .view-details-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .view-details-btn:hover {
+            background: #ff6b35;
+            border-color: #ff6b35;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+            grid-column: 1 / -1;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #ff6b35;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .control-panel {
+                height: auto;
+            }
+
+            .places-list {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 28px;
+            }
+
+            .places-list {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">← DISCOVER UZBEKISTAN</a>
+            <a href="index.html" class="back-btn">Back to Home</a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h1 class="page-title">Smart Route Planner</h1>
+        <p class="page-subtitle">Plan your journey and discover places along the way</p>
+
+        <div class="main-grid">
+            <!-- Left Panel - Controls -->
+            <div class="control-panel">
+                <!-- Current Location -->
+                <div class="section-header">📍 Your Current Location</div>
+                <div class="location-display">
+                    <div class="location-label">You are currently at</div>
+                    <div class="location-value">
+                        <span class="location-icon"></span>
+                        <span id="currentLocation">Detecting...</span>
+                    </div>
+                </div>
+
+                <!-- Route Planning Form -->
+                <div class="section-header">🗺️ Plan Your Route</div>
+
+                <div class="form-group">
+                    <label class="form-label">From (Current City)</label>
+                    <select class="form-select" id="fromCity">
+                        <option value="">Select starting city</option>
+                        <option value="tashkent">Tashkent</option>
+                        <option value="samarkand" selected>Samarkand</option>
+                        <option value="bukhara">Bukhara</option>
+                        <option value="khiva">Khiva</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">To (Destination)</label>
+                    <select class="form-select" id="toCity">
+                        <option value="">Select destination</option>
+                        <option value="tashkent">Tashkent</option>
+                        <option value="samarkand">Samarkand</option>
+                        <option value="bukhara">Bukhara</option>
+                        <option value="khiva">Khiva</option>
+                        <option value="registan">Registan Square</option>
+                        <option value="baxt_restaurant">Baxt Restaurant</option>
+                        <option value="registan_plaza">Registan Plaza Hotel</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Preferred Transport</label>
+                    <select class="form-select" id="transportType">
+                        <option value="all">Show all options</option>
+                        <option value="train">Train</option>
+                        <option value="bus">Bus</option>
+                        <option value="car">Private Car</option>
+                        <option value="taxi">Taxi</option>
+                    </select>
+                </div>
+
+                <button class="plan-btn" onclick="planRoute()">
+                    <i class="fas fa-directions"></i> Find Best Routes
+                </button>
+
+                <!-- Route Results -->
+                <div class="results-section" id="routeResults" style="display: none;">
+                    <div class="section-header">Available Routes</div>
+                    <!-- Routes will be populated here -->
+                </div>
+            </div>
+
+            <!-- Right Panel - Map and Nearby Places -->
+            <div class="display-panel">
+                <!-- Map -->
+                <div id="map"></div>
+
+                <!-- Tabs for Nearby Places -->
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('restaurants')">
+                        <i class="fas fa-utensils"></i> Restaurants
+                    </button>
+                    <button class="tab" onclick="showTab('hotels')">
+                        <i class="fas fa-hotel"></i> Hotels
+                    </button>
+                    <button class="tab" onclick="showTab('attractions')">
+                        <i class="fas fa-landmark"></i> Attractions
+                    </button>
+                </div>
+
+                <!-- Nearby Places Header with Navigation -->
+                <div class="places-header">
+                    <div class="section-header" id="placesHeader">Nearby Restaurants</div>
+                </div>
+
+                <div class="places-list" id="placesList">
+                    <div class="loading">
+                        <p>Select a route to see nearby places</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Your JavaScript -->
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+
+        const cityCoordinates = {
+            tashkent: { lat: 41.2995, lng: 69.2401, name: 'Tashkent' },
+            samarkand: { lat: 39.6549, lng: 66.9756, name: 'Samarkand' },
+            bukhara: { lat: 39.7756, lng: 64.4222, name: 'Bukhara' },
+            khiva: { lat: 41.3783, lng: 60.3625, name: 'Khiva' }
+        };
+
+        const routesData = {
+            'tashkent-samarkand': [
+                {
+                    method: 'train',
+                    icon: '🚄',
+                    name: 'High-Speed Train (Afrosiyob)',
+                    time: '2h 10min',
+                    price: '$8-15',
+                    description: 'Fastest and most comfortable option'
+                },
+                {
+                    method: 'bus',
+                    icon: '🚌',
+                    name: 'Express Bus',
+                    time: '4h 30min',
+                    price: '$5-8',
+                    description: 'Budget-friendly option'
+                },
+                {
+                    method: 'taxi',
+                    icon: '🚕',
+                    name: 'Shared Taxi',
+                    time: '3h 45min',
+                    price: '$12-18',
+                    description: 'Door-to-door service'
+                }
+            ],
+            'samarkand-bukhara': [
+                {
+                    method: 'train',
+                    icon: '🚂',
+                    name: 'Regional Train',
+                    time: '4h 15min',
+                    price: '$6-12',
+                    description: 'Scenic route through countryside'
+                },
+                {
+                    method: 'bus',
+                    icon: '🚌',
+                    name: 'Tourist Bus',
+                    time: '3h 50min',
+                    price: '$7-10',
+                    description: 'Popular with tourists'
+                }
+            ]
+        };
+
+        // Global variables
+        let map;
+        let userMarker;
+        let placeMarkers = [];
+        let routeLayer = null;
+        let userLocation = { lat: 39.6549, lng: 66.9756 }; // Default: Samarkand
+        let currentTab = 'restaurants';
+        let selectedRoute = null;
+
+        // Data cache (fetched from API)
+        let placesData = {
+            restaurants: [],
+            hotels: [],
+            attractions: []
+        };
+
+        // Initialize when page loads
+        document.addEventListener("DOMContentLoaded", function () {
+            initMap();
+            detectUserLocation();
+            loadAllPlacesData(); // Fetch data from backend
+        });
+
+        // ==================== FETCH DATA FROM BACKEND ====================
+
+        async function loadAllPlacesData() {
+            try {
+                // Show loading state
+                document.getElementById('placesList').innerHTML =
+                    '<div class="loading"><div class="spinner"></div><p>Loading places...</p></div>';
+
+                // Fetch restaurants from backend
+                const restaurantsResponse = await fetch(`${API_BASE_URL}/restaurants`);
+                const hotelsResponse = await fetch(`${API_BASE_URL}/hotels`);
+                const attractionsResponse = await fetch(`${API_BASE_URL}/attractions`);
+
+                if (!restaurantsResponse.ok || !hotelsResponse.ok) {
+                    throw new Error('Failed to fetch data from backend');
+                }
+
+                const restaurants = await restaurantsResponse.json();
+                const hotels = await hotelsResponse.json();
+                const attractions = await attractionsResponse.json();
+
+
+                // Transform backend data to match your frontend format
+                placesData.restaurants = restaurants.map(r => ({
+                    id: r.id,
+                    name: r.name,
+                    distance: '0 km', // Will be calculated based on user location
+                    phone: r.phone || 'Not available',
+                    type: r.cuisine_type || 'Restaurant',
+                    gradient: getRandomGradient(),
+                    lat: r.latitude,
+                    lng: r.longitude,
+                    rating: r.rating ? r.rating.toFixed(1) : 'N/A',
+                    partner: r.is_partner || false,
+                    offer: r.is_partner ? 'Special offers available' : null,
+                    address: r.address,
+                    description: r.description,
+                    image_url: r.image_url,
+                    website: r.website,
+                    opening_hours: r.opening_hours,
+                    review_count: r.review_count || 0
+                }));
+
+                placesData.hotels = hotels.map(h => ({
+                    id: h.id,
+                    name: h.name,
+                    distance: '0 km',
+                    phone: h.phone || 'Not available',
+                    type: h.hotel_type || 'Hotel',
+                    gradient: getRandomGradient(),
+                    lat: h.latitude,
+                    lng: h.longitude,
+                    rating: h.rating ? h.rating.toFixed(1) : 'N/A',
+                    partner: h.is_partner || false,
+                    offer: h.is_partner ? 'Exclusive deals available' : null,
+                    address: h.address,
+                    description: h.description,
+                    image_url: h.image_url,
+                    website: h.website,
+                    review_count: h.review_count || 0
+                }));
+
+
+                placesData.attractions = attractions.map(a => ({
+                    id: a.id,
+                    name: a.name,
+                    distance: '0 km', // you can calculate later
+                    phone: a.phone || 'Not available',
+                    type: a.category || 'Attraction',
+                    gradient: getRandomGradient(),
+                    lat: a.latitude,
+                    lng: a.longitude,
+                    rating: a.rating ? a.rating.toFixed(1) : 'N/A',
+                    partner: a.is_partner || false,
+                    offer: a.is_partner ? 'Special offers available' : null,
+                    address: a.address,
+                    description: a.description,
+                    image_url: a.image_url,
+                    website: a.website,
+                    review_count: a.review_count || 0
+                }));
+
+                // Show restaurants by default
+                showPlaces('restaurants');
+
+                console.log(`Loaded ${placesData.restaurants.length} restaurants from database`);
+
+            } catch (error) {
+                console.error('Error loading places data:', error);
+                document.getElementById('placesList').innerHTML =
+                    `<div class="loading"><p style="color: #ff4444;">Failed to load data. Please check if backend is running.</p></div>`;
+            }
+        }
+
+        // Helper function to get random gradient (for image placeholder)
+        function getRandomGradient() {
+            const gradients = [
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+                'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+            ];
+            return gradients[Math.floor(Math.random() * gradients.length)];
+        }
+
+        // ==================== MAP INITIALIZATION ====================
+
+        function initMap() {
+            map = L.map('map').setView([userLocation.lat, userLocation.lng], 14);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            addUserMarker();
+        }
+
+        function addUserMarker() {
+            const userIcon = L.divIcon({
+                className: 'user-marker',
+                html: '<div style="background: #00ff88; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 15px #00ff88; animation: pulse 2s infinite;"></div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            });
+
+            userMarker = L.marker([userLocation.lat, userLocation.lng], {
+                icon: userIcon,
+                title: 'Your Location'
+            }).addTo(map);
+
+            userMarker.bindPopup(`
+        <div style="padding: 10px; min-width: 180px;">
+            <h3 style="margin: 0 0 5px 0;">📍 Your Location</h3>
+            <p style="margin: 0 0 5px 0; font-size: 12px;">Lat: ${userLocation.lat.toFixed(4)}</p>
+            <p style="margin: 0 0 5px 0; font-size: 12px;">Lng: ${userLocation.lng.toFixed(4)}</p>
+        </div>
+    `);
+        }
+
+        // ==================== USER LOCATION ====================
+
+        function detectUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        userLocation.lat = position.coords.latitude;
+                        userLocation.lng = position.coords.longitude;
+
+                        document.getElementById("currentLocation").innerHTML = `
+                    <span class="location-icon" style="background: #00ff88;"></span>
+                    Lat ${userLocation.lat.toFixed(4)}, Lng ${userLocation.lng.toFixed(4)}
+                `;
+
+                        if (userMarker) {
+                            userMarker.setLatLng([userLocation.lat, userLocation.lng]);
+                        }
+
+                        map.setView([userLocation.lat, userLocation.lng], 14);
+
+                        // Recalculate distances after getting real location
+                        showPlaces(currentTab);
+                        updateCityFromLocation();
+                    },
+                    error => {
+                        console.log("Location access denied, using default");
+                        document.getElementById("currentLocation").innerHTML = `
+                    <span class="location-icon" style="background: #ff6b35;"></span>
+                    Demo Mode: Samarkand, Uzbekistan
+                `;
+                    }
+                );
+            }
+        }
+
+        function updateCityFromLocation() {
+            let closestCity = 'samarkand';
+            let shortestDistance = Infinity;
+
+            for (const [city, coords] of Object.entries(cityCoordinates)) {
+                const distance = calculateDistance(
+                    userLocation.lat,
+                    userLocation.lng,
+                    coords.lat,
+                    coords.lng
+                );
+
+                if (distance < shortestDistance) {
+                    shortestDistance = distance;
+                    closestCity = city;
+                }
+            }
+
+            document.getElementById('fromCity').value = closestCity;
+        }
+
+        // ==================== DISTANCE CALCULATION ====================
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        // ==================== ROUTE PLANNING ====================
+
+        function planRoute() {
+            const from = document.getElementById('fromCity').value;
+            const to = document.getElementById('toCity').value;
+            const transport = document.getElementById('transportType').value;
+
+            if (!from || !to) {
+                alert('Please select both departure and destination cities');
+                return;
+            }
+
+            if (from === to) {
+                alert('Departure and destination cannot be the same');
+                return;
+            }
+
+            const routeKey = `${from}-${to}`;
+            const routes = routesData[routeKey] || [];
+
+            if (routes.length === 0) {
+                alert('No routes available for this journey. Try different cities.');
+                return;
+            }
+
+            displayRoutes(routes, transport);
+            drawRouteOnMap(from, to);
+        }
+
+        function displayRoutes(routes, filterTransport) {
+            const resultsDiv = document.getElementById('routeResults');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="section-header">Available Routes</div>';
+
+            const filteredRoutes = filterTransport === 'all'
+                ? routes
+                : routes.filter(r => r.method === filterTransport);
+
+            if (filteredRoutes.length === 0) {
+                resultsDiv.innerHTML += '<p style="opacity: 0.6; text-align: center;">No routes found for selected transport type</p>';
+                return;
+            }
+
+            filteredRoutes.forEach((route, index) => {
+                const routeCard = document.createElement('div');
+                routeCard.className = 'route-card';
+                routeCard.onclick = () => selectRoute(index);
+                routeCard.innerHTML = `
+            <div class="route-method">
+                <span class="method-icon">${route.icon}</span>
+                <span class="method-name">${route.name}</span>
+            </div>
+            <p style="font-size: 13px; opacity: 0.8; margin-bottom: 8px;">${route.description}</p>
+            <div class="route-details">
+                <span class="route-time">⏱️ ${route.time}</span>
+                <span class="route-price">💰 ${route.price}</span>
+            </div>
+        `;
+                resultsDiv.appendChild(routeCard);
+            });
+        }
+
+        function drawRouteOnMap(from, to) {
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+
+            let startPoint, endPoint;
+
+            if (from in cityCoordinates) {
+                startPoint = cityCoordinates[from];
+            } else {
+                startPoint = userLocation;
+            }
+
+            if (to in cityCoordinates) {
+                endPoint = cityCoordinates[to];
+            } else {
+                endPoint = userLocation;
+            }
+
+            routeLayer = L.polyline([
+                [startPoint.lat, startPoint.lng],
+                [endPoint.lat, endPoint.lng]
+            ], {
+                color: '#ff6b35',
+                weight: 4,
+                opacity: 0.7,
+                dashArray: '10, 10'
+            }).addTo(map);
+
+            const bounds = L.latLngBounds(
+                [startPoint.lat, startPoint.lng],
+                [endPoint.lat, endPoint.lng]
+            );
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+
+        function selectRoute(index) {
+            selectedRoute = index;
+            const cards = document.querySelectorAll('.route-card');
+            cards.forEach((card, i) => {
+                card.classList.toggle('selected', i === index);
+            });
+        }
+
+        // ==================== TAB SWITCHING ====================
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const headers = {
+                restaurants: 'Nearby Restaurants',
+                hotels: 'Nearby Hotels & Stays',
+                attractions: 'Nearby Attractions'
+            };
+            document.getElementById('placesHeader').textContent = headers[tab];
+
+            showPlaces(tab);
+        }
+
+        // ==================== DISPLAY PLACES ====================
+
+        function showPlaces(type) {
+            const placesList = document.getElementById('placesList');
+            const places = placesData[type] || [];
+
+            if (places.length === 0) {
+                placesList.innerHTML = '<div class="loading"><p>No places found in database</p></div>';
+                return;
+            }
+
+            placesList.innerHTML = '';
+
+            // Clear previous markers
+            placeMarkers.forEach(marker => map.removeLayer(marker));
+            placeMarkers = [];
+
+            // Sort by distance
+            places.forEach(place => {
+                const distance = calculateDistance(
+                    userLocation.lat,
+                    userLocation.lng,
+                    place.lat,
+                    place.lng
+                );
+                place.distance = distance.toFixed(1) + ' km';
+                place.distanceValue = distance; // For sorting
+            });
+
+            // Sort closest first
+            places.sort((a, b) => a.distanceValue - b.distanceValue);
+
+            places.forEach(place => {
+                // Create place card
+                const placeCard = document.createElement('div');
+                placeCard.className = 'place-card';
+                placeCard.onclick = () => viewPlaceDetails(place.id, type);
+
+                placeCard.innerHTML = `
+            <div class="place-image" style="background: url(${place.image_url}); background-size: cover; background-position: center;">
+                ${!place.image_url ? `<span>${place.type}</span>` : ''}
+            </div>
+            <div class="place-info">
+                <div class="place-name">${place.name}</div>
+                <div class="place-distance">
+                    <i class="fas fa-map-marker-alt"></i> ${place.distance} from you
+                    ${place.partner ? '<span style="color: #9c27b0; margin-left: 8px;"><i class="fas fa-crown"></i> Partner</span>' : ''}
+                </div>
+                <div class="place-contact">
+                    <i class="fas fa-phone"></i> ${place.phone}
+                </div>
+                ${place.rating ? `<div style="font-size: 12px; color: #ffd700; margin-top: 5px;">
+                    <i class="fas fa-star"></i> ${place.rating}/5.0 (${place.review_count} reviews)
+                </div>` : ''}
+                <button class="view-details-btn" onclick="event.stopPropagation(); viewPlaceDetails('${place.id}', '${type}')">
+                    <i class="fas fa-info-circle"></i> View Details & Menu
+                </button>
+            </div>
+        `;
+                placesList.appendChild(placeCard);
+                console.log(`Added place card for ${place.image_url} - ${place.name}`);
+
+                // Add marker to map
+                addPlaceMarker(place, type);
+            });
+        }
+
+
+        // ==================== MAP MARKERS ====================
+
+        function addPlaceMarker(place, type) {
+            let iconColor, iconChar;
+
+            switch (type) {
+                case 'restaurants':
+                    iconColor = '#FF5722';
+                    iconChar = 'R';
+                    break;
+                case 'hotels':
+                    iconColor = '#2196F3';
+                    iconChar = 'H';
+                    break;
+                case 'attractions':
+                    iconColor = '#FF9800';
+                    iconChar = 'A';
+                    break;
+            }
+
+            const icon = L.divIcon({
+                className: 'place-marker',
+                html: `
+            <div style="background: ${iconColor}; width: 24px; height: 24px; border-radius: 50%; 
+                        border: 2px solid white; display: flex; align-items: center; 
+                        justify-content: center; color: white; font-weight: bold; font-size: 12px;
+                        box-shadow: 0 0 10px ${iconColor};">
+                ${iconChar}
+            </div>
+        `,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            const marker = L.marker([place.lat, place.lng], {
+                icon: icon,
+                title: `${place.name} (${place.distance})`
+            }).addTo(map);
+
+            marker.bindPopup(`
+        <div style="padding: 10px; min-width: 200px;">
+            <h3 style="margin: 0 0 5px 0;">${place.name}</h3>
+            <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">${place.type}</p>
+            <p style="margin: 0 0 5px 0; font-size: 12px;">📍 ${place.distance} away</p>
+            ${place.rating ? `<p style="margin: 0 0 5px 0; font-size: 12px; color: #ffd700;">⭐ ${place.rating}/5.0</p>` : ''}
+            ${place.partner ? `<p style="margin: 0 0 10px 0; font-size: 11px; color: #9c27b0;">✓ Partner Business</p>` : ''}
+            <button onclick="showRouteToPlace('${place.id}', '${type}')" 
+                    style="background: #ff6b35; color: white; border: none; padding: 8px 12px; 
+                           border-radius: 5px; cursor: pointer; font-size: 12px; width: 100%; margin-bottom: 5px;">
+                <i class="fas fa-route"></i> Show Route
+            </button>
+            <button onclick="viewPlaceDetails('${place.id}', '${type}')" 
+                    style="background: #4CAF50; color: white; border: none; padding: 8px 12px; 
+                           border-radius: 5px; cursor: pointer; font-size: 12px; width: 100%;">
+                <i class="fas fa-info-circle"></i> View Details
+            </button>
+        </div>
+    `);
+
+            placeMarkers.push(marker);
+        }
+
+        // ==================== ROUTE TO PLACE ====================
+
+        function showRouteToPlace(placeId, type) {
+            const place = placesData[type].find(p => p.id == placeId);
+            if (!place || !userMarker) return;
+
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+
+            routeLayer = L.polyline([
+                [userLocation.lat, userLocation.lng],
+                [place.lat, place.lng]
+            ], {
+                color: '#ff6b35',
+                weight: 4,
+                opacity: 0.7,
+                dashArray: '10, 10'
+            }).addTo(map);
+
+            const bounds = L.latLngBounds(
+                [userLocation.lat, userLocation.lng],
+                [place.lat, place.lng]
+            );
+            map.fitBounds(bounds, { padding: [50, 50] });
+
+            const distance = calculateDistance(userLocation.lat, userLocation.lng, place.lat, place.lng);
+            const time = (distance * 2).toFixed(0);
+
+            alert(`Route to ${place.name}\nDistance: ${distance.toFixed(1)} km\nEstimated time: ${time} minutes by car`);
+        }
+
+        // ==================== VIEW DETAILS ====================
+
+        function viewPlaceDetails(placeId, type) {
+            // Navigate to the detail page with the place ID
+            if (type === 'restaurants') {
+                window.location.href = `restaurants.html?id=${placeId}`;
+            } else if (type === 'hotels') {
+                window.location.href = `hotels.html?id=${placeId}`;
+            } else if (type === 'attractions') {
+                window.location.href = `attractions.html?id=${placeId}`;
+            }
+        }
+
+        console.log('Location page loaded - using FastAPI backend');
+    </script>
+</body>
+
+</html>

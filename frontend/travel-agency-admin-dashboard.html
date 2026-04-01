@@ -1,0 +1,2503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agency Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --bg2: #111;
+            --bg3: #181818;
+            --bg4: #1f1f1f;
+            --border: rgba(255, 255, 255, .07);
+            --border2: rgba(255, 255, 255, .12);
+            --text: #ddd8d2;
+            --muted: #5a5650;
+            --muted2: #888;
+            --accent: #e8a045;
+            --accent-dim: rgba(232, 160, 69, .12);
+            --accent-border: rgba(232, 160, 69, .25);
+            --red: #e05555;
+            --red-dim: rgba(224, 85, 85, .1);
+            --green: #4db87a;
+            --green-dim: rgba(77, 184, 122, .1);
+            --blue: #5b9cf6;
+            --sidebar: 240px;
+            --r: 10px;
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar);
+            flex-shrink: 0;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 200;
+            transition: transform .3s;
+        }
+
+        .sb-logo {
+            padding: 1.6rem 1.5rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sb-logo-mark {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: .12em;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .sb-logo-mark span {
+            color: var(--accent)
+        }
+
+        .sb-agency {
+            font-size: .72rem;
+            color: var(--muted2);
+            margin-top: .3rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .sb-agency-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            flex-shrink: 0
+        }
+
+        .sb-nav {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+            scrollbar-width: none
+        }
+
+        .sb-nav::-webkit-scrollbar {
+            display: none
+        }
+
+        .sb-section-label {
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: .6rem 1.5rem .3rem;
+        }
+
+        .sb-item {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .62rem 1.5rem;
+            cursor: pointer;
+            font-size: .82rem;
+            font-weight: 500;
+            color: var(--muted2);
+            border-left: 2px solid transparent;
+            transition: all .18s;
+            position: relative;
+        }
+
+        .sb-item:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, .03)
+        }
+
+        .sb-item.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+            background: var(--accent-dim)
+        }
+
+        .sb-item .sb-ico {
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0
+        }
+
+        .sb-badge {
+            margin-left: auto;
+            background: var(--accent);
+            color: var(--bg);
+            font-size: .6rem;
+            font-weight: 700;
+            padding: .1rem .45rem;
+            border-radius: 50px;
+        }
+
+        .sb-bottom {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+
+        .sb-user {
+            display: flex;
+            align-items: center;
+            gap: .7rem
+        }
+
+        .sb-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: .9rem;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .sb-user-name {
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .sb-user-role {
+            font-size: .68rem;
+            color: var(--muted2)
+        }
+
+        .btn-logout {
+            width: 100%;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted2);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .75rem;
+            padding: .45rem;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .btn-logout:hover {
+            border-color: var(--red);
+            color: var(--red)
+        }
+
+        /* ── MAIN ── */
+        .main {
+            margin-left: var(--sidebar);
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 10, .85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .topbar-title {
+            font-size: .88rem;
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .topbar-title span {
+            color: var(--muted2);
+            font-weight: 400;
+            margin-left: .5rem
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: .75rem
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .78rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            padding: .5rem 1.2rem;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: background .2s;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .btn-primary:hover {
+            background: #f5b35a
+        }
+
+        .btn-ghost {
+            background: none;
+            border: 1px solid var(--border2);
+            color: var(--muted2);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .78rem;
+            font-weight: 500;
+            padding: .5rem 1rem;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--border2);
+            color: var(--text)
+        }
+
+        /* ── PAGE CONTENT ── */
+        .page {
+            display: none;
+            padding: 2rem;
+            animation: fadeIn .3s
+        }
+
+        .page.active {
+            display: block
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* ── DASHBOARD ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem
+        }
+
+        .stat-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 1.3rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+        }
+
+        .stat-ico {
+            font-size: 1.5rem;
+            margin-bottom: .6rem
+        }
+
+        .stat-val {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.4rem;
+            line-height: 1;
+            color: #fff;
+            margin-bottom: .2rem
+        }
+
+        .stat-label {
+            font-size: .72rem;
+            color: var(--muted2);
+            text-transform: uppercase;
+            letter-spacing: .07em
+        }
+
+        .dash-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem
+        }
+
+        .tour-table-wrap {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-header h3 {
+            font-size: .88rem;
+            font-weight: 600;
+            color: #fff
+        }
+
+        .t-table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .t-table th {
+            text-align: left;
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: .75rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .t-table td {
+            padding: .85rem 1.5rem;
+            font-size: .82rem;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .t-table tr:last-child td {
+            border-bottom: none
+        }
+
+        .t-table tr:hover td {
+            background: rgba(255, 255, 255, .02)
+        }
+
+        .t-name {
+            font-weight: 600;
+            color: #fff
+        }
+
+        .t-status {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            padding: .2rem .65rem;
+            border-radius: 50px;
+        }
+
+        .t-status.active {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(77, 184, 122, .2)
+        }
+
+        .t-status.draft {
+            background: rgba(90, 86, 80, .15);
+            color: var(--muted2);
+            border: 1px solid var(--border)
+        }
+
+        .btn-tbl {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted2);
+            font-size: .72rem;
+            padding: .28rem .7rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all .18s;
+            font-family: 'DM Sans', sans-serif
+        }
+
+        .btn-tbl:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        .btn-tbl.red:hover {
+            border-color: var(--red);
+            color: var(--red)
+        }
+
+        /* quick tips card */
+        .tips-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 1.5rem
+        }
+
+        .tips-card h3 {
+            font-size: .88rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 1.2rem
+        }
+
+        .tip-item {
+            display: flex;
+            gap: .75rem;
+            padding: .65rem 0;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .tip-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0
+        }
+
+        .tip-ico {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            flex-shrink: 0;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+        }
+
+        .tip-text {
+            font-size: .8rem;
+            color: var(--muted2);
+            line-height: 1.55
+        }
+
+        .tip-text strong {
+            color: var(--text)
+        }
+
+        /* ── SECTION HEADER ── */
+        .sec-hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem
+        }
+
+        .sec-hd h2 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff
+        }
+
+        .sec-hd p {
+            font-size: .8rem;
+            color: var(--muted2);
+            margin-top: .2rem
+        }
+
+        /* ── FORM CARD ── */
+        .form-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            margin-bottom: 1.5rem
+        }
+
+        .form-card-header {
+            padding: 1.2rem 1.8rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .form-card-header .fch-ico {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .form-card-header h3 {
+            font-size: .92rem;
+            font-weight: 600;
+            color: #fff
+        }
+
+        .form-card-header p {
+            font-size: .75rem;
+            color: var(--muted2);
+            margin-top: .1rem
+        }
+
+        .form-card-body {
+            padding: 1.5rem 1.8rem
+        }
+
+        /* ── FORM ELEMENTS ── */
+        .fgrid {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1rem
+        }
+
+        .fgrid-2 {
+            grid-template-columns: 1fr 1fr
+        }
+
+        .fgrid-3 {
+            grid-template-columns: 1fr 1fr 1fr
+        }
+
+        .fg {
+            display: flex;
+            flex-direction: column;
+            gap: .35rem
+        }
+
+        .fg label {
+            font-size: .67rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: var(--muted2)
+        }
+
+        .fg input,
+        .fg select,
+        .fg textarea {
+            background: var(--bg3);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: .65rem .9rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .85rem;
+            color: var(--text);
+            transition: border-color .2s, background .2s;
+        }
+
+        .fg input:focus,
+        .fg select:focus,
+        .fg textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg4);
+        }
+
+        .fg input::placeholder,
+        .fg textarea::placeholder {
+            color: var(--muted)
+        }
+
+        .fg textarea {
+            resize: vertical;
+            min-height: 90px;
+            line-height: 1.6
+        }
+
+        .fg select option {
+            background: var(--bg3)
+        }
+
+        .fg .hint {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: .15rem
+        }
+
+        /* toggle switch */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .75rem 0;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .toggle-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0
+        }
+
+        .toggle-info strong {
+            font-size: .85rem;
+            color: var(--text);
+            display: block
+        }
+
+        .toggle-info span {
+            font-size: .75rem;
+            color: var(--muted2)
+        }
+
+        .toggle {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            flex-shrink: 0
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--bg4);
+            border: 1.5px solid var(--border2);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all .25s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--muted2);
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all .25s;
+        }
+
+        .toggle input:checked+.toggle-slider {
+            background: var(--accent);
+            border-color: var(--accent)
+        }
+
+        .toggle input:checked+.toggle-slider::before {
+            left: 19px;
+            background: #fff
+        }
+
+        /* ── TAGS INPUT ── */
+        .tags-wrap {
+            background: var(--bg3);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: .4rem .5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+            align-items: center;
+            min-height: 42px;
+            cursor: text;
+            transition: border-color .2s;
+        }
+
+        .tags-wrap:focus-within {
+            border-color: var(--accent)
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            color: var(--accent);
+            font-size: .75rem;
+            font-weight: 500;
+            padding: .2rem .6rem;
+            border-radius: 50px;
+        }
+
+        .tag-x {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: .8rem;
+            padding: 0;
+            line-height: 1;
+            opacity: .7
+        }
+
+        .tag-x:hover {
+            opacity: 1
+        }
+
+        .tags-input {
+            border: none;
+            background: none;
+            outline: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .85rem;
+            color: var(--text);
+            min-width: 120px;
+            padding: .2rem .3rem;
+            flex: 1;
+        }
+
+        .tags-input::placeholder {
+            color: var(--muted)
+        }
+
+        /* ── DYNAMIC LIST (itinerary days / destinations) ── */
+        .dyn-list {
+            display: flex;
+            flex-direction: column;
+            gap: .75rem;
+            margin-bottom: 1rem
+        }
+
+        .dyn-item {
+            background: var(--bg3);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden;
+        }
+
+        .dyn-item-header {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .9rem 1.2rem;
+            cursor: pointer;
+            border-bottom: 1px solid transparent;
+            transition: border-color .2s;
+        }
+
+        .dyn-item.open .dyn-item-header {
+            border-bottom-color: var(--border)
+        }
+
+        .dyn-handle {
+            color: var(--muted);
+            font-size: 1rem;
+            cursor: grab;
+            flex-shrink: 0
+        }
+
+        .dyn-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: .85rem;
+            color: var(--accent);
+        }
+
+        .dyn-item-title {
+            flex: 1;
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .dyn-item-sub {
+            font-size: .72rem;
+            color: var(--muted2);
+            margin-top: .1rem
+        }
+
+        .dyn-chevron {
+            color: var(--muted2);
+            transition: transform .25s;
+            font-size: .8rem
+        }
+
+        .dyn-item.open .dyn-chevron {
+            transform: rotate(180deg)
+        }
+
+        .btn-dyn-del {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: .9rem;
+            padding: .3rem;
+            border-radius: 5px;
+            transition: color .18s;
+            flex-shrink: 0;
+        }
+
+        .btn-dyn-del:hover {
+            color: var(--red)
+        }
+
+        .dyn-item-body {
+            display: none;
+            padding: 1.2rem
+        }
+
+        .dyn-item.open .dyn-item-body {
+            display: block
+        }
+
+        .btn-add-dyn {
+            width: 100%;
+            background: none;
+            border: 1.5px dashed var(--border2);
+            color: var(--muted2);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .8rem;
+            font-weight: 600;
+            padding: .7rem;
+            border-radius: var(--r);
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+        }
+
+        .btn-add-dyn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim)
+        }
+
+        /* ── IMAGE UPLOAD ── */
+        .img-upload-zone {
+            border: 2px dashed var(--border2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+            background: var(--bg3);
+            position: relative;
+        }
+
+        .img-upload-zone:hover {
+            border-color: var(--accent);
+            background: var(--accent-dim)
+        }
+
+        .img-upload-zone input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer
+        }
+
+        .iuz-ico {
+            font-size: 1.6rem;
+            margin-bottom: .5rem
+        }
+
+        .iuz-text {
+            font-size: .8rem;
+            color: var(--muted2)
+        }
+
+        .iuz-sub {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: .2rem
+        }
+
+        .img-previews {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            margin-top: .75rem
+        }
+
+        .img-preview {
+            width: 80px;
+            height: 60px;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border);
+        }
+
+        .img-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .img-preview-del {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0, 0, 0, .7);
+            color: #fff;
+            border: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            font-size: .6rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── MAP PICKER ── */
+        .map-picker-wrap {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1.5px solid var(--border);
+            margin-top: .5rem
+        }
+
+        .map-picker-bar {
+            background: var(--bg4);
+            padding: .6rem .9rem;
+            font-size: .72rem;
+            color: var(--muted2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .map-picker-bar strong {
+            color: var(--accent)
+        }
+
+        #dest-map-picker {
+            height: 220px
+        }
+
+        /* ── COORD INPUTS ── */
+        .coord-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+            margin-top: .5rem
+        }
+
+        .coord-row input {
+            font-family: 'DM Mono', monospace;
+            font-size: .82rem
+        }
+
+        /* ── FORM SAVE BAR ── */
+        .save-bar {
+            position: sticky;
+            bottom: 0;
+            z-index: 50;
+            background: rgba(10, 10, 10, .95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border);
+            padding: .9rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: -2rem;
+            margin-top: 1rem;
+        }
+
+        .save-bar-status {
+            font-size: .8rem;
+            color: var(--muted2);
+            display: flex;
+            align-items: center;
+            gap: .4rem
+        }
+
+        .save-bar-status.saved {
+            color: var(--green)
+        }
+
+        .save-bar-status.unsaved {
+            color: var(--accent)
+        }
+
+        .save-actions {
+            display: flex;
+            gap: .75rem
+        }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            padding: .9rem 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            font-size: .84rem;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .5);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all .3s;
+            pointer-events: none;
+            max-width: 320px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1
+        }
+
+        .toast.success {
+            border-color: rgba(77, 184, 122, .3);
+            color: var(--green)
+        }
+
+        .toast.error {
+            border-color: rgba(224, 85, 85, .3);
+            color: var(--red)
+        }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:1100px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .dash-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:768px) {
+            .sidebar {
+                transform: translateX(-100%)
+            }
+
+            .sidebar.open {
+                transform: translateX(0)
+            }
+
+            .main {
+                margin-left: 0
+            }
+
+            .fgrid-2,
+            .fgrid-3 {
+                grid-template-columns: 1fr
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-mark">Travel<span>.</span> Admin</div>
+            <div class="sb-agency" id="sb-agency-name">
+                <div class="sb-agency-dot"></div>
+                <span>Loading agency…</span>
+            </div>
+        </div>
+
+        <nav class="sb-nav">
+            <div class="sb-section-label">Overview</div>
+            <div class="sb-item active" onclick="nav('dashboard')">
+                <span class="sb-ico">📊</span> Dashboard
+            </div>
+
+            <div class="sb-section-label">Agency</div>
+            <div class="sb-item" onclick="nav('profile')">
+                <span class="sb-ico">🏢</span> Agency Profile
+            </div>
+
+            <div class="sb-section-label">Tours</div>
+            <div class="sb-item" onclick="nav('tours')">
+                <span class="sb-ico">🗺</span> All Tours
+            </div>
+            <div class="sb-item" onclick="nav('new-tour')">
+                <span class="sb-ico">＋</span> Create Tour
+            </div>
+
+            <div class="sb-section-label">Content</div>
+            <div class="sb-item" onclick="nav('reviews')">
+                <span class="sb-ico">⭐</span> Reviews
+            </div>
+        </nav>
+
+        <div class="sb-bottom">
+            <div class="sb-user">
+                <div class="sb-avatar" id="sb-avatar">A</div>
+                <div>
+                    <div class="sb-user-name" id="sb-user-name">Agency Admin</div>
+                    <div class="sb-user-role">Tour Manager</div>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="alert('Logout — connect to your auth system')">Sign Out</button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div class="topbar-title" id="topbar-title">Dashboard <span>Overview</span></div>
+            <div class="topbar-actions">
+                <button class="btn-ghost" onclick="nav('tours')">All Tours</button>
+                <button class="btn-primary" onclick="nav('new-tour')">+ New Tour</button>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════ -->
+        <!-- PAGE: DASHBOARD -->
+        <!-- ══════════════════════════════════ -->
+        <div class="page active" id="page-dashboard" style="padding:2rem">
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-ico">🗺</div>
+                    <div class="stat-val" id="st-tours">—</div>
+                    <div class="stat-label">Active Tours</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-ico">⭐</div>
+                    <div class="stat-val" id="st-reviews">—</div>
+                    <div class="stat-label">Reviews</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-ico">📅</div>
+                    <div class="stat-ico"></div>
+                    <div class="stat-val">—</div>
+                    <div class="stat-label">Bookings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-ico">💬</div>
+                    <div class="stat-val">—</div>
+                    <div class="stat-label">Inquiries</div>
+                </div>
+            </div>
+
+            <div class="dash-grid">
+                <div class="tour-table-wrap">
+                    <div class="table-header">
+                        <h3>Your Tours</h3>
+                        <button class="btn-ghost" onclick="nav('new-tour')">+ Add Tour</button>
+                    </div>
+                    <table class="t-table">
+                        <thead>
+                            <tr>
+                                <th>Tour Name</th>
+                                <th>Days</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="dash-tours-tbody">
+                            <tr>
+                                <td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">Loading…</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tips-card">
+                    <h3>Quick Guide</h3>
+                    <div class="tip-item">
+                        <div class="tip-ico">🏢</div>
+                        <div class="tip-text"><strong>Agency Profile</strong> — Set your agency details, contact info,
+                            and specializations.</div>
+                    </div>
+                    <div class="tip-item">
+                        <div class="tip-ico">🗺</div>
+                        <div class="tip-text"><strong>Create Tour</strong> — Add tour name, price, duration, highlights,
+                            included services and more.</div>
+                    </div>
+                    <div class="tip-item">
+                        <div class="tip-ico">📅</div>
+                        <div class="tip-text"><strong>Itinerary</strong> — Build day-by-day plans with activities,
+                            meals, accommodation and photos.</div>
+                    </div>
+                    <div class="tip-item">
+                        <div class="tip-ico">📍</div>
+                        <div class="tip-text"><strong>Destinations</strong> — Pin exact locations on the map so
+                            travelers see the full route.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════ -->
+        <!-- PAGE: AGENCY PROFILE -->
+        <!-- ══════════════════════════════════ -->
+        <div class="page" id="page-profile" style="padding:2rem">
+            <div class="sec-hd">
+                <div>
+                    <h2>Agency Profile</h2>
+                    <p>This information appears on your public agency page</p>
+                </div>
+                <button class="btn-primary" onclick="saveProfile()">💾 Save Profile</button>
+            </div>
+
+            <!-- Basic Info -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">🏢</div>
+                    <div>
+                        <h3>Basic Information</h3>
+                        <p>Your agency identity</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="fgrid fgrid-2">
+                        <div class="fg"><label>Agency Name *</label><input type="text" id="p-name"
+                                placeholder="Silk Road Journeys" /></div>
+                        <div class="fg"><label>Agency Type</label>
+                            <select id="p-type">
+                                <option value="">Select type…</option>
+                                <option>Adventure</option>
+                                <option>Luxury</option>
+                                <option>Cultural</option>
+                                <option>Budget</option>
+                                <option>Family</option>
+                                <option>Eco Tourism</option>
+                                <option>Luxury & Private</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="fg" style="margin-bottom:1rem"><label>Description *</label>
+                        <textarea id="p-desc" rows="4"
+                            placeholder="Describe your agency — what makes you unique, your philosophy, experience…"></textarea>
+                    </div>
+                    <div class="fgrid fgrid-3">
+                        <div class="fg"><label>City</label><input type="text" id="p-city" placeholder="Tashkent" />
+                        </div>
+                        <div class="fg"><label>Country</label><input type="text" id="p-country"
+                                placeholder="Uzbekistan" /></div>
+                        <div class="fg"><label>Languages</label><input type="text" id="p-langs"
+                                placeholder="English, Russian, Chinese" /></div>
+                    </div>
+                    <div class="fg"><label>Full Address</label><input type="text" id="p-address"
+                            placeholder="25 Mustaqillik Avenue, Tashkent" /></div>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">📞</div>
+                    <div>
+                        <h3>Contact Information</h3>
+                        <p>How travelers can reach you</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="fgrid fgrid-3">
+                        <div class="fg"><label>Phone</label><input type="tel" id="p-phone"
+                                placeholder="+998 71 567 8901" /></div>
+                        <div class="fg"><label>Email</label><input type="email" id="p-email"
+                                placeholder="info@agencyname.com" /></div>
+                        <div class="fg"><label>Website</label><input type="url" id="p-website"
+                                placeholder="https://agencyname.com" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agency Images -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">🖼</div>
+                    <div>
+                        <h3>Agency Images</h3>
+                        <p>Logo shown in listings · Cover photo shown as the hero background on your agency page</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="fgrid fgrid-2">
+                        <div class="fg">
+                            <label>Logo</label>
+                            <div class="img-upload-zone" style="height:auto;padding:.75rem;flex-direction:row;gap:.75rem;align-items:center;">
+                                <input type="file" accept="image/*" onchange="uploadAgencyImg(event,'p-logo-url','p-logo-preview')"/>
+                                <div style="text-align:center;flex:1">
+                                    <div class="iuz-ico" style="font-size:1.4rem">🏷</div>
+                                    <div class="iuz-text" style="font-size:.78rem">Upload logo</div>
+                                </div>
+                            </div>
+                            <input type="text" id="p-logo-url" placeholder="or paste logo URL"
+                                   style="margin-top:.5rem;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.55rem .85rem;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);width:100%"
+                                   oninput="updateSinglePreview('p-logo-preview',this.value)"/>
+                            <div id="p-logo-preview" style="margin-top:.5rem;display:none">
+                                <img style="max-height:80px;border-radius:8px;border:1.5px solid var(--border)" onerror="this.parentElement.style.display='none'"/>
+                            </div>
+                        </div>
+                        <div class="fg">
+                            <label>Cover / Background Photo</label>
+                            <div class="img-upload-zone" style="height:auto;padding:.75rem;flex-direction:row;gap:.75rem;align-items:center;">
+                                <input type="file" accept="image/*" onchange="uploadAgencyImg(event,'p-cover-url','p-cover-preview')"/>
+                                <div style="text-align:center;flex:1">
+                                    <div class="iuz-ico" style="font-size:1.4rem">🌄</div>
+                                    <div class="iuz-text" style="font-size:.78rem">Upload cover photo</div>
+                                </div>
+                            </div>
+                            <input type="text" id="p-cover-url" placeholder="or paste cover URL"
+                                   style="margin-top:.5rem;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.55rem .85rem;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);width:100%"
+                                   oninput="updateSinglePreview('p-cover-preview',this.value)"/>
+                            <div id="p-cover-preview" style="margin-top:.5rem;display:none">
+                                <img style="max-height:80px;border-radius:8px;border:1.5px solid var(--border);width:100%;object-fit:cover;" onerror="this.parentElement.style.display='none'"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specializations -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">🎯</div>
+                    <div>
+                        <h3>Specializations</h3>
+                        <p>What types of travel do you offer? Press Enter to add</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="tags-wrap" id="spec-tags-wrap" onclick="document.getElementById('spec-input').focus()">
+                        <input class="tags-input" id="spec-input"
+                            placeholder="e.g. Silk Road, Adventure, Photography Tours…"
+                            onkeydown="addTag(event,'spec-tags-wrap','spec-input','spec-data')" />
+                    </div>
+                    <input type="hidden" id="spec-data" value="[]" />
+                </div>
+            </div>
+
+
+            <!-- Location -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">📍</div>
+                    <div>
+                        <h3>Agency Location on Map</h3>
+                        <p>Click the map to set your location, or enter coordinates manually</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="coord-row">
+                        <div class="fg"><label>Latitude</label><input type="number" step="any" id="p-lat"
+                                placeholder="41.2995" oninput="updateProfilePin()" /></div>
+                        <div class="fg"><label>Longitude</label><input type="number" step="any" id="p-lng"
+                                placeholder="69.2401" oninput="updateProfilePin()" /></div>
+                    </div>
+                    <p class="hint" style="margin-bottom:.5rem;font-size:.72rem;color:var(--muted)">💡 Tip: Go to Google
+                        Maps, right-click your location, and copy the coordinates</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════ -->
+        <!-- PAGE: ALL TOURS -->
+        <!-- ══════════════════════════════════ -->
+        <div class="page" id="page-tours" style="padding:2rem">
+            <div class="sec-hd">
+                <div>
+                    <h2>All Tours</h2>
+                    <p>Manage your tour packages</p>
+                </div>
+                <button class="btn-primary" onclick="nav('new-tour')">+ Create Tour</button>
+            </div>
+            <div class="tour-table-wrap">
+                <table class="t-table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Tour Name</th>
+                            <th>Type</th>
+                            <th>Duration</th>
+                            <th>Price</th>
+                            <th>Group</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-tours-tbody">
+                        <tr>
+                            <td colspan="7" style="text-align:center;color:var(--muted);padding:2.5rem">Loading tours…
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════ -->
+        <!-- PAGE: CREATE / EDIT TOUR -->
+        <!-- ══════════════════════════════════ -->
+        <div class="page" id="page-new-tour" style="padding:2rem">
+            <div class="sec-hd">
+                <div>
+                    <h2 id="tour-form-title">Create New Tour</h2>
+                    <p>Fill in all sections — travelers see everything</p>
+                </div>
+            </div>
+            <input type="hidden" id="editing-tour-id" value="" />
+
+            <!-- Basic Info -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">✈️</div>
+                    <div>
+                        <h3>Tour Basics</h3>
+                        <p>Core details shown in listings</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="fgrid fgrid-2">
+                        <div class="fg"><label>Tour Name *</label><input type="text" id="t-name"
+                                placeholder="Classic Japan 10-Day Journey" /></div>
+                        <div class="fg"><label>Tour Type</label>
+                            <select id="t-type">
+                                <option value="">Select…</option>
+                                <option>Cultural</option>
+                                <option>Adventure</option>
+                                <option>Luxury</option>
+                                <option>Luxury & Private</option>
+                                <option>Budget</option>
+                                <option>Family</option>
+                                <option>Photography</option>
+                                <option>Food & Culinary</option>
+                                <option>Historical</option>
+                                <option>Eco Tourism</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="fg" style="margin-bottom:1rem"><label>Description *</label>
+                        <textarea id="t-desc" rows="4"
+                            placeholder="Engaging description of what makes this tour special…"></textarea>
+                    </div>
+                    <div class="fgrid fgrid-3">
+                        <div class="fg"><label>Duration (Days) *</label><input type="number" id="t-days" min="1"
+                                placeholder="10" /></div>
+                        <div class="fg"><label>Max Group Size</label><input type="number" id="t-group" min="1"
+                                placeholder="12" /></div>
+                        <div class="fg"><label>Difficulty Level</label>
+                            <select id="t-difficulty">
+                                <option value="">Select…</option>
+                                <option>Easy</option>
+                                <option>Easy to Moderate</option>
+                                <option>Moderate</option>
+                                <option>Challenging</option>
+                                <option>Expert</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="fgrid fgrid-3">
+                        <div class="fg"><label>Price (per person) *</label><input type="number" id="t-price"
+                                placeholder="2499" /></div>
+                        <div class="fg"><label>Currency</label>
+                            <select id="t-currency">
+                                <option>USD</option>
+                                <option>EUR</option>
+                                <option>GBP</option>
+                                <option>JPY</option>
+                                <option>UZS</option>
+                                <option>AED</option>
+                            </select>
+                        </div>
+                        <div class="fg"><label>Best Season</label><input type="text" id="t-season"
+                                placeholder="April–May & September–October" /></div>
+                    </div>
+                    <div class="fg">
+                        <label>Tour Cover Image</label>
+                        <div class="img-upload-zone" onclick="this.querySelector('input').click()" style="height:auto;padding:.65rem;flex-direction:row;gap:.75rem;align-items:center;margin-bottom:.5rem">
+                            <input type="file" accept="image/*" style="display:none" onchange="uploadSingleImg(event,'t-image','t-image-preview')"/>
+                            <div style="text-align:center;flex:1">
+                                <div class="iuz-ico" style="font-size:1.4rem">🖼</div>
+                                <div class="iuz-text" style="font-size:.78rem">Upload cover photo</div>
+                            </div>
+                        </div>
+                        <input type="text" id="t-image" placeholder="Or paste image URL"
+                               style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.55rem .85rem;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);width:100%"
+                               oninput="updateSinglePreview('t-image-preview',this.value)"/>
+                        <div id="t-image-preview" style="margin-top:.5rem;display:none">
+                            <img style="max-height:120px;border-radius:8px;border:1.5px solid var(--border);width:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Highlights -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">✦</div>
+                    <div>
+                        <h3>Highlights</h3>
+                        <p>Key selling points — press Enter to add each one</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="tags-wrap" id="hl-tags-wrap" onclick="document.getElementById('hl-input').focus()">
+                        <input class="tags-input" id="hl-input" placeholder="e.g. Visit Kyoto temples at dawn…"
+                            onkeydown="addTag(event,'hl-tags-wrap','hl-input','hl-data')" />
+                    </div>
+                    <input type="hidden" id="hl-data" value="[]" />
+                </div>
+            </div>
+
+            <!-- Included / Excluded -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">✅</div>
+                    <div>
+                        <h3>Included &amp; Excluded Services</h3>
+                        <p>Press Enter to add each item</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="fgrid fgrid-2">
+                        <div>
+                            <div class="fg"><label style="color:var(--green)">✓ What's Included</label>
+                                <div class="tags-wrap" id="inc-tags-wrap"
+                                    onclick="document.getElementById('inc-input').focus()"
+                                    style="border-color:rgba(77,184,122,.2)">
+                                    <input class="tags-input" id="inc-input" placeholder="e.g. All accommodation…"
+                                        onkeydown="addTag(event,'inc-tags-wrap','inc-input','inc-data','green')" />
+                                </div>
+                                <input type="hidden" id="inc-data" value="[]" />
+                            </div>
+                        </div>
+                        <div>
+                            <div class="fg"><label style="color:var(--red)">✕ Not Included</label>
+                                <div class="tags-wrap" id="exc-tags-wrap"
+                                    onclick="document.getElementById('exc-input').focus()"
+                                    style="border-color:rgba(224,85,85,.2)">
+                                    <input class="tags-input" id="exc-input" placeholder="e.g. International flights…"
+                                        onkeydown="addTag(event,'exc-tags-wrap','exc-input','exc-data','red')" />
+                                </div>
+                                <input type="hidden" id="exc-data" value="[]" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Destinations -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">📍</div>
+                    <div>
+                        <h3>Destinations &amp; Route</h3>
+                        <p>Add each place visited — these appear as markers on the route map</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="dyn-list" id="dest-list"></div>
+                    <button class="btn-add-dyn" onclick="addDestination()">+ Add Destination</button>
+                </div>
+            </div>
+
+            <!-- Itinerary -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="fch-ico">📅</div>
+                    <div>
+                        <h3>Day-by-Day Itinerary</h3>
+                        <p>Each day's plan — photos, meals, accommodation</p>
+                    </div>
+                </div>
+                <div class="form-card-body">
+                    <div class="dyn-list" id="itin-list"></div>
+                    <button class="btn-add-dyn" onclick="addItineraryDay()">+ Add Day</button>
+                </div>
+            </div>
+
+            <!-- Save bar -->
+            <div class="save-bar">
+                <div class="save-bar-status unsaved" id="save-status">● Unsaved changes</div>
+                <div class="save-actions">
+                    <button class="btn-ghost" onclick="resetTourForm()">Discard</button>
+                    <button class="btn-primary" onclick="saveTour()">💾 Save Tour</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════ -->
+        <!-- PAGE: REVIEWS -->
+        <!-- ══════════════════════════════════ -->
+        <div class="page" id="page-reviews" style="padding:2rem">
+            <div class="sec-hd">
+                <div>
+                    <h2>Reviews</h2>
+                    <p>What travelers say about your agency</p>
+                </div>
+            </div>
+            <div id="reviews-list" style="display:flex;flex-direction:column;gap:1rem">
+                <div style="text-align:center;color:var(--muted);padding:3rem">Loading reviews…</div>
+            </div>
+        </div>
+
+    </div><!-- end .main -->
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+
+    <script>
+        // ══════════════════════════════════════════════════
+        // CONFIG
+        // ══════════════════════════════════════════════════
+        const BASE = 'http://localhost:8000';
+        const AGENCY_ID = new URLSearchParams(location.search).get('agency') || 1;
+
+        // ══════════════════════════════════════════════════
+        // NAVIGATION
+        // ══════════════════════════════════════════════════
+        const pageMap = {
+            dashboard: { page: 'page-dashboard', label: 'Dashboard', sub: 'Overview' },
+            profile: { page: 'page-profile', label: 'Agency Profile', sub: 'Edit your public page' },
+            tours: { page: 'page-tours', label: 'All Tours', sub: 'Manage packages' },
+            'new-tour': { page: 'page-new-tour', label: 'Create Tour', sub: 'New package' },
+            reviews: { page: 'page-reviews', label: 'Reviews', sub: 'Traveler feedback' },
+        };
+
+        function nav(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+            const cfg = pageMap[id];
+            if (!cfg) return;
+            document.getElementById(cfg.page).classList.add('active');
+            document.querySelectorAll('.sb-item').forEach(i => {
+                if (i.getAttribute('onclick') === `nav('${id}')`) i.classList.add('active');
+            });
+            document.getElementById('topbar-title').innerHTML = `${cfg.label} <span>${cfg.sub}</span>`;
+            if (id === 'dashboard') loadDashboard();
+            if (id === 'tours') loadToursPage();
+            if (id === 'profile') loadProfile();
+            if (id === 'reviews') loadReviews();
+            if (id === 'new-tour') resetTourForm();
+            window.scrollTo(0, 0);
+        }
+
+        // ══════════════════════════════════════════════════
+        // API
+        // ══════════════════════════════════════════════════
+        async function api(method, path, body) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body !== undefined) opts.body = JSON.stringify(body);
+            const r = await fetch(BASE + path, opts);
+            if (!r.ok) { const t = await r.text(); throw new Error(t); }
+            return method === 'DELETE' ? null : r.json();
+        }
+
+        // ══════════════════════════════════════════════════
+        // TOAST
+        // ══════════════════════════════════════════════════
+        function toast(msg, type = 'success') {
+            const el = document.getElementById('toast');
+            el.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
+            el.className = `toast ${type} show`;
+            setTimeout(() => el.classList.remove('show'), 3200);
+        }
+
+        // ══════════════════════════════════════════════════
+        // DASHBOARD
+        // ══════════════════════════════════════════════════
+        async function loadDashboard() {
+            try {
+                const [tours, reviews] = await Promise.all([
+                    api('GET', `/travel-agencies/${AGENCY_ID}/tours`),
+                    api('GET', `/travel-agencies/${AGENCY_ID}/reviews`),
+                ]);
+                document.getElementById('st-tours').textContent = tours.length;
+                document.getElementById('st-reviews').textContent = reviews.length;
+
+                document.getElementById('dash-tours-tbody').innerHTML = tours.length
+                    ? tours.map(t => `
+                <tr>
+                    <td><div class="t-name">${t.tour_name}</div></td>
+                    <td>${t.duration_days || '—'}d</td>
+                    <td>${t.price ? `${t.currency || 'USD'} ${Number(t.price).toLocaleString()}` : '—'}</td>
+                    <td><span class="t-status ${t.status === 'approved' ? 'active' : 'draft'}">
+                        ${t.status === 'approved' ? 'Active' : t.status === 'pending' ? '⏳ Pending CEO' : t.status}
+                    </span></td>
+                    <td><button class="btn-tbl" onclick="editTour(${t.id})">Edit</button></td>
+                </tr>`).join('')
+                    : `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">
+                No tours yet. <a href="#" onclick="nav('new-tour')" style="color:var(--accent)">Create your first tour →</a>
+               </td></tr>`;
+            } catch (e) { console.error(e); }
+        }
+
+        // ══════════════════════════════════════════════════
+        // PROFILE
+        // ══════════════════════════════════════════════════
+        async function loadProfile() {
+            try {
+                const a = await api('GET', `/travel-agencies/${AGENCY_ID}`);
+                document.getElementById('p-name').value = a.name || '';
+                document.getElementById('p-type').value = a.agency_type || '';
+                document.getElementById('p-desc').value = a.description || '';
+                document.getElementById('p-city').value = a.city || '';
+                document.getElementById('p-country').value = a.country || '';
+                document.getElementById('p-langs').value = a.languages || '';
+                document.getElementById('p-address').value = a.address || '';
+                document.getElementById('p-phone').value = a.phone || '';
+                document.getElementById('p-email').value = a.email || '';
+                document.getElementById('p-website').value = a.website || '';
+                document.getElementById('p-lat').value = a.latitude || '';
+                document.getElementById('p-lng').value = a.longitude || '';
+                // Agency images
+                if (a.logo_url) {
+                    document.getElementById('p-logo-url').value = a.logo_url;
+                    updateSinglePreview('p-logo-preview', a.logo_url);
+                }
+                if (a.image_url) {
+                    document.getElementById('p-cover-url').value = a.image_url;
+                    updateSinglePreview('p-cover-preview', a.image_url);
+                }
+                const specs = Array.isArray(a.specializations) ? a.specializations : [];
+                document.getElementById('spec-data').value = JSON.stringify(specs);
+                rebuildTagsFromData('spec-tags-wrap', 'spec-input', 'spec-data');
+                document.getElementById('sb-agency-name').innerHTML =
+                    `<div class="sb-agency-dot"></div><span>${a.name}</span>`;
+                document.getElementById('sb-user-name').textContent = a.name;
+                document.getElementById('sb-avatar').textContent = a.name.charAt(0).toUpperCase();
+            } catch (e) { console.error('profile load', e); }
+        }
+
+        async function saveProfile() {
+            const body = {
+                name: document.getElementById('p-name').value,
+                agency_type: document.getElementById('p-type').value,
+                description: document.getElementById('p-desc').value,
+                city: document.getElementById('p-city').value,
+                country: document.getElementById('p-country').value,
+                languages: document.getElementById('p-langs').value,
+                address: document.getElementById('p-address').value,
+                phone: document.getElementById('p-phone').value,
+                email: document.getElementById('p-email').value,
+                website: document.getElementById('p-website').value,
+                latitude: parseFloat(document.getElementById('p-lat').value) || null,
+                longitude: parseFloat(document.getElementById('p-lng').value) || null,
+                logo_url: document.getElementById('p-logo-url').value || null,
+                image_url: document.getElementById('p-cover-url').value || null,
+                specializations: JSON.parse(document.getElementById('spec-data').value || '[]'),
+            };
+            try {
+                await api('PUT', `/travel-agencies/${AGENCY_ID}`, body);
+                toast('Agency profile saved!');
+            } catch (e) { toast('Save failed: ' + e.message, 'error'); }
+        }
+
+        // ══════════════════════════════════════════════════
+        // TOURS PAGE
+        // ══════════════════════════════════════════════════
+        async function loadToursPage() {
+            const tbody = document.getElementById('all-tours-tbody');
+            try {
+                const tours = await api('GET', `/travel-agencies/${AGENCY_ID}/tours`);
+                tbody.innerHTML = tours.length
+                    ? tours.map(t => `
+                <tr>
+                    <td><div class="t-name">${t.tour_name}</div></td>
+                    <td><span style="font-size:.78rem;color:var(--muted2)">${t.tour_type || '—'}</span></td>
+                    <td>${t.duration_days || '—'} days</td>
+                    <td>${t.price ? `${t.currency || 'USD'} ${Number(t.price).toLocaleString()}` : '—'}</td>
+                    <td>${t.max_group_size ? `Max ${t.max_group_size}` : '—'}</td>
+                    <td><span class="t-status ${t.status === 'approved' ? 'active' : 'draft'}">
+                        ${t.status === 'approved' ? 'Active' : t.status === 'pending' ? '⏳ Pending' : t.status || 'Draft'}
+                    </span></td>
+                    <td style="display:flex;gap:.4rem">
+                        <button class="btn-tbl" onclick="editTour(${t.id})">✏ Edit</button>
+                        <button class="btn-tbl red" onclick="deleteTour(${t.id},'${t.tour_name.replace(/'/g, "\\'")}')">✕</button>
+                    </td>
+                </tr>`).join('')
+                    : `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:3rem">
+                No tours yet. <a href="#" onclick="nav('new-tour')" style="color:var(--accent)">Create your first →</a>
+               </td></tr>`;
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:2rem;text-align:center">Error loading tours</td></tr>`;
+            }
+        }
+
+        async function deleteTour(id, name) {
+            if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+            try {
+                await api('DELETE', `/travel-agencies/tours/${id}`);
+                toast(`"${name}" deleted`);
+                loadToursPage();
+                loadDashboard();
+            } catch (e) { toast('Delete failed', 'error'); }
+        }
+
+        // ══════════════════════════════════════════════════
+        // DESTINATIONS — with Leaflet map picker per destination
+        // ══════════════════════════════════════════════════
+        let destCount = 0;
+        const destMaps = {};    // store Leaflet map instances by dest id
+        const destMarkers = {}; // store Leaflet markers by dest id
+
+        function addDestination(data = {}) {
+            const i = destCount++;
+            const id = `dest-${i}`;
+            const el = document.createElement('div');
+            el.className = 'dyn-item';
+            el.id = id;
+
+            el.innerHTML = `
+        <div class="dyn-item-header" onclick="toggleDyn('${id}')">
+            <span class="dyn-handle">⠿</span>
+            <div class="dyn-num">${document.querySelectorAll('#dest-list .dyn-item').length + 1}</div>
+            <div>
+                <div class="dyn-item-title">${data.destination_name || 'New Destination'}</div>
+                <div class="dyn-item-sub" id="dsub-${id}">${data.nights_stay ? data.nights_stay + ' nights' : ''}</div>
+            </div>
+            <span class="dyn-chevron">▼</span>
+            <button class="btn-dyn-del" onclick="event.stopPropagation();removeDyn('${id}')" title="Remove">✕</button>
+        </div>
+        <div class="dyn-item-body">
+            <div class="fgrid fgrid-2" style="margin-bottom:1rem">
+                <div class="fg">
+                    <label>Destination Name *</label>
+                    <input type="text" id="dname-${id}" placeholder="e.g. Samarkand"
+                           value="${data.destination_name || ''}"
+                           oninput="updateDynTitle('${id}',this.value)"/>
+                </div>
+                <div class="fg">
+                    <label>Nights Stay</label>
+                    <input type="number" id="dnights-${id}" min="0" placeholder="2"
+                           value="${data.nights_stay || ''}"
+                           oninput="updateDynSub('${id}',this.value+' nights')"/>
+                </div>
+            </div>
+            <div class="fg" style="margin-bottom:1rem">
+                <label>Description</label>
+                <textarea id="ddesc-${id}" rows="2" placeholder="What makes this place special?">${data.description || ''}</textarea>
+            </div>
+
+            <!-- MAP PICKER -->
+            <div class="fg" style="margin-bottom:.5rem">
+                <label>📍 Click map to set location, or type coordinates below</label>
+                <div id="dmap-${id}" style="height:200px;border-radius:8px;border:1.5px solid var(--border);margin-top:.4rem;"></div>
+                <div style="margin-top:.4rem;padding:.5rem .75rem;background:rgba(232,160,69,.08);border-radius:6px;font-size:.72rem;color:var(--accent);" id="dcoord-label-${id}">
+                    ${data.latitude && data.longitude
+                    ? `📍 ${parseFloat(data.latitude).toFixed(5)}, ${parseFloat(data.longitude).toFixed(5)}`
+                    : 'Click the map to drop a pin'}
+                </div>
+            </div>
+            <div class="fgrid fgrid-2">
+                <div class="fg">
+                    <label>Latitude</label>
+                    <input type="number" step="any" id="dlat-${id}" placeholder="39.6547"
+                           value="${data.latitude || ''}"
+                           oninput="updateDestMapFromInputs('${id}')"/>
+                </div>
+                <div class="fg">
+                    <label>Longitude</label>
+                    <input type="number" step="any" id="dlng-${id}" placeholder="66.9597"
+                           value="${data.longitude || ''}"
+                           oninput="updateDestMapFromInputs('${id}')"/>
+                </div>
+            </div>
+            <div class="fg" style="margin-top:1rem">
+                <label>Destination Photo</label>
+                <div class="img-upload-zone" onclick="this.querySelector('input').click()" style="height:auto;padding:.65rem;flex-direction:row;gap:.75rem;align-items:center;margin-bottom:.5rem">
+                    <input type="file" accept="image/*" style="display:none" onchange="uploadDestImg(event,'${id}')"/>
+                    <div style="text-align:center;flex:1">
+                        <div class="iuz-ico" style="font-size:1.4rem">📷</div>
+                        <div class="iuz-text" style="font-size:.78rem">Upload photo</div>
+                    </div>
+                </div>
+                <input type="text" id="dimg-${id}"
+                       placeholder="Or paste image URL"
+                       value="${data.image_url || ''}"
+                       style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.55rem .85rem;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);width:100%"
+                       oninput="updateDestImgPreview('${id}', this.value)"/>
+                <div id="dimg-preview-${id}" style="margin-top:.5rem;${data.image_url ? '' : 'display:none'}">
+                    <img src="${data.image_url || ''}" style="max-height:120px;border-radius:8px;border:1.5px solid var(--border);width:100%;object-fit:cover"
+                         onerror="this.parentElement.style.display='none'"/>
+                </div>
+            </div>
+            <input type="hidden" id="dvisit-${id}" value="${data.visit_order || ''}"/>
+        </div>`;
+
+            document.getElementById('dest-list').appendChild(el);
+            el.classList.add('open');
+
+            // Init Leaflet map after DOM insertion
+            setTimeout(() => initDestMap(id, data.latitude, data.longitude), 100);
+            markUnsaved();
+        }
+
+        function initDestMap(id, lat, lng) {
+            if (destMaps[id]) { destMaps[id].remove(); }
+
+            const initLat = lat ? parseFloat(lat) : 39.6547;
+            const initLng = lng ? parseFloat(lng) : 66.9597;
+
+            const map = L.map(`dmap-${id}`).setView([initLat, initLng], lat ? 11 : 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            destMaps[id] = map;
+
+            // Place existing marker if coords given
+            if (lat && lng) {
+                destMarkers[id] = L.marker([parseFloat(lat), parseFloat(lng)]).addTo(map);
+            }
+
+            // Click to place/move marker
+            map.on('click', function (e) {
+                const newLat = e.latlng.lat.toFixed(6);
+                const newLng = e.latlng.lng.toFixed(6);
+                if (destMarkers[id]) map.removeLayer(destMarkers[id]);
+                destMarkers[id] = L.marker([newLat, newLng]).addTo(map);
+                document.getElementById(`dlat-${id}`).value = newLat;
+                document.getElementById(`dlng-${id}`).value = newLng;
+                document.getElementById(`dcoord-label-${id}`).textContent = `📍 ${newLat}, ${newLng}`;
+                markUnsaved();
+            });
+        }
+
+        function updateDestMapFromInputs(id) {
+            const lat = parseFloat(document.getElementById(`dlat-${id}`).value);
+            const lng = parseFloat(document.getElementById(`dlng-${id}`).value);
+            if (!lat || !lng) return;
+            const map = destMaps[id];
+            if (!map) return;
+            if (destMarkers[id]) map.removeLayer(destMarkers[id]);
+            destMarkers[id] = L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 11);
+            document.getElementById(`dcoord-label-${id}`).textContent = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        }
+
+        function getDestinations() {
+            return Array.from(document.querySelectorAll('#dest-list .dyn-item')).map((el, i) => {
+                const id = el.id;
+                const name = document.getElementById(`dname-${id}`)?.value || '';
+                if (!name) return null;
+                return {
+                    destination_name: name,
+                    nights_stay: parseInt(document.getElementById(`dnights-${id}`)?.value) || 0,
+                    description: document.getElementById(`ddesc-${id}`)?.value || null,
+                    latitude: parseFloat(document.getElementById(`dlat-${id}`)?.value) || null,
+                    longitude: parseFloat(document.getElementById(`dlng-${id}`)?.value) || null,
+                    visit_order: i + 1,
+                    image_url: document.getElementById(`dimg-${id}`)?.value || null,
+                };
+            }).filter(Boolean);
+        }
+
+        // ══════════════════════════════════════════════════
+        // ITINERARY DAYS
+        // ══════════════════════════════════════════════════
+        let dayCount = 0;
+
+        function addItineraryDay(data = {}) {
+            const i = dayCount++;
+            const dayNum = document.querySelectorAll('#itin-list .dyn-item').length + 1;
+            const id = `day-${i}`;
+            const el = document.createElement('div');
+            el.className = 'dyn-item';
+            el.id = id;
+
+            el.innerHTML = `
+        <div class="dyn-item-header" onclick="toggleDyn('${id}')">
+            <span class="dyn-handle">⠿</span>
+            <div class="dyn-num">${dayNum}</div>
+            <div>
+                <div class="dyn-item-title" id="dtitle-${id}">${data.day_title || `Day ${dayNum}`}</div>
+                <div class="dyn-item-sub" id="dsub2-${id}">
+                    ${data.destinations && data.destinations.length ? '📍 ' + data.destinations.join(', ') : ''}
+                </div>
+            </div>
+            <span class="dyn-chevron">▼</span>
+            <button class="btn-dyn-del" onclick="event.stopPropagation();removeDyn('${id}')" title="Remove">✕</button>
+        </div>
+        <div class="dyn-item-body">
+            <div class="fgrid fgrid-2" style="margin-bottom:1rem">
+                <div class="fg">
+                    <label>Day Title *</label>
+                    <input type="text" id="dayname-${id}" placeholder="e.g. Temples of Samarkand"
+                           value="${data.day_title || ''}"
+                           oninput="document.getElementById('dtitle-${id}').textContent=this.value||'Untitled'"/>
+                </div>
+                <div class="fg">
+                    <label>Locations visited (comma separated)</label>
+                    <input type="text" id="daylocs-${id}" placeholder="Samarkand, Registan"
+                           value="${(data.destinations || []).join(', ')}"
+                           oninput="document.getElementById('dsub2-${id}').textContent=this.value?'📍 '+this.value:''"/>
+                </div>
+            </div>
+            <div class="fg" style="margin-bottom:1rem">
+                <label>Activities & Description *</label>
+                <textarea id="dayact-${id}" rows="4"
+                          placeholder="Describe what travelers will do today…">${data.activities || ''}</textarea>
+            </div>
+            <div class="fgrid fgrid-3" style="margin-bottom:1rem">
+                <div class="fg">
+                    <label>Meals</label>
+                    <input type="text" id="daymeals-${id}" placeholder="Breakfast, Lunch"
+                           value="${data.meals || ''}"/>
+                </div>
+                <div class="fg">
+                    <label>Accommodation</label>
+                    <input type="text" id="dayhotel-${id}" placeholder="Registan Hotel"
+                           value="${data.accommodation || ''}"/>
+                </div>
+                <div class="fg">
+                    <label>Day # *</label>
+                    <input type="number" id="daynum-${id}" min="1"
+                           value="${data.day_number || dayNum}"/>
+                </div>
+            </div>
+            <!-- Photos (multiple) -->
+            <div class="fg">
+                <label>Day Photos</label>
+                <div class="img-upload-zone" onclick="this.querySelector('input').click()">
+                    <input type="file" accept="image/*" multiple style="display:none" onchange="handleDayImgUpload(event,'${id}')"/>
+                    <div class="iuz-ico">🖼</div>
+                    <div class="iuz-text">Click to upload photos</div>
+                    <div class="iuz-sub">JPG, PNG — multiple allowed</div>
+                </div>
+                <input type="text" placeholder="Or paste image URL and press Enter"
+                       style="margin-top:.5rem;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.55rem .85rem;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);width:100%"
+                       onkeydown="addDayImgUrl(event,'${id}')"/>
+                <div class="img-previews" id="dayimgs-${id}"></div>
+                <input type="hidden" id="dayimgdata-${id}" value="[]"/>
+            </div>
+        </div>`;
+
+            document.getElementById('itin-list').appendChild(el);
+            el.classList.add('open');
+
+            // Load existing images — images[] is array of URL strings; fall back to image_url
+            const existingImgs = (data.images && data.images.length)
+                ? data.images
+                : (data.image_url ? [data.image_url] : []);
+            existingImgs.forEach(url => { if (url) addDayImgPreview(id, url); });
+
+            markUnsaved();
+        }
+
+        // ── Day image helpers (multi-photo per itinerary day) ──
+        function handleDayImgUpload(e, dayId) {
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = ev => addDayImgPreview(dayId, ev.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function addDayImgUrl(e, dayId) {
+            if (e.key !== 'Enter') return;
+            const url = e.target.value.trim();
+            if (!url) return;
+            addDayImgPreview(dayId, url);
+            e.target.value = '';
+        }
+
+        function addDayImgPreview(dayId, url) {
+            const wrap = document.getElementById(`dayimgs-${dayId}`);
+            const hidden = document.getElementById(`dayimgdata-${dayId}`);
+            if (!wrap || !hidden) return;
+            const arr = JSON.parse(hidden.value || '[]');
+            if (arr.includes(url)) return; // no duplicates
+            arr.push(url);
+            hidden.value = JSON.stringify(arr);
+            const div = document.createElement('div');
+            div.className = 'img-preview';
+            div.innerHTML = `
+        <img src="${url}" onerror="this.style.opacity='.3'"/>
+        <button class="img-preview-del" onclick="removeDayImg(this,'${dayId}',${JSON.stringify(url)})">✕</button>`;
+            wrap.appendChild(div);
+            markUnsaved();
+        }
+
+        function removeDayImg(btn, dayId, url) {
+            btn.closest('.img-preview').remove();
+            const hidden = document.getElementById(`dayimgdata-${dayId}`);
+            if (!hidden) return;
+            hidden.value = JSON.stringify(JSON.parse(hidden.value || '[]').filter(u => u !== url));
+        }
+
+        // ── Destination photo upload (single photo, but can upload from disk) ──
+        function uploadDestImg(e, destId) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const url = ev.target.result;
+                const input = document.getElementById(`dimg-${destId}`);
+                if (input) input.value = url;
+                updateDestImgPreview(destId, url);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateDestImgPreview(id, url) {
+            const wrap = document.getElementById(`dimg-preview-${id}`);
+            if (!wrap) return;
+            if (url) {
+                wrap.style.display = '';
+                wrap.querySelector('img').src = url;
+            } else {
+                wrap.style.display = 'none';
+            }
+        }
+
+        // ── Agency logo / cover upload ──
+        // Generic single-image upload → converts to base64, stores in input, shows preview
+        function uploadSingleImg(e, inputId, previewId) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const url = ev.target.result;
+                const inp = document.getElementById(inputId);
+                if (inp) inp.value = url;
+                updateSinglePreview(previewId, url);
+                markUnsaved();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function uploadAgencyImg(e, targetInputId, previewId) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const url = ev.target.result;
+                document.getElementById(targetInputId).value = url;
+                updateSinglePreview(previewId, url);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateSinglePreview(previewId, url) {
+            const wrap = document.getElementById(previewId);
+            if (!wrap) return;
+            if (url) {
+                wrap.style.display = '';
+                wrap.querySelector('img').src = url;
+            } else {
+                wrap.style.display = 'none';
+            }
+        }
+
+        function getItinerary() {
+            return Array.from(document.querySelectorAll('#itin-list .dyn-item')).map(el => {
+                const id = el.id;
+                const title = document.getElementById(`dayname-${id}`)?.value;
+                const activities = document.getElementById(`dayact-${id}`)?.value;
+                if (!title || !activities) return null;
+                const locsRaw = document.getElementById(`daylocs-${id}`)?.value || '';
+                const imgDataEl = document.getElementById(`dayimgdata-${id}`);
+                const images = imgDataEl ? JSON.parse(imgDataEl.value || '[]') : [];
+                return {
+                    day_title: title,
+                    day_number: parseInt(document.getElementById(`daynum-${id}`)?.value) || 1,
+                    activities,
+                    meals: document.getElementById(`daymeals-${id}`)?.value || null,
+                    accommodation: document.getElementById(`dayhotel-${id}`)?.value || null,
+                    destinations: locsRaw ? locsRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+                    coordinates: [],
+                    // Send first image as image_url (used for map marker), full array as images
+                    image_url: images[0] || null,
+                    images: images,
+                };
+            }).filter(Boolean);
+        }
+
+        // ══════════════════════════════════════════════════
+        // SAVE TOUR — sends everything in ONE request
+        // ══════════════════════════════════════════════════
+        async function saveTour() {
+            const name = document.getElementById('t-name').value.trim();
+            if (!name) { toast('Tour name is required', 'error'); return; }
+
+            const body = {
+                agency_id: parseInt(AGENCY_ID),
+                tour_name: name,
+                tour_type: document.getElementById('t-type').value || null,
+                description: document.getElementById('t-desc').value || null,
+                duration_days: parseInt(document.getElementById('t-days').value) || null,
+                max_group_size: parseInt(document.getElementById('t-group').value) || null,
+                difficulty_level: document.getElementById('t-difficulty').value || null,
+                price: parseFloat(document.getElementById('t-price').value) || null,
+                currency: document.getElementById('t-currency').value || 'USD',
+                best_season: document.getElementById('t-season').value || null,
+                image_url: document.getElementById('t-image').value || null,
+                highlights: JSON.parse(document.getElementById('hl-data').value || '[]'),
+                included_services: JSON.parse(document.getElementById('inc-data').value || '[]'),
+                excluded_services: JSON.parse(document.getElementById('exc-data').value || '[]'),
+
+                // ← THESE are now included in the single request
+                destinations: getDestinations(),
+                itinerary_days: getItinerary(),
+            };
+
+            try {
+                const editId = document.getElementById('editing-tour-id').value;
+                let saved;
+                if (editId) {
+                    saved = await api('PUT', `/travel-agencies/tours/${editId}`, body);
+                    toast('Tour updated! Changes submitted for CEO review.');
+                } else {
+                    saved = await api('POST', `/travel-agencies/tours`, body);
+                    toast('✅ Tour submitted for CEO approval!');
+                    document.getElementById('editing-tour-id').value = saved.id || '';
+                }
+                document.getElementById('save-status').textContent = '✓ Saved — pending CEO approval';
+                document.getElementById('save-status').className = 'save-bar-status saved';
+            } catch (e) {
+                toast('Save failed: ' + e.message, 'error');
+                console.error(e);
+            }
+        }
+
+        function markUnsaved() {
+            const el = document.getElementById('save-status');
+            if (el) { el.textContent = '● Unsaved changes'; el.className = 'save-bar-status unsaved'; }
+        }
+
+        function resetTourForm() {
+            document.getElementById('editing-tour-id').value = '';
+            updateSinglePreview('t-image-preview', '');
+            document.getElementById('tour-form-title').textContent = 'Create New Tour';
+            ['t-name', 't-desc', 't-days', 't-group', 't-price', 't-season', 't-image'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            ['t-type', 't-difficulty', 't-currency'].forEach(id => document.getElementById(id).selectedIndex = 0);
+            ['hl-data', 'inc-data', 'exc-data'].forEach(id => { document.getElementById(id).value = '[]'; });
+            ['hl-tags-wrap', 'inc-tags-wrap', 'exc-tags-wrap'].forEach(id => rebuildTagsFromData(id, null, null, []));
+            document.getElementById('dest-list').innerHTML = '';
+            document.getElementById('itin-list').innerHTML = '';
+            // Clean up old Leaflet map instances
+            Object.values(destMaps).forEach(m => { try { m.remove(); } catch (e) { } });
+            Object.keys(destMaps).forEach(k => delete destMaps[k]);
+            Object.keys(destMarkers).forEach(k => delete destMarkers[k]);
+            destCount = 0; dayCount = 0;
+            markUnsaved();
+        }
+
+        async function editTour(id) {
+            nav('new-tour');
+            try {
+                const t = await api('GET', `/travel-agencies/tours/${id}`);
+                document.getElementById('editing-tour-id').value = id;
+                document.getElementById('tour-form-title').textContent = 'Edit Tour';
+                document.getElementById('t-name').value = t.tour_name || '';
+                document.getElementById('t-type').value = t.tour_type || '';
+                document.getElementById('t-desc').value = t.description || '';
+                document.getElementById('t-days').value = t.duration_days || '';
+                document.getElementById('t-group').value = t.max_group_size || '';
+                document.getElementById('t-difficulty').value = t.difficulty_level || '';
+                document.getElementById('t-price').value = t.price || '';
+                document.getElementById('t-currency').value = t.currency || 'USD';
+                document.getElementById('t-season').value = t.best_season || '';
+                document.getElementById('t-image').value = t.image_url || '';
+                if (t.image_url) updateSinglePreview('t-image-preview', t.image_url);
+                setTagsData('hl-data', 'hl-tags-wrap', 'hl-input', t.highlights || []);
+                setTagsData('inc-data', 'inc-tags-wrap', 'inc-input', t.included_services || [], 'green');
+                setTagsData('exc-data', 'exc-tags-wrap', 'exc-input', t.excluded_services || [], 'red');
+                document.getElementById('dest-list').innerHTML = '';
+                (t.destinations || []).forEach(d => addDestination(d));
+                document.getElementById('itin-list').innerHTML = '';
+                const days = [...(t.itinerary_days || [])].sort((a, b) => a.day_number - b.day_number);
+                days.forEach(d => addItineraryDay(d));
+                document.getElementById('save-status').textContent = '✓ Loaded';
+                document.getElementById('save-status').className = 'save-bar-status saved';
+            } catch (e) { toast('Could not load tour: ' + e.message, 'error'); }
+        }
+
+        // ══════════════════════════════════════════════════
+        // DYN HELPERS
+        // ══════════════════════════════════════════════════
+        function toggleDyn(id) { document.getElementById(id).classList.toggle('open'); }
+        function removeDyn(id) { document.getElementById(id).remove(); markUnsaved(); }
+        function updateDynTitle(id, val) {
+            const el = document.querySelector(`#${id} .dyn-item-title`);
+            if (el) el.textContent = val || 'Untitled';
+        }
+        function updateDynSub(id, val) {
+            const el = document.querySelector(`#${id} .dyn-item-sub`);
+            if (el) el.textContent = val;
+        }
+
+        // ══════════════════════════════════════════════════
+        // REVIEWS
+        // ══════════════════════════════════════════════════
+        async function loadReviews() {
+            const wrap = document.getElementById('reviews-list');
+            try {
+                const reviews = await api('GET', `/travel-agencies/${AGENCY_ID}/reviews`);
+                if (!reviews.length) {
+                    wrap.innerHTML = '<div style="text-align:center;color:var(--muted);padding:3rem">No reviews yet.</div>';
+                    return;
+                }
+                const starsOf = n => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+                wrap.innerHTML = reviews.map(r => `
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.7rem">
+                    <div>
+                        <div style="font-weight:600;color:#fff">${r.tourist_name || 'Anonymous'}</div>
+                        <div style="color:var(--accent);font-size:.85rem">${starsOf(r.rating)}</div>
+                    </div>
+                    <div style="font-size:.75rem;color:var(--muted2)">${new Date(r.created_at).toLocaleDateString()}</div>
+                </div>
+                <div style="font-size:.88rem;color:rgba(221,216,210,.65);line-height:1.75">${r.comment || ''}</div>
+                ${r.tour_taken ? `<div style="margin-top:.6rem;font-size:.72rem;color:var(--accent)">Tour: ${r.tour_taken}</div>` : ''}
+            </div>`).join('');
+            } catch (e) {
+                wrap.innerHTML = '<div style="color:var(--red);padding:2rem;text-align:center">Could not load reviews</div>';
+            }
+        }
+
+        // ══════════════════════════════════════════════════
+        // TAGS
+        // ══════════════════════════════════════════════════
+        function addTag(e, wrapId, inputId, dataId, color = 'accent') {
+            if (e.key !== 'Enter' && e.key !== ',') return;
+            e.preventDefault();
+            const input = document.getElementById(inputId);
+            const val = input.value.trim().replace(/,$/, '');
+            if (!val) return;
+            const arr = JSON.parse(document.getElementById(dataId).value || '[]');
+            arr.push(val);
+            document.getElementById(dataId).value = JSON.stringify(arr);
+            addTagEl(wrapId, inputId, val, color);
+            input.value = '';
+            markUnsaved();
+        }
+
+        function addTagEl(wrapId, inputId, val, color = 'accent') {
+            const wrap = document.getElementById(wrapId);
+            const inp = inputId ? document.getElementById(inputId) : null;
+            const tag = document.createElement('span');
+            tag.className = 'tag';
+            const cm = { accent: 'var(--accent)', green: 'var(--green)', red: 'var(--red)' };
+            const dm = { accent: 'var(--accent-dim)', green: 'var(--green-dim)', red: 'var(--red-dim)' };
+            const bm = { accent: 'var(--accent-border)', green: 'rgba(77,184,122,.2)', red: 'rgba(224,85,85,.2)' };
+            tag.style.cssText = `color:${cm[color] || cm.accent};background:${dm[color] || dm.accent};border-color:${bm[color] || bm.accent}`;
+            tag.innerHTML = `${val}<button class="tag-x" onclick="removeTag(this,'${wrapId}','${val.replace(/'/g, "\\'")}')">✕</button>`;
+            if (inp) wrap.insertBefore(tag, inp);
+            else wrap.appendChild(tag);
+        }
+
+        function removeTag(btn, wrapId, val) {
+            btn.closest('.tag').remove();
+            const wrap = document.getElementById(wrapId);
+            const hidden = wrap.closest('.form-card-body')?.querySelector('input[type=hidden]') ||
+                wrap.parentElement?.querySelector('input[type=hidden]');
+            if (hidden) {
+                const arr = JSON.parse(hidden.value || '[]').filter(v => v !== val);
+                hidden.value = JSON.stringify(arr);
+            }
+        }
+
+        function setTagsData(dataId, wrapId, inputId, arr, color = 'accent') {
+            document.getElementById(dataId).value = JSON.stringify(arr);
+            rebuildTagsFromData(wrapId, inputId, dataId, arr, color);
+        }
+
+        function rebuildTagsFromData(wrapId, inputId, dataId, forceArr, color = 'accent') {
+            const wrap = document.getElementById(wrapId);
+            if (!wrap) return;
+            wrap.querySelectorAll('.tag').forEach(t => t.remove());
+            const arr = forceArr || JSON.parse(document.getElementById(dataId)?.value || '[]');
+            arr.forEach(v => addTagEl(wrapId, inputId, v, color));
+        }
+
+        // ══════════════════════════════════════════════════
+        // INIT
+        // ══════════════════════════════════════════════════
+
+
+        async function init() {
+            try {
+                const a = await api('GET', `/travel-agencies/${AGENCY_ID}`);
+                document.getElementById('sb-agency-name').innerHTML =
+                    `<div class="sb-agency-dot"></div><span>${a.name}</span>`;
+                document.getElementById('sb-user-name').textContent = a.name;
+                document.getElementById('sb-avatar').textContent = a.name.charAt(0).toUpperCase();
+            } catch (e) { }
+            loadDashboard();
+        }
+
+        init();
+    </script>
+
+</body>
+
+</html>

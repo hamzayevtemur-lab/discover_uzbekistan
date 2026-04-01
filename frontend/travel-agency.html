@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agency — Travel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Serif+Display:ital@0;1&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --ink: #080808;
+            --ink2: #111111;
+            --ink3: #1a1a1a;
+            --surface: #202020;
+            --border: rgba(255, 255, 255, .07);
+            --border2: rgba(255, 255, 255, .12);
+            --text: #e2ddd8;
+            --muted: #6e6860;
+            --accent: #e8a045;
+            --accent2: #c94f3a;
+            --green: #4db87a;
+            --r: 12px;
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--ink);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 800;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.2rem;
+            background: rgba(8, 8, 8, .82);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border)
+        }
+
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            color: var(--muted);
+            font-size: .78rem;
+            font-weight: 500;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            background: none;
+            transition: color .2s;
+            font-family: 'DM Sans', sans-serif
+        }
+
+        .nav-back:hover {
+            color: var(--text)
+        }
+
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.25rem;
+            letter-spacing: .12em;
+            color: var(--text)
+        }
+
+        .nav-logo span {
+            color: var(--accent)
+        }
+
+        .nav-share {
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            padding: .38rem 1rem;
+            border-radius: 50px;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'DM Sans', sans-serif
+        }
+
+        .nav-share:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        /* HERO — full viewport height */
+        .hero {
+            position: relative;
+            height: 100svh;
+            min-height: 520px;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transform: scale(1.06);
+            transition: transform 10s ease-out;
+            filter: brightness(.38)
+        }
+
+        .hero-bg.loaded {
+            transform: scale(1)
+        }
+
+        .hero-vignette {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(8, 8, 8, 1) 0%, rgba(8, 8, 8, .5) 45%, rgba(8, 8, 8, .1) 100%)
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            padding: 0 1.2rem 2.5rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1.2rem;
+            flex-wrap: wrap
+        }
+
+        .hero-left {
+            flex: 1;
+            min-width: 220px
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+            margin-bottom: .9rem;
+            opacity: 0;
+            animation: up .6s .2s forwards
+        }
+
+        .hbadge {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            padding: .25rem .7rem;
+            border-radius: 50px
+        }
+
+        .hb-verified {
+            background: rgba(77, 184, 122, .15);
+            color: #6ddd9a;
+            border: 1px solid rgba(77, 184, 122, .3)
+        }
+
+        .hb-partner {
+            background: rgba(232, 160, 69, .15);
+            color: #f0be70;
+            border: 1px solid rgba(232, 160, 69, .3)
+        }
+
+        .hb-featured {
+            background: rgba(201, 79, 58, .15);
+            color: #f07060;
+            border: 1px solid rgba(201, 79, 58, .3)
+        }
+
+        .hb-type {
+            background: rgba(255, 255, 255, .06);
+            color: rgba(255, 255, 255, .6);
+            border: 1px solid rgba(255, 255, 255, .1)
+        }
+
+        .hero-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(3rem, 13vw, 7rem);
+            line-height: .9;
+            letter-spacing: .02em;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: up .7s .35s forwards
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .9rem;
+            margin-top: 1rem;
+            font-size: .82rem;
+            color: rgba(255, 255, 255, .6);
+            opacity: 0;
+            animation: up .6s .55s forwards
+        }
+
+        .hero-meta-item {
+            display: flex;
+            align-items: center;
+            gap: .35rem
+        }
+
+        .hero-meta-item strong {
+            color: #fff
+        }
+
+        .hero-rating {
+            opacity: 0;
+            animation: up .6s .6s forwards;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1rem 1.3rem;
+            text-align: center;
+            min-width: 110px;
+            align-self: flex-end
+        }
+
+        .rating-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            line-height: 1;
+            color: var(--accent)
+        }
+
+        .rating-stars {
+            color: var(--accent);
+            font-size: .95rem;
+            margin: .2rem 0
+        }
+
+        .rating-count {
+            font-size: .68rem;
+            color: rgba(255, 255, 255, .4)
+        }
+
+        @keyframes up {
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* TABS */
+        .page-tabs {
+            position: sticky;
+            top: 56px;
+            z-index: 700;
+            background: rgba(8, 8, 8, .9);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border)
+        }
+
+        .tabs-inner {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding: 0 .8rem
+        }
+
+        .tabs-inner::-webkit-scrollbar {
+            display: none
+        }
+
+        .ptab {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            padding: .8rem 1rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .2s
+        }
+
+        .ptab:hover {
+            color: var(--text)
+        }
+
+        .ptab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent)
+        }
+
+        /* MAIN — single column, phone-optimised */
+        .main {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 1.8rem 1.2rem 5rem
+        }
+
+        /* SECTION */
+        .section {
+            margin-bottom: 2.8rem
+        }
+
+        .sec-header {
+            display: flex;
+            align-items: center;
+            gap: .9rem;
+            margin-bottom: 1.6rem
+        }
+
+        .sec-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.55rem;
+            color: #fff;
+            white-space: nowrap
+        }
+
+        .sec-rule {
+            flex: 1;
+            height: 1px;
+            background: var(--border)
+        }
+
+        .sec-pill {
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: var(--muted);
+            background: var(--ink3);
+            border: 1px solid var(--border);
+            padding: .18rem .65rem;
+            border-radius: 50px
+        }
+
+        /* ABOUT */
+        .about-text {
+            font-size: .9rem;
+            line-height: 1.9;
+            color: rgba(226, 221, 216, .72);
+            margin-bottom: 1.3rem
+        }
+
+        .spec-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .45rem;
+            margin-bottom: 1.5rem
+        }
+
+        .spec-chip {
+            background: var(--ink3);
+            border: 1px solid var(--border);
+            color: rgba(226, 221, 216, .58);
+            font-size: .76rem;
+            font-weight: 500;
+            padding: .28rem .78rem;
+            border-radius: 50px;
+            transition: all .2s;
+            cursor: default
+        }
+
+        .spec-chip:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        /* CONTACT GRID — inside About */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .6rem;
+            margin-top: .2rem
+        }
+
+        .ci-item {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            background: var(--ink2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .75rem .9rem;
+            text-decoration: none;
+            transition: border-color .2s, background .2s;
+            min-width: 0
+        }
+
+        .ci-item:hover {
+            border-color: rgba(232, 160, 69, .35);
+            background: var(--ink3)
+        }
+
+        .ci-ico {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            flex-shrink: 0;
+            background: rgba(232, 160, 69, .08);
+            border: 1px solid rgba(232, 160, 69, .15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem
+        }
+
+        .ci-lbl {
+            font-size: .58rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: var(--muted)
+        }
+
+        .ci-val {
+            font-size: .78rem;
+            color: var(--text);
+            margin-top: .05rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        a.ci-item .ci-val {
+            color: var(--accent)
+        }
+
+        /* TOURS */
+        .tours-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem
+        }
+
+        .tour-card {
+            background: var(--ink2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform .25s, border-color .25s, box-shadow .25s
+        }
+
+        .tour-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(232, 160, 69, .28);
+            box-shadow: 0 10px 36px rgba(0, 0, 0, .4)
+        }
+
+        .tour-card.expanded {
+            border-color: var(--accent)
+        }
+
+        .tour-thumb {
+            height: 195px;
+            position: relative;
+            overflow: hidden;
+            background: var(--ink3)
+        }
+
+        .tour-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .5s
+        }
+
+        .tour-card:hover .tour-thumb img {
+            transform: scale(1.05)
+        }
+
+        .tour-thumb-ph {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--ink3), var(--surface))
+        }
+
+        .t-type {
+            position: absolute;
+            top: .65rem;
+            left: .65rem;
+            background: rgba(8, 8, 8, .75);
+            backdrop-filter: blur(6px);
+            color: rgba(255, 255, 255, .8);
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            padding: .2rem .6rem;
+            border-radius: 50px
+        }
+
+        .t-price {
+            position: absolute;
+            top: .65rem;
+            right: .65rem;
+            background: var(--accent);
+            color: var(--ink);
+            font-size: .82rem;
+            font-weight: 700;
+            padding: .25rem .68rem;
+            border-radius: 8px
+        }
+
+        .tour-body {
+            padding: 1.1rem 1.2rem
+        }
+
+        .tour-name {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: .4rem;
+            line-height: 1.2
+        }
+
+        .tour-desc-s {
+            font-size: .8rem;
+            color: var(--muted);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: .85rem
+        }
+
+        .tour-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+            margin-bottom: .9rem
+        }
+
+        .t-chip {
+            display: flex;
+            align-items: center;
+            gap: .22rem;
+            background: var(--ink3);
+            border: 1px solid var(--border);
+            color: rgba(226, 221, 216, .58);
+            font-size: .7rem;
+            padding: .18rem .55rem;
+            border-radius: 50px
+        }
+
+        .btn-expand {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .74rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: .52rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem
+        }
+
+        .btn-expand:hover,
+        .tour-card.expanded .btn-expand {
+            background: rgba(232, 160, 69, .08);
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        .earrow {
+            transition: transform .3s;
+            display: inline-block
+        }
+
+        .tour-card.expanded .earrow {
+            transform: rotate(180deg)
+        }
+
+        /* TOUR DRAWER */
+        .tour-drawer {
+            grid-column: 1/-1;
+            background: var(--ink2);
+            border-top: 1px solid var(--border);
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height .55s cubic-bezier(.4, 0, .2, 1), opacity .3s;
+            opacity: 0;
+            pointer-events: none
+        }
+
+        .tour-drawer.open {
+            max-height: 5500px;
+            opacity: 1;
+            pointer-events: auto
+        }
+
+        .drawer-inner {
+            padding: 1.4rem
+        }
+
+        .drawer-hero {
+            position: relative;
+            height: 240px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1.6rem;
+            background: var(--ink3)
+        }
+
+        .drawer-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .drawer-hero-ov {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(8, 8, 8, .92) 0%, transparent 55%)
+        }
+
+        .drawer-hero-foot {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.1rem
+        }
+
+        .d-tour-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.85rem;
+            letter-spacing: .04em;
+            color: #fff
+        }
+
+        .d-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .55rem;
+            margin-top: .45rem
+        }
+
+        .d-meta-chip {
+            background: rgba(255, 255, 255, .1);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, .15);
+            color: #fff;
+            font-size: .72rem;
+            padding: .22rem .7rem;
+            border-radius: 50px
+        }
+
+        .d-price {
+            position: absolute;
+            top: .9rem;
+            right: .9rem;
+            background: var(--accent);
+            color: var(--ink);
+            font-size: 1rem;
+            font-weight: 700;
+            padding: .38rem .9rem;
+            border-radius: 10px
+        }
+
+        .d-label {
+            font-size: .64rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: .6rem;
+            margin-top: 1.4rem
+        }
+
+        .d-text {
+            font-size: .87rem;
+            line-height: 1.85;
+            color: rgba(226, 221, 216, .7)
+        }
+
+        /* HIGHLIGHTS */
+        .hl-list {
+            display: flex;
+            flex-direction: column;
+            gap: .25rem;
+            margin-bottom: 1rem
+        }
+
+        .hl-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .5rem;
+            font-size: .84rem;
+            color: rgba(226, 221, 216, .7);
+            padding: .32rem 0;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .hl-item:last-child {
+            border-bottom: none
+        }
+
+        .hl-dot {
+            color: var(--accent);
+            font-size: .6rem;
+            margin-top: .35rem;
+            flex-shrink: 0
+        }
+
+        /* DEST STRIP */
+        .dest-strip {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: .35rem;
+            margin-bottom: 1.4rem
+        }
+
+        .dest-strip::-webkit-scrollbar {
+            display: none
+        }
+
+        .dest-node {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0
+        }
+
+        .dest-card {
+            background: var(--ink3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            width: 155px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: border-color .2s, transform .2s
+        }
+
+        .dest-card:hover {
+            border-color: rgba(232, 160, 69, .45);
+            transform: translateY(-2px)
+        }
+
+        .dest-thumb {
+            height: 88px;
+            overflow: hidden;
+            background: var(--surface);
+            position: relative
+        }
+
+        .dest-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .4s
+        }
+
+        .dest-card:hover .dest-thumb img {
+            transform: scale(1.06)
+        }
+
+        .dest-thumb-ph {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, var(--ink3), var(--surface))
+        }
+
+        .dest-order {
+            position: absolute;
+            top: .4rem;
+            left: .4rem;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--ink);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: .85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .dest-body {
+            padding: .6rem .75rem
+        }
+
+        .dest-name {
+            font-size: .78rem;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.2
+        }
+
+        .dest-nights {
+            font-size: .67rem;
+            color: var(--accent);
+            margin-top: .15rem
+        }
+
+        .dest-arrow {
+            padding: 0 .4rem;
+            color: var(--accent);
+            opacity: .4;
+            font-size: .7rem
+        }
+
+        /* ROUTE MAP */
+        .route-map-wrap {
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 1.2rem
+        }
+
+        .route-map {
+            height: 280px
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: var(--ink2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .7);
+            padding: 0;
+            overflow: hidden
+        }
+
+        .leaflet-popup-tip-container {
+            display: none
+        }
+
+        .leaflet-popup-content {
+            margin: 13px 18px 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .82rem;
+            line-height: 1.5
+        }
+
+        .leaflet-popup-close-button {
+            color: rgba(255, 255, 255, .5) !important;
+            top: 6px !important;
+            right: 8px !important;
+            font-size: 1.1rem !important;
+            z-index: 10
+        }
+
+        .leaflet-popup-close-button:hover {
+            color: #fff !important
+        }
+
+        .leaflet-tile {
+            filter: brightness(.55) saturate(.5) hue-rotate(185deg)
+        }
+
+        .leaflet-container {
+            background: var(--ink)
+        }
+
+        /* DAY GALLERY */
+        .day-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: .4rem;
+            margin-top: .6rem
+        }
+
+        .dg-item {
+            aspect-ratio: 4/3;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: transform .2s, border-color .2s
+        }
+
+        .dg-item:hover {
+            transform: scale(1.04);
+            border-color: var(--accent)
+        }
+
+        .dg-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        /* ITINERARY */
+        .itinerary {
+            position: relative;
+            padding-left: 1.7rem;
+            margin-bottom: 1.2rem
+        }
+
+        .itinerary::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 4px;
+            bottom: 4px;
+            width: 1px;
+            background: linear-gradient(to bottom, var(--accent), transparent)
+        }
+
+        .iday {
+            position: relative;
+            padding-bottom: 1.6rem;
+            opacity: 0;
+            transform: translateX(-8px);
+            transition: opacity .4s, transform .4s
+        }
+
+        .iday.vis {
+            opacity: 1;
+            transform: translateX(0)
+        }
+
+        .iday:last-child {
+            padding-bottom: 0
+        }
+
+        .idot {
+            position: absolute;
+            left: -1.7rem;
+            top: 4px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: var(--ink);
+            border: 2px solid var(--accent);
+            transition: background .2s
+        }
+
+        .iday:hover .idot {
+            background: var(--accent)
+        }
+
+        .inum {
+            font-size: .64rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: .18rem
+        }
+
+        .ittl {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: .28rem
+        }
+
+        .itxt {
+            font-size: .82rem;
+            line-height: 1.75;
+            color: var(--muted)
+        }
+
+        .ipills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .3rem;
+            margin-top: .45rem
+        }
+
+        .ipill {
+            background: rgba(232, 160, 69, .08);
+            border: 1px solid rgba(232, 160, 69, .2);
+            color: rgba(232, 160, 69, .8);
+            font-size: .65rem;
+            padding: .15rem .5rem;
+            border-radius: 50px
+        }
+
+        /* INC / EXC */
+        .ie-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+            margin-top: .5rem
+        }
+
+        .ie-box {
+            background: var(--ink3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .9rem
+        }
+
+        .ie-lbl {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            margin-bottom: .6rem
+        }
+
+        .ie-inc .ie-lbl {
+            color: var(--green)
+        }
+
+        .ie-exc .ie-lbl {
+            color: var(--accent2)
+        }
+
+        .ie-ul {
+            list-style: none
+        }
+
+        .ie-ul li {
+            font-size: .78rem;
+            color: var(--muted);
+            padding: .26rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: .42rem;
+            align-items: flex-start
+        }
+
+        .ie-ul li:last-child {
+            border-bottom: none
+        }
+
+        .ie-inc .ie-ul li::before {
+            content: '✓';
+            color: var(--green);
+            flex-shrink: 0;
+            font-weight: 700
+        }
+
+        .ie-exc .ie-ul li::before {
+            content: '✕';
+            color: var(--accent2);
+            flex-shrink: 0;
+            font-weight: 700
+        }
+
+        /* TOUR DETAILS CARD */
+        .tour-details-card {
+            background: var(--ink3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1.2rem
+        }
+
+        .td-row {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            padding: .5rem 0;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .td-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0
+        }
+
+        .td-ico {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            flex-shrink: 0;
+            background: rgba(232, 160, 69, .08);
+            border: 1px solid rgba(232, 160, 69, .12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .78rem
+        }
+
+        .td-lbl {
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--muted)
+        }
+
+        .td-val {
+            font-size: .82rem;
+            color: var(--text);
+            margin-top: .04rem
+        }
+
+        .btn-book-tour {
+            width: 100%;
+            background: var(--accent);
+            color: var(--ink);
+            border: none;
+            padding: .82rem;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: .9rem;
+            cursor: pointer;
+            transition: background .2s;
+            margin-top: 1rem
+        }
+
+        .btn-book-tour:hover {
+            background: #f5b35a
+        }
+
+        .btn-close-drw {
+            width: 100%;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .74rem;
+            font-weight: 600;
+            letter-spacing: .05em;
+            padding: .5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all .2s;
+            margin-top: .55rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem
+        }
+
+        .btn-close-drw:hover {
+            border-color: var(--border2);
+            color: var(--text)
+        }
+
+        /* REVIEWS */
+        .rv-top-bar {
+            background: var(--ink2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 1.2rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.3rem
+        }
+
+        .rvn {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4rem;
+            line-height: 1;
+            color: var(--accent)
+        }
+
+        .rvs {
+            color: var(--accent);
+            font-size: 1rem
+        }
+
+        .rvc {
+            font-size: .7rem;
+            color: var(--muted);
+            margin-top: .15rem
+        }
+
+        .rv-divider {
+            width: 1px;
+            height: 50px;
+            background: var(--border)
+        }
+
+        .rv-blurb {
+            font-size: .85rem;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 220px
+        }
+
+        .rv-wrap {
+            position: relative;
+            max-height: 480px;
+            overflow: hidden;
+            transition: max-height .5s ease
+        }
+
+        .rv-wrap.open {
+            max-height: 9999px
+        }
+
+        .rv-list {
+            display: flex;
+            flex-direction: column;
+            gap: .9rem
+        }
+
+        .rv-card {
+            background: var(--ink2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 1.2rem;
+            transition: border-color .2s
+        }
+
+        .rv-card:hover {
+            border-color: rgba(232, 160, 69, .22)
+        }
+
+        .rv-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: .55rem
+        }
+
+        .rv-nm {
+            font-weight: 600;
+            color: #fff;
+            font-size: .9rem
+        }
+
+        .rv-dt {
+            font-size: .72rem;
+            color: var(--muted)
+        }
+
+        .rv-st {
+            color: var(--accent);
+            font-size: .82rem;
+            margin-top: .15rem
+        }
+
+        .rv-tx {
+            font-size: .86rem;
+            line-height: 1.75;
+            color: rgba(226, 221, 216, .65)
+        }
+
+        .rv-tr {
+            display: inline-block;
+            margin-top: .5rem;
+            font-size: .68rem;
+            color: var(--accent);
+            background: rgba(232, 160, 69, .08);
+            border: 1px solid rgba(232, 160, 69, .15);
+            padding: .16rem .55rem;
+            border-radius: 50px
+        }
+
+        .rv-fade {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(to bottom, transparent, var(--ink));
+            pointer-events: none
+        }
+
+        .rv-wrap.open .rv-fade {
+            display: none
+        }
+
+        .btn-rv-more {
+            display: block;
+            margin: .85rem auto 0;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .78rem;
+            font-weight: 600;
+            padding: .55rem 1.8rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .btn-rv-more:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        /* WRITE REVIEW BUTTON — always visible, collapses form */
+        .btn-write-rv {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .55rem;
+            width: 100%;
+            margin-top: 1.2rem;
+            background: var(--ink2);
+            border: 1.5px solid var(--border2);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .85rem;
+            font-weight: 600;
+            padding: .78rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .btn-write-rv:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(232, 160, 69, .05)
+        }
+
+        .btn-write-rv .wrarrow {
+            transition: transform .3s;
+            display: inline-block;
+            font-size: .7rem;
+            opacity: .6
+        }
+
+        .rv-form-wrap {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .5s cubic-bezier(.4, 0, .2, 1)
+        }
+
+        .rv-form-wrap.open {
+            max-height: 900px
+        }
+
+        .rv-form-card {
+            background: var(--ink2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 1.5rem;
+            margin-top: .8rem
+        }
+
+        .rv-form-card h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 1.1rem;
+            font-style: italic
+        }
+
+        .frow {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .85rem
+        }
+
+        .fg {
+            margin-bottom: .9rem
+        }
+
+        .fg label {
+            display: block;
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: .38rem
+        }
+
+        .fg input,
+        .fg select,
+        .fg textarea {
+            width: 100%;
+            background: var(--ink3);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: .62rem .8rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .86rem;
+            color: var(--text);
+            transition: border-color .2s;
+            -webkit-appearance: none
+        }
+
+        .fg input:focus,
+        .fg select:focus,
+        .fg textarea:focus {
+            outline: none;
+            border-color: var(--accent)
+        }
+
+        .fg select option {
+            background: var(--ink3)
+        }
+
+        .fg textarea {
+            min-height: 95px;
+            resize: vertical
+        }
+
+        .btn-rv-sub {
+            background: var(--accent);
+            color: var(--ink);
+            border: none;
+            padding: .8rem;
+            width: 100%;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: .88rem;
+            cursor: pointer;
+            transition: background .2s
+        }
+
+        .btn-rv-sub:hover {
+            background: #f5b35a
+        }
+
+        .rv-ok {
+            display: none;
+            background: rgba(77, 184, 122, .08);
+            border: 1px solid rgba(77, 184, 122, .25);
+            border-radius: 8px;
+            padding: .72rem 1rem;
+            margin-top: .75rem;
+            color: var(--green);
+            font-size: .84rem;
+            text-align: center
+        }
+
+        /* LOCATION */
+        #agency-map {
+            height: 300px;
+            border-radius: var(--r);
+            overflow: hidden;
+            border: 1px solid var(--border)
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            background: rgba(0, 0, 0, .92);
+            justify-content: center;
+            align-items: center
+        }
+
+        .modal.open {
+            display: flex
+        }
+
+        .modal-inner {
+            position: relative;
+            max-width: 92vw;
+            max-height: 92vh
+        }
+
+        .modal-inner img {
+            max-width: 100%;
+            max-height: 88vh;
+            border-radius: 10px;
+            display: block
+        }
+
+        .modal-cap {
+            text-align: center;
+            color: rgba(255, 255, 255, .45);
+            font-size: .8rem;
+            margin-top: .55rem
+        }
+
+        .modal-x {
+            position: absolute;
+            top: -2rem;
+            right: 0;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, .6);
+            font-size: 1.8rem;
+            cursor: pointer
+        }
+
+        .modal-x:hover {
+            color: #fff
+        }
+
+        /* LOADER */
+        .loader-page {
+            position: fixed;
+            inset: 0;
+            background: var(--ink);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 9999;
+            transition: opacity .4s
+        }
+
+        .loader-page.hide {
+            opacity: 0;
+            pointer-events: none
+        }
+
+        .spinner {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 3px solid var(--border2);
+            border-top-color: var(--accent);
+            animation: spin .8s linear infinite
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .loader-txt {
+            font-size: .8rem;
+            color: var(--muted);
+            letter-spacing: .05em
+        }
+
+        /* ERROR */
+        .err-box {
+            max-width: 460px;
+            margin: 4rem auto;
+            text-align: center;
+            background: var(--ink2);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 2.5rem 1.5rem
+        }
+
+        .err-box h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.7rem;
+            color: #fff;
+            margin-bottom: .7rem
+        }
+
+        .err-box p {
+            color: var(--muted);
+            font-size: .86rem;
+            margin-bottom: 1.3rem;
+            line-height: 1.7
+        }
+
+        .err-box code {
+            background: var(--ink3);
+            padding: .14rem .5rem;
+            border-radius: 4px;
+            font-size: .8rem
+        }
+
+        .btn-err {
+            background: var(--accent);
+            color: var(--ink);
+            border: none;
+            padding: .62rem 1.7rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700
+        }
+
+        /* EMPTY */
+        .empty-msg {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--muted);
+            font-size: .86rem
+        }
+
+        .empty-msg .ei {
+            font-size: 1.9rem;
+            margin-bottom: .55rem
+        }
+
+        /* RESPONSIVE */
+        @media(max-width:500px) {
+            .contact-grid {
+                grid-template-columns: 1fr
+            }
+
+            .ie-grid {
+                grid-template-columns: 1fr
+            }
+
+            .frow {
+                grid-template-columns: 1fr
+            }
+
+            .hero-rating {
+                display: none
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="loader-page" id="pageLoader">
+        <div class="spinner"></div>
+        <div class="loader-txt">Loading agency…</div>
+    </div>
+
+    <nav>
+        <button class="nav-back" onclick="history.back()">← Agencies</button>
+        <div class="nav-logo">Travel<span>.</span></div>
+        <button class="nav-share"
+            onclick="navigator.share?navigator.share({title:document.title,url:location.href}):navigator.clipboard?.writeText(location.href)">Share</button>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-bg" id="heroBg"></div>
+        <div class="hero-vignette"></div>
+        <div class="hero-content" id="heroContent"></div>
+    </div>
+
+    <div class="page-tabs">
+        <div class="tabs-inner">
+            <button class="ptab active" onclick="jumpTo('sec-about');setTab(this)">About</button>
+            <button class="ptab" onclick="jumpTo('sec-tours');setTab(this)">Tours</button>
+            <button class="ptab" onclick="jumpTo('sec-reviews');setTab(this)">Reviews</button>
+            <button class="ptab" onclick="jumpTo('sec-location');setTab(this)">Location</button>
+        </div>
+    </div>
+
+    <div class="main" id="mainWrap" style="display:none">
+        <div id="pageContent"></div>
+    </div>
+
+    <div class="modal" id="imgModal">
+        <div class="modal-inner">
+            <button class="modal-x" onclick="closeModal()">✕</button>
+            <img id="modalImg" src="" alt="" />
+            <div class="modal-cap" id="modalCap"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const BASE = 'http://localhost:8000';
+        const AGENCY_ID = new URLSearchParams(location.search).get('id') || 1;
+        const COVERS = ['https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600', 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1600', 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=1600', 'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=1600'];
+        const TOUR_FB = ['https://images.unsplash.com/photo-1597409114356-16e346ce2699?w=600', 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=600', 'https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=600', 'https://images.unsplash.com/photo-1566765657997-0b2d3e0dc9c2?w=600', 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600'];
+
+        const starsOf = n => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+        const fmtDate = d => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+        function jumpTo(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
+        function setTab(el) { document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active')); el.classList.add('active') }
+        function openModal(src, cap) { document.getElementById('modalImg').src = src; document.getElementById('modalCap').textContent = cap || ''; document.getElementById('imgModal').classList.add('open') }
+        function closeModal() { document.getElementById('imgModal').classList.remove('open') }
+        document.getElementById('imgModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal() });
+
+        async function apiFetch(path) { const r = await fetch(BASE + path); if (!r.ok) throw new Error(r.status); return r.json() }
+
+        /* ── HERO ── */
+        function buildHero(agency, reviews) {
+            const cover = agency.image_url || agency.logo_url || COVERS[agency.id % COVERS.length];
+            const bg = document.getElementById('heroBg');
+            bg.style.backgroundImage = `url('${cover}')`;
+            setTimeout(() => bg.classList.add('loaded'), 100);
+            const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+            const badges = [
+                agency.is_verified ? `<span class="hbadge hb-verified">✓ Verified</span>` : '',
+                agency.is_partner ? `<span class="hbadge hb-partner">★ Partner</span>` : '',
+                agency.is_featured ? `<span class="hbadge hb-featured">◆ Featured</span>` : '',
+                agency.agency_type ? `<span class="hbadge hb-type">${agency.agency_type}</span>` : '',
+            ].filter(Boolean).join('');
+            const meta = [
+                agency.city ? `<div class="hero-meta-item">📍 <strong>${agency.city}</strong></div>` : '',
+                agency.tours_count != null ? `<div class="hero-meta-item">🗺 <strong>${agency.tours_count}</strong> tours</div>` : '',
+            ].filter(Boolean).join('');
+            document.getElementById('heroContent').innerHTML = `
+    <div class="hero-left">
+      <div class="hero-badges">${badges}</div>
+      <h1 class="hero-name">${agency.name}</h1>
+      <div class="hero-meta">${meta}</div>
+    </div>
+    <div class="hero-rating">
+      <div class="rating-num">${avg > 0 ? avg.toFixed(1) : '—'}</div>
+      <div class="rating-stars">${avg > 0 ? starsOf(avg) : '☆☆☆☆☆'}</div>
+      <div class="rating-count">${reviews.length} review${reviews.length !== 1 ? 's' : ''}</div>
+    </div>`;
+        }
+
+        /* ── ABOUT — with contact grid ── */
+        function buildAbout(agency) {
+            const specs = agency.specializations || [];
+            const contacts = [
+                agency.city ? `<div class="ci-item"><div class="ci-ico">📍</div><div><div class="ci-lbl">City</div><div class="ci-val">${agency.city}</div></div></div>` : '',
+                agency.address ? `<div class="ci-item"><div class="ci-ico">🏢</div><div><div class="ci-lbl">Address</div><div class="ci-val">${agency.address}</div></div></div>` : '',
+                agency.phone ? `<a href="tel:${agency.phone}" class="ci-item"><div class="ci-ico">📞</div><div><div class="ci-lbl">Phone</div><div class="ci-val">${agency.phone}</div></div></a>` : '',
+                agency.email ? `<a href="mailto:${agency.email}" class="ci-item"><div class="ci-ico">✉️</div><div><div class="ci-lbl">Email</div><div class="ci-val">${agency.email}</div></div></a>` : '',
+                agency.website ? `<a href="${agency.website}" target="_blank" class="ci-item"><div class="ci-ico">🌐</div><div><div class="ci-lbl">Website</div><div class="ci-val">${agency.website.replace(/^https?:\/\//, '')}</div></div></a>` : '',
+                agency.languages ? `<div class="ci-item"><div class="ci-ico">🗣️</div><div><div class="ci-lbl">Languages</div><div class="ci-val">${agency.languages}</div></div></div>` : '',
+            ].filter(Boolean).join('');
+            return `
+  <div class="section" id="sec-about">
+    <div class="sec-header"><h2 class="sec-title">About</h2><div class="sec-rule"></div></div>
+    <p class="about-text">${agency.description || 'No description available.'}</p>
+    ${specs.length ? `<div class="spec-wrap">${specs.map(s => `<span class="spec-chip">${s}</span>`).join('')}</div>` : ''}
+    ${contacts ? `<div class="contact-grid">${contacts}</div>` : ''}
+  </div>`;
+        }
+
+        /* ── TOURS ── */
+        let openTourId = null;
+        const drawerMaps = {};
+
+        function buildTours(tours) {
+            if (!tours.length) return `
+  <div class="section" id="sec-tours">
+    <div class="sec-header"><h2 class="sec-title">Tours</h2><div class="sec-rule"></div></div>
+    <div class="empty-msg"><div class="ei">🗺</div><p>No active tours yet.</p></div>
+  </div>`;
+            const cards = tours.map((t, i) => {
+                const img = t.image_url || TOUR_FB[i % TOUR_FB.length];
+                const price = t.price ? `${t.currency || 'USD'} ${Number(t.price).toLocaleString()}` : 'Ask';
+                return `
+    <div class="tour-card" id="tc-${t.id}" onclick="toggleTour(${t.id})">
+      <div class="tour-thumb">
+        <img src="${img}" alt="${t.tour_name}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=tour-thumb-ph>🗺</div>'"/>
+        ${t.tour_type ? `<span class="t-type">${t.tour_type}</span>` : ''}
+        <span class="t-price">${price}</span>
+      </div>
+      <div class="tour-body">
+        <div class="tour-name">${t.tour_name}</div>
+        ${t.description ? `<div class="tour-desc-s">${t.description}</div>` : ''}
+        <div class="tour-chips">
+          ${t.duration_days ? `<span class="t-chip">📅 ${t.duration_days}d</span>` : ''}
+          ${t.max_group_size ? `<span class="t-chip">👥 max ${t.max_group_size}</span>` : ''}
+          ${t.difficulty_level ? `<span class="t-chip">🎯 ${t.difficulty_level}</span>` : ''}
+        </div>
+        <button class="btn-expand">View details <span class="earrow">▼</span></button>
+      </div>
+      <div class="tour-drawer" id="td-${t.id}"></div>
+    </div>`;
+            }).join('');
+            return `
+  <div class="section" id="sec-tours">
+    <div class="sec-header"><h2 class="sec-title">Tours</h2><div class="sec-rule"></div><span class="sec-pill">${tours.length}</span></div>
+    <div class="tours-list">${cards}</div>
+  </div>`;
+        }
+
+        async function toggleTour(id) {
+            const card = document.getElementById(`tc-${id}`);
+            const drawer = document.getElementById(`td-${id}`);
+            if (!card || !drawer) return;
+            if (openTourId === id) { drawer.classList.remove('open'); card.classList.remove('expanded'); openTourId = null; return }
+            if (openTourId) { document.getElementById(`td-${openTourId}`)?.classList.remove('open'); document.getElementById(`tc-${openTourId}`)?.classList.remove('expanded') }
+            openTourId = id; card.classList.add('expanded');
+            if (drawer.dataset.loaded) { drawer.classList.add('open'); setTimeout(() => drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100); return }
+            drawer.innerHTML = `<div class="drawer-inner" style="display:flex;align-items:center;justify-content:center;padding:3rem"><div class="spinner"></div></div>`;
+            drawer.classList.add('open');
+            try {
+                const tour = await apiFetch(`/travel-agencies/tours/${id}`);
+                drawer.innerHTML = renderDrawer(tour);
+                drawer.dataset.loaded = '1';
+                setTimeout(() => { drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); drawer.querySelectorAll('.iday').forEach((el, i) => setTimeout(() => el.classList.add('vis'), i * 55)) }, 80);
+            } catch (err) { drawer.innerHTML = `<div class="drawer-inner"><div class="empty-msg"><div class="ei">⚠</div><p>Could not load details. (${err.message})</p></div></div>` }
+        }
+
+        function renderDrawer(t) {
+            const img = t.image_url || TOUR_FB[t.id % TOUR_FB.length];
+            const price = t.price ? `${t.currency || 'USD'} ${Number(t.price).toLocaleString()}` : '';
+            const dests = [...(t.destinations || [])].sort((a, b) => (a.visit_order || 0) - (b.visit_order || 0));
+            const days = [...(t.itinerary_days || [])].sort((a, b) => a.day_number - b.day_number);
+            const destDayMap = {};
+            days.forEach(day => (day.destinations || []).forEach(dname => { const k = dname.toLowerCase(); if (!destDayMap[k]) destDayMap[k] = []; destDayMap[k].push(day.day_number) }));
+
+            const destStripHtml = dests.length ? dests.map((d, i) => {
+                const k = d.destination_name.toLowerCase();
+                const dn = destDayMap[k] || [];
+                const dr = dn.length ? (dn.length === 1 ? `Day ${dn[0]}` : `Days ${dn[0]}–${dn[dn.length - 1]}`) : '';
+                const thumb = d.image_url || '';
+                const nl = d.nights_stay ? `🌙 ${d.nights_stay} night${d.nights_stay !== 1 ? 's' : ''}` : dr ? `📅 ${dr}` : '';
+                const arrow = i < dests.length - 1 ? `<div class="dest-arrow">→</div>` : '';
+                return `<div class="dest-node">
+      <div class="dest-card" onclick="event.stopPropagation();focusDestOnMap('map-${t.id}',${d.latitude || 0},${d.longitude || 0})">
+        <div class="dest-thumb">
+          ${thumb ? `<img src="${thumb}" alt="${d.destination_name}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=dest-thumb-ph>🗺</div>'"/>` : `<div class="dest-thumb-ph">🗺</div>`}
+          <div class="dest-order">${i + 1}</div>
+        </div>
+        <div class="dest-body"><div class="dest-name">${d.destination_name}</div>${nl ? `<div class="dest-nights">${nl}</div>` : ''}</div>
+      </div>${arrow}</div>`;
+            }).join('') : '';
+
+            const mapId = `map-${t.id}`;
+            const hasMap = dests.some(d => d.latitude && d.longitude);
+
+            const itinHtml = days.map(day => {
+                const dayImgs = (day.images && day.images.length) ? day.images : (day.image_url ? [day.image_url] : []);
+                const gallery = dayImgs.length ? `<div class="day-gallery">${dayImgs.map(src => `<div class="dg-item" onclick="event.stopPropagation();openModal('${src}','${day.day_title}')"><img src="${src}" loading="lazy" onerror="this.closest('.dg-item').style.display='none'"/></div>`).join('')}</div>` : '';
+                const pills = [day.meals ? `<span class="ipill">🍽 ${day.meals}</span>` : '', day.accommodation ? `<span class="ipill">🏨 ${day.accommodation}</span>` : '', ...(day.destinations || []).map(d => `<span class="ipill">📍 ${d}</span>`)].filter(Boolean).join('');
+                return `<div class="iday"><div class="idot"></div><div class="inum">Day ${day.day_number}</div><div class="ittl">${day.day_title}</div><div class="itxt">${day.activities}</div>${pills ? `<div class="ipills">${pills}</div>` : ''} ${gallery}</div>`;
+            }).join('');
+
+            const inc = t.included_services || [];
+            const exc = t.excluded_services || [];
+            const hl = t.highlights || [];
+            const infoRows = [
+                { ico: '📅', lbl: 'Duration', val: t.duration_days ? `${t.duration_days} Days / ${t.duration_days - 1} Nights` : '—' },
+                { ico: '👥', lbl: 'Group Size', val: t.max_group_size ? `Max ${t.max_group_size}` : '—' },
+                dests.length ? { ico: '📍', lbl: 'Destinations', val: dests.map(d => d.destination_name).join(' → ') } : null,
+                t.difficulty_level ? { ico: '🎯', lbl: 'Difficulty', val: t.difficulty_level } : null,
+                t.best_season ? { ico: '🌸', lbl: 'Best Season', val: t.best_season } : null,
+                t.tour_type ? { ico: '🏷', lbl: 'Tour Type', val: t.tour_type } : null,
+            ].filter(Boolean);
+
+            if (hasMap) setTimeout(() => initRouteMap(mapId, dests), 80);
+
+            return `<div class="drawer-inner">
+    <div class="drawer-hero">
+      <img src="${img}" alt="${t.tour_name}" onerror="this.style.display='none'"/>
+      <div class="drawer-hero-ov"></div>
+      <div class="drawer-hero-foot">
+        <div class="d-tour-name">${t.tour_name}</div>
+        <div class="d-meta">
+          ${t.duration_days ? `<span class="d-meta-chip">📅 ${t.duration_days} Days</span>` : ''}
+          ${dests.length ? `<span class="d-meta-chip">📍 ${dests.length} stops</span>` : ''}
+          ${t.tour_type ? `<span class="d-meta-chip">${t.tour_type}</span>` : ''}
+        </div>
+      </div>
+      ${price ? `<div class="d-price">${price}</div>` : ''}
+    </div>
+    ${t.description ? `<div class="d-label">Overview</div><p class="d-text">${t.description}</p>` : ''}
+    ${hl.length ? `<div class="d-label">Highlights</div><div class="hl-list">${hl.map(h => `<div class="hl-item"><span class="hl-dot">✦</span>${h}</div>`).join('')}</div>` : ''}
+    ${destStripHtml ? `<div class="d-label">Destinations & Route</div><div class="dest-strip">${destStripHtml}</div>` : ''}
+    ${days.length ? `<div class="d-label">Day-by-Day Itinerary</div><div class="itinerary">${itinHtml}</div>` : ''}
+    ${(inc.length || exc.length) ? `<div class="d-label">Included & Excluded</div><div class="ie-grid"><div class="ie-box ie-inc"><div class="ie-lbl">✓ Included</div><ul class="ie-ul">${inc.length ? inc.map(s => `<li>${s}</li>`).join('') : '<li>Contact for details</li>'}</ul></div><div class="ie-box ie-exc"><div class="ie-lbl">✕ Not Included</div><ul class="ie-ul">${exc.length ? exc.map(s => `<li>${s}</li>`).join('') : '<li>—</li>'}</ul></div></div>` : ''}
+    ${hasMap ? `<div class="d-label">Route Map</div><div class="route-map-wrap"><div class="route-map" id="${mapId}"></div></div>` : ''}
+    <div class="tour-details-card">
+      <div class="d-label" style="margin-top:0">Tour Details</div>
+      ${infoRows.map(r => `<div class="td-row"><div class="td-ico">${r.ico}</div><div><div class="td-lbl">${r.lbl}</div><div class="td-val">${r.val}</div></div></div>`).join('')}
+    </div>
+    <button class="btn-close-drw" onclick="event.stopPropagation();toggleTour(${t.id})">▲ Close details</button>
+  </div>`;
+        }
+
+        function initRouteMap(mapId, dests) {
+            const el = document.getElementById(mapId);
+            if (!el || drawerMaps[mapId]) return;
+            const valid = dests.filter(d => d.latitude && d.longitude).sort((a, b) => (a.visit_order || 0) - (b.visit_order || 0));
+            if (!valid.length) return;
+            const coords = valid.map(d => [parseFloat(d.latitude), parseFloat(d.longitude)]);
+            const map = L.map(mapId, { zoomControl: true, scrollWheelZoom: false });
+            drawerMaps[mapId] = map;
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+            if (coords.length > 1) L.polyline(coords, { color: '#e8a045', weight: 2.5, dashArray: '8,8', opacity: .65 }).addTo(map);
+            valid.forEach((d, i) => {
+                const thumb = d.image_url || '';
+                const markerHtml = thumb
+                    ? `<div style="width:40px;height:40px;border-radius:50%;border:2.5px solid #e8a045;overflow:hidden;background:#1a1a1a;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.6)"><img src="${thumb}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.background='#e8a045'"/><div style="position:absolute;bottom:0;right:0;width:15px;height:15px;border-radius:50%;background:#e8a045;color:#080808;font-family:'Bebas Neue',sans-serif;font-size:.65rem;display:flex;align-items:center;justify-content:center;border:1px solid #fff">${i + 1}</div></div>`
+                    : `<div style="width:34px;height:34px;border-radius:50%;background:#e8a045;color:#080808;font-family:'Bebas Neue',sans-serif;font-size:1rem;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(232,160,69,.4)">${i + 1}</div>`;
+                const icon = L.divIcon({ className: '', html: markerHtml, iconSize: thumb ? [40, 40] : [34, 34], iconAnchor: thumb ? [20, 20] : [17, 17], popupAnchor: [0, -22] });
+                const bigImg = thumb ? `<div style="margin:-13px -18px 10px;height:110px;overflow:hidden;border-radius:6px 6px 0 0"><img src="${thumb}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'"/></div>` : '';
+                L.marker([parseFloat(d.latitude), parseFloat(d.longitude)], { icon }).addTo(map).bindPopup(L.popup({ maxWidth: 200, minWidth: 160, className: 'dest-popup' }).setContent(`${bigImg}<div style="font-family:'DM Sans',sans-serif"><div style="font-weight:700;color:#fff;font-size:.88rem">${d.destination_name}</div>${d.nights_stay ? `<div style="color:#e8a045;font-size:.7rem;margin-top:.2rem">🌙 ${d.nights_stay} night${d.nights_stay !== 1 ? 's' : ''}</div>` : ''}</div>`));
+            });
+            coords.length > 1 ? map.fitBounds(coords, { padding: [40, 40] }) : map.setView(coords[0], 10);
+        }
+
+        function focusDestOnMap(mapId, lat, lng) {
+            const map = drawerMaps[mapId];
+            if (map && lat && lng) map.flyTo([lat, lng], 10, { duration: 1 });
+        }
+
+        /* ── REVIEWS — collapsible form ── */
+        function buildReviews(reviews, agencyId) {
+            const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+            const cards = reviews.map(r => `
+  <div class="rv-card">
+    <div class="rv-top">
+      <div><div class="rv-nm">${r.tourist_name || 'Anonymous'}</div><div class="rv-st">${starsOf(r.rating)}</div></div>
+      <div class="rv-dt">${fmtDate(r.created_at)}</div>
+    </div>
+    <div class="rv-tx">${r.comment || ''}</div>
+    ${r.tour_taken ? `<span class="rv-tr">Tour: ${r.tour_taken}</span>` : ''}
+  </div>`).join('');
+            const blurb = avg >= 4.5 ? '🏆 Exceptional — highly recommended.' : avg >= 4 ? '👍 Well rated by travelers.' : avg > 0 ? 'Rated by travelers.' : 'No reviews yet — be the first!';
+            return `
+  <div class="section" id="sec-reviews">
+    <div class="sec-header"><h2 class="sec-title">Reviews</h2><div class="sec-rule"></div><span class="sec-pill">${reviews.length}</span></div>
+    <div class="rv-top-bar">
+      <div><div class="rvn">${avg > 0 ? avg.toFixed(1) : '—'}</div><div class="rvs">${avg > 0 ? starsOf(avg) : '☆☆☆☆☆'}</div><div class="rvc">${reviews.length} review${reviews.length !== 1 ? 's' : ''}</div></div>
+      <div class="rv-divider"></div>
+      <div class="rv-blurb">${blurb}</div>
+    </div>
+    <div class="rv-wrap" id="rvWrap">
+      <div class="rv-list">${cards || `<div class="empty-msg"><div class="ei">💬</div><p>No reviews yet. Be the first!</p></div>`}</div>
+      ${reviews.length > 3 ? `<div class="rv-fade"></div>` : ''}
+    </div>
+    ${reviews.length > 3 ? `<button class="btn-rv-more" id="rvMoreBtn" onclick="toggleRv()">Show More Reviews</button>` : ''}
+
+    <!-- Write review toggle button -->
+    <button class="btn-write-rv" id="writeRvBtn" onclick="toggleRvForm()">
+      ✏️ Write a Review <span class="wrarrow" id="wrarrow">▼</span>
+    </button>
+
+    <!-- Collapsible form -->
+    <div class="rv-form-wrap" id="rvFormWrap">
+      <div class="rv-form-card">
+        <h3>Share your experience</h3>
+        <div class="frow">
+          <div class="fg"><label>Your Name *</label><input type="text" id="rv-name" placeholder="Jane Smith"/></div>
+          <div class="fg"><label>Rating *</label>
+            <select id="rv-rating">
+              <option value="">Select…</option>
+              <option value="5">★★★★★ Excellent</option>
+              <option value="4">★★★★☆ Very Good</option>
+              <option value="3">★★★☆☆ Good</option>
+              <option value="2">★★☆☆☆ Fair</option>
+              <option value="1">★☆☆☆☆ Poor</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label>Tour Taken</label><input type="text" id="rv-tour" placeholder="Which tour?"/></div>
+        <div class="fg"><label>Your Review *</label><textarea id="rv-comment" placeholder="Share your experience…"></textarea></div>
+        <button class="btn-rv-sub" onclick="submitReview(${agencyId})">Submit Review</button>
+        <div class="rv-ok" id="rvOk">✓ Thank you! Your review has been submitted.</div>
+      </div>
+    </div>
+  </div>`;
+        }
+
+        function toggleRv() {
+            const w = document.getElementById('rvWrap');
+            const b = document.getElementById('rvMoreBtn');
+            w.classList.toggle('open');
+            b.textContent = w.classList.contains('open') ? 'Show Less' : 'Show More Reviews';
+        }
+
+        function toggleRvForm() {
+            const wrap = document.getElementById('rvFormWrap');
+            const arrow = document.getElementById('wrarrow');
+            wrap.classList.toggle('open');
+            if (arrow) arrow.style.transform = wrap.classList.contains('open') ? 'rotate(180deg)' : '';
+            if (wrap.classList.contains('open')) {
+                setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+            }
+        }
+
+        async function submitReview(agencyId) {
+            const name = document.getElementById('rv-name').value.trim();
+            const rating = parseInt(document.getElementById('rv-rating').value);
+            const comment = document.getElementById('rv-comment').value.trim();
+            const tourTaken = document.getElementById('rv-tour').value.trim();
+            if (!name || !rating || !comment) { alert('Please fill in your name, rating, and review.'); return }
+            try {
+                await fetch(`${BASE}/travel-agencies/reviews`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ agency_id: agencyId, tourist_name: name, rating, comment, tour_taken: tourTaken || null }) });
+            } catch (_) { }
+            ['rv-name', 'rv-comment', 'rv-tour'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('rv-rating').value = '';
+            const ok = document.getElementById('rvOk'); ok.style.display = 'block';
+            setTimeout(() => ok.style.display = 'none', 5000);
+        }
+
+        /* ── LOCATION ── */
+        function buildLocation(agency) {
+            return `
+  <div class="section" id="sec-location">
+    <div class="sec-header"><h2 class="sec-title">Location</h2><div class="sec-rule"></div></div>
+    <div id="agency-map"></div>
+  </div>`;
+        }
+
+        function initMap(agency) {
+            const lat = parseFloat(agency.latitude), lng = parseFloat(agency.longitude);
+            if (!lat || !lng) { document.getElementById('agency-map').innerHTML = `<div class="empty-msg" style="padding:2.5rem"><div class="ei">📍</div><p>Location not set.</p></div>`; return }
+            const map = L.map('agency-map').setView([lat, lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+            const icon = L.divIcon({ className: '', html: `<div style="width:14px;height:14px;border-radius:50%;background:#e8a045;border:3px solid #fff;box-shadow:0 2px 10px rgba(232,160,69,.5)"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] });
+            L.marker([lat, lng], { icon }).addTo(map).bindPopup(`<b>${agency.name}</b>${agency.address ? `<br><small>${agency.address}</small>` : ''}`).openPopup();
+        }
+
+        /* ── INIT ── */
+        async function init() {
+            try {
+                const [agency, tours, reviews] = await Promise.all([
+                    apiFetch(`/travel-agencies/${AGENCY_ID}`),
+                    apiFetch(`/travel-agencies/${AGENCY_ID}/tours`),
+                    apiFetch(`/travel-agencies/${AGENCY_ID}/reviews`),
+                ]);
+                buildHero(agency, reviews);
+                document.getElementById('pageContent').innerHTML =
+                    buildAbout(agency) + buildTours(tours) + buildReviews(reviews, agency.id) + buildLocation(agency);
+                document.getElementById('mainWrap').style.display = 'block';
+                const loader = document.getElementById('pageLoader');
+                loader.classList.add('hide');
+                setTimeout(() => loader.remove(), 450);
+                setTimeout(() => initMap(agency), 80);
+            } catch (err) {
+                console.error(err);
+                const loader = document.getElementById('pageLoader');
+                loader.classList.add('hide'); setTimeout(() => loader.remove(), 450);
+                document.getElementById('mainWrap').style.display = 'block';
+                document.getElementById('pageContent').innerHTML = `
+    <div class="err-box"><h2>⚠ Error</h2><p>Could not connect to <code>${BASE}</code>.<br>Make sure your server is running.<br><br>Agency ID: <strong>${AGENCY_ID}</strong></p><button class="btn-err" onclick="location.reload()">Retry</button></div>`;
+            }
+        }
+        init();
+    </script>
+</body>
+
+</html>

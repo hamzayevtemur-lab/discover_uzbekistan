@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJHCVBY91E"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-KJHCVBY91E');
+    </script>
+
+    <title>Restaurants - Discover Uzbekistan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* restaurant.css - Restaurant Detail Page Styles */
+
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .restaurant-header {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 107, 53, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ff6b35;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 107, 53, 0.2);
+        }
+
+        .restaurant-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            flex: 1;
+            padding: 0 20px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .share-btn,
+        .favorite-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .share-btn:hover,
+        .favorite-btn:hover {
+            background: rgba(255, 107, 53, 0.2);
+            border-color: #ff6b35;
+        }
+
+
+        /* Favorite Button */
+        #favoriteBtn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #favoriteBtn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        #favoriteBtn.liked {
+            background: rgba(255, 71, 87, 0.2);
+            border-color: #ff4757;
+        }
+
+        #favoriteBtn .heart-icon {
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        #favoriteBtn.liked .heart-icon {
+            color: #ff4757;
+        }
+
+        #favoriteBtn .like-count {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        @keyframes heartBeat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.3);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Hero Section */
+        .restaurant-hero {
+            height: 300px;
+            height: 400px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            object-fit: cover;
+            display: flex;
+            align-items: flex-end;
+            padding: 30px;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rating-badge {
+            background: linear-gradient(135deg, #ffd700, #ff9800);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+        }
+
+        .rating-badge small {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .partner-badge {
+            background: linear-gradient(135deg, #9c27b0, #673ab7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Main Container */
+        .restaurant-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* Quick Info Bar */
+        .quick-info-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 15px;
+        }
+
+        .info-item i {
+            color: #ff6b35;
+            width: 20px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-text,
+        .btn-outline,
+        .btn-load-more {
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b35, #ff8a50);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-text {
+            background: transparent;
+            color: #ff6b35;
+            padding: 10px 20px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #ff6b35;
+            border: 1px solid #ff6b35;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .btn-load-more {
+            width: 100%;
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 20px;
+        }
+
+        .btn-load-more:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Menu Tabs */
+        .menu-tabs {
+            margin-bottom: 40px;
+            overflow-x: auto;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            transition: all 0.3s;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 107, 53, 0.2);
+            border-color: #ff6b35;
+            color: #ff6b35;
+        }
+
+        .tab-btn i {
+            font-size: 18px;
+        }
+
+        /* Section Styles */
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title i {
+            color: #ff6b35;
+        }
+
+        .menu-section,
+        .offers-section,
+        .map-section,
+        .reviews-section,
+        .similar-section {
+            margin-bottom: 50px;
+        }
+
+        /* Menu Items Grid */
+        .menu-items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .menu-item-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid rgba(18, 17, 17, 0.1);
+            transition: all 0.3s;
+        }
+
+        .menu-item-card:hover {
+            transform: translateY(-5px);
+            border-color: #ff6b35;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.2);
+        }
+
+        .menu-item-image {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 10px;
+        }
+
+        .menu-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        /* Gradient overlay */
+        .menu-item-image::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom,
+                    transparent 50%,
+                    rgba(0, 0, 0, 0.5));
+            pointer-events: none;
+        }
+
+        /* Hover zoom */
+        .menu-item-image:hover img {
+            transform: scale(1.08);
+        }
+
+        .menu-item-content {
+            padding: 20px;
+        }
+
+        .menu-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .menu-item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .menu-item-price {
+            color: #ff6b35;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .menu-item-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .menu-item-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background: rgba(255, 107, 53, 0.2);
+            color: #ff6b35;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 107, 53, 0.2);
+            border: 1px solid #ff6b35;
+            color: #ff6b35;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #ff6b35;
+            color: white;
+        }
+
+        .add-to-cart-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Offers Grid */
+        .offers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .offer-card {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(103, 58, 183, 0.1));
+            border: 1px solid rgba(156, 39, 176, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C27B0' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        .offer-title {
+            color: #9c27b0;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .offer-desc {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .offer-code {
+            background: rgba(156, 39, 176, 0.2);
+            color: #9c27b0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .offer-expiry {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        /* Map Section */
+        #restaurantMap {
+            width: 100%;
+            height: 300px;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .map-note {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        /* Reviews Section */
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .reviews-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .review-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .reviewer-name {
+            font-weight: 600;
+            color: white;
+        }
+
+        .review-date {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+        }
+
+        .review-rating {
+            color: #ffd700;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .review-text {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        /* Similar Restaurants */
+        .similar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .similar-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: white;
+        }
+
+        .similar-card:hover {
+            transform: translateY(-3px);
+            border-color: #ff6b35;
+        }
+
+        .similar-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #ff6b35, #ffa726);
+        }
+
+        .similar-content {
+            padding: 15px;
+        }
+
+        .similar-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .similar-cuisine {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .similar-rating {
+            color: #ffd700;
+            font-size: 14px;
+        }
+
+        /* Footer */
+        .restaurant-footer {
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 50px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-section h3 {
+            color: #ff6b35;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .footer-section a {
+            display: block;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-section a:hover {
+            color: #ff6b35;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            color: white;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .rating-input {
+            margin-bottom: 20px;
+        }
+
+        .rating-input p {
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .stars {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stars i {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .stars i:hover,
+        .stars i.active {
+            color: #ffd700;
+        }
+
+        .rating-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .modal-body textarea,
+        .modal-body input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 15px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .modal-body textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            grid-column: 1 / -1;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #ff6b35;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .restaurant-title {
+                font-size: 18px;
+                padding: 0 10px;
+            }
+
+            .hero-content {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .quick-info-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs-container {
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            .menu-items-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .offers-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .similar-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reviews-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+
+        .user-location-marker .pulse {
+            width: 24px;
+            height: 24px;
+            background: #4285F4;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 12px rgba(66, 133, 244, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0);
+            }
+        }
+
+        .restaurant-card {
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .restaurant-card i {
+            margin-right: 4px;
+        }
+
+        .nearby-card {
+            transition: transform 0.2s;
+        }
+
+        .nearby-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="restaurant-header">
+        <div class="header-container">
+            <a href="location.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Map
+            </a>
+            <div class="restaurant-title" id="restaurantName">Loading...</div>
+            <div class="header-actions">
+                <button class="share-btn" id="shareBtn">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+                <button class="favorite-btn" id="favoriteBtn">
+                    <i class="far fa-heart"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Restaurant Hero Section -->
+    <section class="restaurant-hero" id="restaurantHero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="rating-badge">
+                <i class="fas fa-star"></i>
+                <span id="restaurantRating">4.8</span>
+                <small>(<span id="reviewCount">0</span> reviews)</small>
+            </div>
+            <div class="partner-badge" id="partnerBadge">
+                <i class="fas fa-crown"></i>
+                <span>Partner Restaurant</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="restaurant-container">
+        <!-- Quick Info Bar -->
+        <div class="quick-info-bar">
+            <div class="info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span id="restaurantAddress">Loading...</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-phone"></i>
+                <span id="restaurantPhone">Loading...</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-clock"></i>
+                <span id="restaurantHours">10:00 AM - 11:00 PM</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn-primary" id="callBtn">
+                <i class="fas fa-phone-alt"></i> Call Now
+            </button>
+            <button class="btn-secondary" id="directionsBtn">
+                <i class="fas fa-directions"></i> Get Directions
+            </button>
+            <button class="btn-secondary" id="websiteBtn">
+                <i class="fas fa-globe"></i> Website
+            </button>
+        </div>
+
+        <!-- Menu Categories Tabs -->
+        <nav class="menu-tabs" id="menuTabs">
+            <div class="tabs-container">
+                <button class="tab-btn active" data-category="solo">
+                    <i class="fas fa-user"></i>
+                    <span>Solo</span>
+                </button>
+                <button class="tab-btn" data-category="fortwo">
+                    <i class="fas fa-user-friends"></i>
+                    <span>For Two</span>
+                </button>
+                <button class="tab-btn" data-category="family">
+                    <i class="fas fa-users"></i>
+                    <span>Family</span>
+                </button>
+                <button class="tab-btn" data-category="drinks">
+                    <i class="fas fa-glass-cheers"></i>
+                    <span>Drinks</span>
+                </button>
+                <button class="tab-btn" data-category="desserts">
+                    <i class="fas fa-ice-cream"></i>
+                    <span>Desserts</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Menu Items Section -->
+        <section class="menu-section">
+            <h2 class="section-title">
+                <i class="fas fa-utensils"></i>
+                <span id="categoryTitle">Solo Meals</span>
+            </h2>
+
+            <div class="menu-items-grid" id="menuItemsGrid">
+                <!-- Menu items will be loaded here -->
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading menu...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Special Offers -->
+        <section class="offers-section" id="offersSection">
+            <h2 class="section-title">
+                <i class="fas fa-gift"></i> Special Offers
+            </h2>
+            <div class="offers-grid" id="offersGrid">
+                <!-- Offers will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Restaurant Map -->
+        <section class="map-section">
+            <h2 class="section-title">
+                <i class="fas fa-map-marked-alt"></i> Location
+            </h2>
+            <div id="restaurantMap"></div>
+            <p class="map-note">Click the map for directions from your location</p>
+        </section>
+
+        <!-- Similar Restaurants -->
+        <section class="similar-section" id="similarSection">
+            <h2 class="section-title">
+                <i class="fas fa-store"></i> Similar Restaurants
+            </h2>
+            <div class="similar-grid" id="similarGrid">
+                <!-- Similar restaurants will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section class="reviews-section">
+            <div class="reviews-header">
+                <h2 class="section-title">
+                    <i class="fas fa-comment-alt"></i> Customer Reviews
+                </h2>
+                <button class="btn-text" id="addReviewBtn">
+                    <i class="fas fa-plus"></i> Add Review
+                </button>
+            </div>
+
+            <div class="reviews-container" id="reviewsContainer">
+                <!-- Reviews will be loaded here -->
+            </div>
+
+            <button class="btn-load-more" id="loadMoreReviews">
+                Load More Reviews <i class="fas fa-arrow-down"></i>
+            </button>
+
+            <div id="reviewsSection" style="display: none;">
+                <div id="reviewsList"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="restaurant-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Discover Uzbekistan</h3>
+                <p>Your guide to authentic Uzbek cuisine</p>
+            </div>
+            <div class="footer-section">
+                <h3>Need Help?</h3>
+                <a href="#"><i class="fas fa-question-circle"></i> FAQ</a>
+                <a href="#"><i class="fas fa-headset"></i> Contact Support</a>
+            </div>
+            <div class="footer-section">
+                <h3>Partner With Us</h3>
+                <p>Want to list your restaurant?</p>
+                <a href="#" class="btn-outline">Join as Partner</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Discover Uzbekistan Tourism Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Add Review Modal (Hidden by default) -->
+    <div class="modal" id="reviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Your Review</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="rating-input">
+                    <p>Your Rating:</p>
+                    <div class="stars">
+                        <i class="far fa-star" data-rating="1"></i>
+                        <i class="far fa-star" data-rating="2"></i>
+                        <i class="far fa-star" data-rating="3"></i>
+                        <i class="far fa-star" data-rating="4"></i>
+                        <i class="far fa-star" data-rating="5"></i>
+                    </div>
+                    <p class="rating-text">Select a rating</p>
+                </div>
+                <textarea id="reviewText" placeholder="Share your experience with this restaurant..."></textarea>
+                <input type="text" id="reviewerName" placeholder="Your name (optional)">
+                <button class="btn-primary" id="submitReview">Submit Review</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+
+        let currentRestaurant = null;
+        let currentMenuCategory = 'solo';
+        let selectedRating = 0;
+        let reviewsLoaded = false;
+        let reviewsVisible = false;
+        let userPosition = null;
+        let restaurantId = null;
+
+        // DOM Elements
+        const elements = {
+            restaurantName: document.getElementById('restaurantName'),
+            restaurantHero: document.getElementById('restaurantHero'),
+            restaurantRating: document.getElementById('restaurantRating'),
+            reviewCount: document.getElementById('reviewCount'),
+            partnerBadge: document.getElementById('partnerBadge'),
+            restaurantAddress: document.getElementById('restaurantAddress'),
+            restaurantPhone: document.getElementById('restaurantPhone'),
+            restaurantHours: document.getElementById('restaurantHours'),
+            categoryTitle: document.getElementById('categoryTitle'),
+            menuItemsGrid: document.getElementById('menuItemsGrid'),
+            offersGrid: document.getElementById('offersGrid'),
+            reviewsContainer: document.getElementById('reviewsContainer'),
+            similarGrid: document.getElementById('similarGrid'),
+            favoriteBtn: document.getElementById('favoriteBtn'),
+            callBtn: document.getElementById('callBtn'),
+            directionsBtn: document.getElementById('directionsBtn'),
+            websiteBtn: document.getElementById('websiteBtn'),
+            shareBtn: document.getElementById('shareBtn'),
+            addReviewBtn: document.getElementById('addReviewBtn'),
+            reviewModal: document.getElementById('reviewModal'),
+            closeModal: document.getElementById('closeModal'),
+            submitReview: document.getElementById('submitReview'),
+            reviewText: document.getElementById('reviewText'),
+            reviewerName: document.getElementById('reviewerName')
+        };
+
+        // ==================== INITIALIZATION ====================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePage();
+            setupEventListeners();
+            getUserLocation();
+            initializeLikes();
+        });
+
+        async function getUserLocation() {
+            if (navigator.geolocation) {
+                try {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 60000
+                        });
+                    });
+
+                    userPosition = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+
+                    console.log('User location obtained:', userPosition);
+                } catch (err) {
+                    console.warn('User location not obtained:', err);
+                    userPosition = null;
+                }
+            }
+        }
+
+        async function initializePage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            restaurantId = urlParams.get('id');
+
+            if (!restaurantId) {
+                elements.menuItemsGrid.innerHTML = '<p style="color:red; text-align:center;">Error: Add ?id=1 to URL (example: restaurants.html?id=1)</p>';
+                return;
+            }
+
+            elements.menuItemsGrid.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading restaurant...</p></div>';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/restaurants/${restaurantId}`);
+                if (!res.ok) {
+                    throw new Error(res.status === 404 ? 'Restaurant not found' : 'Failed to load restaurant');
+                }
+                currentRestaurant = await res.json();
+
+                updateRestaurantInfo();
+                await loadMenuItems(currentMenuCategory);
+                await initializeMap();
+                await loadSimilarRestaurants();
+
+            } catch (err) {
+                console.error('Load error:', err);
+                elements.menuItemsGrid.innerHTML = `<p style="color:red; text-align:center;">${err.message}</p>`;
+            }
+        }
+
+        function updateRestaurantInfo() {
+            if (!currentRestaurant) return;
+
+            elements.restaurantName.textContent = currentRestaurant.name || 'Unknown Restaurant';
+            elements.restaurantRating.textContent = currentRestaurant.rating?.toFixed(1) || 'N/A';
+            elements.reviewCount.textContent = currentRestaurant.review_count ?? "0";
+            elements.restaurantAddress.textContent = currentRestaurant.address || 'No address';
+            elements.restaurantPhone.textContent = currentRestaurant.phone || 'No phone';
+            elements.restaurantHours.textContent = currentRestaurant.opening_hours || 'N/A';
+
+            if (currentRestaurant.image_url) {
+                elements.restaurantHero.style.backgroundImage =
+                    `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('${currentRestaurant.image_url}')`;
+            }
+
+            if (elements.partnerBadge) {
+                elements.partnerBadge.style.display = currentRestaurant.is_partner ? 'flex' : 'none';
+            }
+
+            if (elements.websiteBtn) {
+                elements.websiteBtn.style.display = currentRestaurant.website ? 'flex' : 'none';
+            }
+        }
+
+        // ==================== LIKE SYSTEM ====================
+
+        async function initializeLikes() {
+            if (!restaurantId) return;
+            await loadLikes(`restaurant_${restaurantId}`);
+        }
+
+        async function loadLikes(placeId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/likes/${placeId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const likeBtn = elements.favoriteBtn;
+
+                    if (likeBtn) {
+                        likeBtn.innerHTML = `
+                    <span class="heart-icon">♡</span> 
+                    <span class="like-count">${data.like_count}</span>
+                `;
+
+                        // Check if user already liked
+                        const userId = getUserId();
+                        const userLikes = JSON.parse(localStorage.getItem(`user_likes_${userId}`) || '[]');
+                        if (userLikes.includes(placeId)) {
+                            likeBtn.classList.add('liked');
+                            likeBtn.querySelector('.heart-icon').textContent = '♥';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading likes:', error);
+            }
+        }
+
+        async function toggleLike(event) {
+            event.stopPropagation();
+
+            if (!restaurantId) return;
+
+            const placeId = `restaurant_${restaurantId}`;
+            const button = elements.favoriteBtn;
+            const heartIcon = button.querySelector('.heart-icon');
+            const countSpan = button.querySelector('.like-count');
+
+            let currentCount = parseInt(countSpan.textContent) || 0;
+            const isLiked = button.classList.contains('liked');
+
+            // Optimistic UI update
+            if (isLiked) {
+                button.classList.remove('liked');
+                heartIcon.textContent = '♡';
+                currentCount = Math.max(0, currentCount - 1);
+                countSpan.textContent = currentCount;
+            } else {
+                button.classList.add('liked');
+                heartIcon.textContent = '♥';
+                currentCount++;
+                countSpan.textContent = currentCount;
+
+                // Heart animation
+                heartIcon.style.animation = 'heartBeat 0.6s ease';
+                setTimeout(() => heartIcon.style.animation = '', 600);
+            }
+
+            // Send to backend
+            try {
+                const userId = getUserId();
+                const response = await fetch(`${API_BASE_URL}/api/likes/${placeId}/${isLiked ? 'remove' : 'add'}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ page_id: placeId, user_id: userId })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    countSpan.textContent = data.like_count;
+
+                    // Update localStorage
+                    let userLikes = JSON.parse(localStorage.getItem(`user_likes_${userId}`) || '[]');
+                    if (!isLiked && !userLikes.includes(placeId)) {
+                        userLikes.push(placeId);
+                    } else if (isLiked) {
+                        userLikes = userLikes.filter(id => id !== placeId);
+                    }
+                    localStorage.setItem(`user_likes_${userId}`, JSON.stringify(userLikes));
+                } else {
+                    // Revert on error
+                    if (isLiked) {
+                        button.classList.add('liked');
+                        heartIcon.textContent = '♥';
+                    } else {
+                        button.classList.remove('liked');
+                        heartIcon.textContent = '♡';
+                    }
+                    countSpan.textContent = currentCount - (isLiked ? -1 : 1);
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+                // Revert on error
+                if (isLiked) {
+                    button.classList.add('liked');
+                    heartIcon.textContent = '♥';
+                } else {
+                    button.classList.remove('liked');
+                    heartIcon.textContent = '♡';
+                }
+                countSpan.textContent = currentCount - (isLiked ? -1 : 1);
+            }
+        }
+
+        function getUserId() {
+            let userId = localStorage.getItem('uzbekistan_user_id');
+            if (!userId) {
+                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('uzbekistan_user_id', userId);
+            }
+            return userId;
+        }
+
+        // ==================== MENU ====================
+
+        async function loadMenuItems(category) {
+            if (!currentRestaurant?.id) return;
+
+            elements.menuItemsGrid.innerHTML =
+                '<div class="loading-state"><div class="spinner"></div><p>Loading menu...</p></div>';
+
+            try {
+                const res = await fetch(
+                    `${API_BASE_URL}/restaurants/${currentRestaurant.id}/menu?category=${category}`
+                );
+                if (!res.ok) throw new Error('Failed to load menu');
+
+                const items = await res.json();
+
+                elements.categoryTitle.textContent =
+                    category.charAt(0).toUpperCase() + category.slice(1) + ' Meals';
+
+                if (items.length === 0) {
+                    elements.menuItemsGrid.innerHTML =
+                        '<p style="text-align:center;color:#aaa;">No items in this category</p>';
+                    return;
+                }
+
+                elements.menuItemsGrid.innerHTML = items.map(item => `
+            <div class="menu-item-card">
+                <div class="menu-item-image">
+                    <img src="${item.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}" 
+                         alt="${item.item_name}"
+                         onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                </div>
+                <div class="menu-item-content">
+                    <div class="menu-item-header">
+                        <div class="menu-item-title">${item.item_name}</div>
+                        <div class="menu-item-price">$${Number(item.price).toFixed(2)}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+            } catch (err) {
+                console.error(err);
+                elements.menuItemsGrid.innerHTML =
+                    '<p style="color:red;text-align:center;">Could not load menu</p>';
+            }
+        }
+
+        // ==================== EVENT LISTENERS ====================
+
+        function setupEventListeners() {
+            // Menu category tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentMenuCategory = this.dataset.category;
+                    loadMenuItems(currentMenuCategory);
+                });
+            });
+
+            // Action buttons
+            if (elements.favoriteBtn) elements.favoriteBtn.addEventListener('click', toggleLike);
+            if (elements.callBtn) elements.callBtn.addEventListener('click', callRestaurant);
+            if (elements.directionsBtn) elements.directionsBtn.addEventListener('click', getDirections);
+            if (elements.websiteBtn) elements.websiteBtn.addEventListener('click', visitWebsite);
+            if (elements.shareBtn) elements.shareBtn.addEventListener('click', shareRestaurant);
+            if (elements.addReviewBtn) elements.addReviewBtn.addEventListener('click', showReviewModal);
+            if (elements.closeModal) elements.closeModal.addEventListener('click', hideReviewModal);
+            if (elements.submitReview) elements.submitReview.addEventListener('click', submitReview);
+
+            // Star rating
+            const starElements = document.querySelectorAll('.stars i');
+            if (starElements.length > 0) {
+                starElements.forEach(star => {
+                    star.addEventListener('click', function () {
+                        selectedRating = parseInt(this.dataset.rating);
+                        updateStarRating();
+                    });
+                    star.addEventListener('mouseover', function () {
+                        highlightStars(parseInt(this.dataset.rating));
+                    });
+                });
+
+                const starsContainer = document.querySelector('.stars');
+                if (starsContainer) {
+                    starsContainer.addEventListener('mouseleave', resetStarHighlight);
+                }
+            }
+
+            // Modal close on background click
+            if (elements.reviewModal) {
+                elements.reviewModal.addEventListener('click', function (e) {
+                    if (e.target === this) hideReviewModal();
+                });
+            }
+
+            // Reviews toggle button
+            const reviewsBtn = document.getElementById("loadMoreReviews");
+            if (reviewsBtn) {
+                reviewsBtn.addEventListener("click", toggleReviews);
+            }
+        }
+
+        // ==================== REVIEWS ====================
+
+        async function toggleReviews() {
+            const reviewsSection = document.getElementById("reviewsSection");
+            const reviewsBtn = document.getElementById("loadMoreReviews");
+
+            if (!reviewsVisible) {
+                reviewsSection.style.display = "block";
+                reviewsBtn.textContent = "Hide Reviews";
+                reviewsVisible = true;
+
+                if (!reviewsLoaded) {
+                    await loadReviews();
+                    reviewsLoaded = true;
+                }
+            } else {
+                reviewsSection.style.display = "none";
+                reviewsBtn.textContent = "Load Reviews";
+                reviewsVisible = false;
+            }
+        }
+
+        function showReviewModal() {
+            if (elements.reviewModal) {
+                elements.reviewModal.classList.add('active');
+            }
+        }
+
+        function hideReviewModal() {
+            if (elements.reviewModal) {
+                elements.reviewModal.classList.remove('active');
+            }
+            resetReviewForm();
+        }
+
+        function updateStarRating() {
+            document.querySelectorAll('.stars i').forEach(star => {
+                const rating = parseInt(star.dataset.rating);
+                star.classList.toggle('active', rating <= selectedRating);
+                star.classList.toggle('fas', rating <= selectedRating);
+                star.classList.toggle('far', rating > selectedRating);
+            });
+
+            const ratingText = document.querySelector('.rating-text');
+            if (ratingText) {
+                const texts = ['Select rating', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+                ratingText.textContent = texts[selectedRating];
+            }
+        }
+
+        function highlightStars(rating) {
+            document.querySelectorAll('.stars i').forEach(s => {
+                s.style.color = parseInt(s.dataset.rating) <= rating ? '#ffd700' : 'rgba(255,255,255,0.3)';
+            });
+        }
+
+        function resetStarHighlight() {
+            document.querySelectorAll('.stars i').forEach(s => s.style.color = '');
+        }
+
+        function resetReviewForm() {
+            selectedRating = 0;
+            if (elements.reviewText) elements.reviewText.value = '';
+            if (elements.reviewerName) elements.reviewerName.value = '';
+            updateStarRating();
+        }
+
+        async function submitReview() {
+            if (selectedRating === 0) {
+                alert('Please select a rating');
+                return;
+            }
+            if (!elements.reviewText.value.trim()) {
+                alert('Please write a review');
+                return;
+            }
+            if (!elements.reviewerName.value.trim()) {
+                alert('Please enter your name');
+                return;
+            }
+
+            const reviewData = {
+                restaurant_id: currentRestaurant.id,
+                reviewer_name: elements.reviewerName.value.trim(),
+                rating: selectedRating,
+                comment: elements.reviewText.value.trim()
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/reviews`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(reviewData)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Failed to submit review');
+                }
+
+                alert('Thank you! Your review has been submitted.');
+                hideReviewModal();
+                resetReviewForm();
+
+                reviewsLoaded = false;
+                await refreshRestaurantData();
+
+                if (reviewsVisible) {
+                    await loadReviews();
+                }
+
+            } catch (err) {
+                console.error('Review submit error:', err);
+                alert('Could not submit review: ' + err.message);
+            }
+        }
+
+        async function loadReviews() {
+            if (!elements.reviewsContainer) return;
+
+            elements.reviewsContainer.innerHTML = '<p>Loading reviews...</p>';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/restaurants/${currentRestaurant.id}/reviews`);
+                if (!res.ok) throw new Error('Failed to load reviews');
+
+                const reviews = await res.json();
+
+                if (reviews.length === 0) {
+                    elements.reviewsContainer.innerHTML = '<p style="text-align:center;opacity:0.6;">No reviews yet. Be the first to review!</p>';
+                    return;
+                }
+
+                elements.reviewsContainer.innerHTML = reviews.map(r => `
+            <div class="review-card" style="background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px; margin-bottom: 15px;">
+                <div class="review-header" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <strong style="font-size: 16px;">${r.reviewer_name}</strong>
+                    <span style="font-size: 13px; opacity: 0.7;">${formatDate(r.created_at)}</span>
+                </div>
+                <div class="stars" style="color: #ffd700; margin-bottom: 10px;">
+                    ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+                </div>
+                <p style="line-height: 1.6; opacity: 0.9;">${r.comment}</p>
+            </div>
+        `).join('');
+
+            } catch (err) {
+                console.error(err);
+                elements.reviewsContainer.innerHTML =
+                    '<p style="color:red;text-align:center;">Could not load reviews</p>';
+            }
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        async function refreshRestaurantData() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/restaurants/${currentRestaurant.id}`);
+                if (!res.ok) throw new Error();
+                currentRestaurant = await res.json();
+                updateRestaurantInfo();
+            } catch (err) {
+                console.error('Failed to refresh restaurant:', err);
+            }
+        }
+
+        // ==================== MAP & LOCATION ====================
+
+        let map = null;
+        let routingControl = null;
+        let userMarker = null;
+        let restaurantMarker = null;
+
+        async function initializeMap() {
+            if (!currentRestaurant?.latitude || !currentRestaurant?.longitude) {
+                const mapContainer = document.getElementById('restaurantMap');
+                if (mapContainer) {
+                    mapContainer.innerHTML =
+                        '<p style="text-align:center; color:#aaa; padding:40px 0;">No location data available</p>';
+                }
+                return;
+            }
+
+            map = L.map('restaurantMap', {
+                zoomControl: true,
+                zoomAnimation: true
+            }).setView([currentRestaurant.latitude, currentRestaurant.longitude], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            restaurantMarker = L.marker([currentRestaurant.latitude, currentRestaurant.longitude])
+                .addTo(map)
+                .bindPopup(`
+            <b>${currentRestaurant.name}</b><br>
+            ${currentRestaurant.address || 'No address'}<br>
+            <span id="popup-distance" style="color:#e67e22; font-weight:500;">
+                calculating distance...
+            </span>
+        `)
+                .openPopup();
+
+            await updatePopupWithDistance();
+            addUserLocationToMap();
+        }
+
+        async function updatePopupWithDistance() {
+            if (!userPosition) {
+                const distanceEl = document.getElementById('popup-distance');
+                if (distanceEl) {
+                    distanceEl.innerHTML = '(enable location to see distance)';
+                }
+                return;
+            }
+
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/` +
+                `${userPosition.lng},${userPosition.lat};${currentRestaurant.longitude},${currentRestaurant.latitude}?overview=false`;
+
+            try {
+                const response = await fetch(osrmUrl);
+                const data = await response.json();
+
+                if (data.code === 'Ok' && data.routes?.length > 0) {
+                    const route = data.routes[0];
+                    const distKm = (route.distance / 1000).toFixed(1);
+                    const timeMin = Math.round(route.duration / 60);
+
+                    const distanceEl = document.getElementById('popup-distance');
+                    if (distanceEl) {
+                        distanceEl.innerHTML = `≈ ${distKm} km • ${timeMin} min by car`;
+                    }
+                }
+            } catch (err) {
+                console.error("OSRM failed:", err);
+                const distanceEl = document.getElementById('popup-distance');
+                if (distanceEl) {
+                    distanceEl.innerHTML = '(distance unavailable)';
+                }
+            }
+        }
+
+        function addUserLocationToMap() {
+            if (!map || !userPosition) return;
+
+            const userIcon = L.divIcon({
+                className: 'user-location-marker',
+                html: '<div style="background: #00ff88; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 15px #00ff88; animation: pulse 2s infinite;"></div>',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            });
+
+            userMarker = L.marker([userPosition.lat, userPosition.lng], { icon: userIcon })
+                .addTo(map)
+                .bindPopup('📍 You are here');
+
+            L.polyline(
+                [[userPosition.lat, userPosition.lng], [currentRestaurant.latitude, currentRestaurant.longitude]],
+                { color: '#1E90FF', weight: 4, opacity: 0.6, dashArray: '8 6' }
+            ).addTo(map);
+
+            const group = L.latLngBounds([
+                [userPosition.lat, userPosition.lng],
+                [currentRestaurant.latitude, currentRestaurant.longitude]
+            ]);
+            map.fitBounds(group, { padding: [60, 60] });
+        }
+
+        function getDirections() {
+            if (!map) {
+                alert('Map is still loading...');
+                return;
+            }
+
+            if (!userPosition) {
+                alert('Please enable location access to get directions');
+                return;
+            }
+
+            showRouteOnMap(userPosition.lat, userPosition.lng, currentRestaurant.latitude, currentRestaurant.longitude);
+        }
+
+        function showRouteOnMap(startLat, startLng, endLat, endLng) {
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+
+            fetch(osrmUrl)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.code !== 'Ok' || !data.routes?.length) {
+                        throw new Error(data.message || 'No route found');
+                    }
+
+                    const route = data.routes[0];
+                    const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+
+                    const routeLine = L.polyline(coords, {
+                        color: '#e74c3c',
+                        weight: 7,
+                        opacity: 0.85,
+                        lineCap: 'round'
+                    });
+
+                    routeLine.addTo(map);
+                    map.fitBounds(routeLine.getBounds(), { padding: [60, 60] });
+
+                    const distKm = (route.distance / 1000).toFixed(1);
+                    const timeMin = Math.round(route.duration / 60);
+
+                    alert(`Route calculated!\nDistance: ${distKm} km\nEstimated time: ${timeMin} minutes`);
+
+                    routingControl = { remove: () => map.removeLayer(routeLine) };
+                })
+                .catch(err => {
+                    console.error('Routing failed:', err);
+                    alert('Could not calculate route. Try again or use Google Maps.');
+                });
+        }
+
+        // ==================== OTHER ACTIONS ====================
+
+        function callRestaurant() {
+            if (currentRestaurant?.phone) {
+                window.location.href = `tel:${currentRestaurant.phone.replace(/\D/g, '')}`;
+            }
+        }
+
+        function visitWebsite() {
+            if (currentRestaurant?.website) {
+                window.open(currentRestaurant.website, '_blank');
+            } else {
+                alert('No website available');
+            }
+        }
+
+        function shareRestaurant() {
+            if (!currentRestaurant) return;
+
+            const shareData = {
+                title: currentRestaurant.name,
+                text: `Check out ${currentRestaurant.name} on Discover Uzbekistan!`,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(window.location.href)
+                    .then(() => alert('Link copied to clipboard!'))
+                    .catch(() => alert('Could not copy link'));
+            }
+        }
+
+        // ==================== SIMILAR RESTAURANTS ====================
+
+        async function loadSimilarRestaurants() {
+            if (!elements.similarGrid || !currentRestaurant) {
+                if (elements.similarGrid) {
+                    elements.similarGrid.innerHTML = '<p style="text-align:center;opacity:0.6;">No similar restaurants available</p>';
+                }
+                return;
+            }
+
+            elements.similarGrid.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading nearby restaurants...</p></div>';
+
+            if (!userPosition) {
+                await getUserLocation();
+
+                if (!userPosition) {
+                    elements.similarGrid.innerHTML = '<p style="text-align:center;opacity:0.6;">Enable location to see nearby restaurants</p>';
+                    return;
+                }
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/restaurants`);
+                if (!res.ok) throw new Error('Failed to fetch restaurants');
+
+                const allRestaurants = await res.json();
+
+                const nearby = allRestaurants
+                    .filter(r => {
+                        if (r.id === currentRestaurant.id) return false;
+
+                        const dist = calculateDistance(
+                            userPosition.lat,
+                            userPosition.lng,
+                            r.latitude,
+                            r.longitude
+                        );
+
+                        r.distance = dist;
+                        return dist <= 5;
+                    })
+                    .sort((a, b) => a.distance - b.distance)
+                    .slice(0, 6);
+
+                if (nearby.length === 0) {
+                    elements.similarGrid.innerHTML = '<p style="text-align:center;opacity:0.6;">No restaurants found within 5 km</p>';
+                    return;
+                }
+
+                const gradients = [
+                    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+                    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+                ];
+
+                elements.similarGrid.innerHTML = nearby.map((r, index) => {
+                    const gradient = r.image_url
+                        ? `url(${r.image_url})`
+                        : gradients[index % gradients.length];
+
+                    return `
+                <div class="place-card" style="cursor: pointer; transition: all 0.3s;" 
+                     onclick="window.location.href='restaurants.html?id=${r.id}'">
+                    <div class="place-image" style="
+                        height: 200px; 
+                        background: ${gradient}; 
+                        background-size: cover; 
+                        background-position: center; 
+                        border-radius: 15px 15px 0 0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 14px;
+                        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+                    ">
+                        ${!r.image_url ? r.cuisine_type || 'Restaurant' : ''}
+                    </div>
+                    <div class="place-info" style="
+                        padding: 20px;
+                        background: rgba(255,255,255,0.08);
+                        border-radius: 0 0 15px 15px;
+                    ">
+                        <div class="place-name" style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">
+                            ${r.name}
+                        </div>
+                        <div class="place-distance" style="font-size: 13px; color: #00ff88; margin-bottom: 8px;">
+                            <i class="fas fa-map-marker-alt"></i> ${r.distance.toFixed(1)} km from you
+                            ${r.is_partner ? '<span style="color: #9c27b0; margin-left: 8px;"><i class="fas fa-crown"></i> Partner</span>' : ''}
+                        </div>
+                        <div class="place-contact" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">
+                            <i class="fas fa-phone"></i> ${r.phone || 'Not available'}
+                        </div>
+                        ${r.rating ? `
+                            <div style="font-size: 12px; color: #ffd700; margin-bottom: 10px;">
+                                <i class="fas fa-star"></i> ${r.rating.toFixed(1)}/5.0
+                            </div>
+                        ` : ''}
+                        <button class="view-details-btn" style="
+                            width: 100%;
+                            padding: 10px;
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid rgba(255,255,255,0.2);
+                            border-radius: 8px;
+                            color: white;
+                            font-size: 13px;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.background='#ff6b35'; this.style.borderColor='#ff6b35';"
+                           onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.2)';">
+                            <i class="fas fa-info-circle"></i> View Details & Menu
+                        </button>
+                    </div>
+                </div>
+            `;
+                }).join('');
+
+            } catch (err) {
+                console.error('Similar restaurants error:', err);
+                elements.similarGrid.innerHTML = '<p style="color:red;text-align:center;">Could not load nearby restaurants</p>';
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        console.log('Restaurants page loaded - clean version with like system');
+
+        // analytics-tracker.js
+        // Add this script to all public pages (restaurants, hotels, attractions)
+
+        (function () {
+            const API_BASE = 'http://localhost:8000';
+
+            // Generate or get session ID
+            function getSessionId() {
+                let sessionId = sessionStorage.getItem('analytics_session');
+                if (!sessionId) {
+                    sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    sessionStorage.setItem('analytics_session', sessionId);
+                }
+                return sessionId;
+            }
+
+            // Track page view
+            function trackPageView(pageType, pageId, partnerId) {
+                const sessionId = getSessionId();
+                const startTime = Date.now();
+
+                // Track when user leaves or switches tab
+                let isTracked = false;
+
+                function sendTracking() {
+                    if (isTracked) return;
+                    isTracked = true;
+
+                    const timeSpent = Math.floor((Date.now() - startTime) / 1000); // seconds
+
+                    const data = {
+                        page_type: pageType,
+                        page_id: pageId,
+                        partner_id: partnerId,
+                        time_spent: timeSpent,
+                        session_id: sessionId
+                    };
+
+                    // Use sendBeacon for reliable tracking even when user leaves
+                    if (navigator.sendBeacon) {
+                        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                        navigator.sendBeacon(`${API_BASE}/api/analytics/track`, blob);
+                    } else {
+                        // Fallback to fetch
+                        fetch(`${API_BASE}/api/analytics/track`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data),
+                            keepalive: true
+                        }).catch(console.error);
+                    }
+                }
+
+                // Track on page unload
+                window.addEventListener('beforeunload', sendTracking);
+
+                // Track on visibility change (tab switch)
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        sendTracking();
+                    }
+                });
+
+                // Also send tracking every 30 seconds for long sessions
+                setInterval(() => {
+                    if (!document.hidden) {
+                        isTracked = false; // Reset to allow next update
+                        sendTracking();
+                    }
+                }, 30000);
+            }
+
+            // Auto-detect page type and ID from URL
+            function autoTrack() {
+                const params = new URLSearchParams(window.location.search);
+                const pageId = params.get('id');
+
+                if (!pageId) return; // No ID in URL, skip tracking
+
+                // Detect page type from URL
+                let pageType = null;
+                let partnerId = null;
+
+                if (window.location.pathname.includes('restaurant')) {
+                    pageType = 'restaurant';
+                    partnerId = pageId; // For restaurants, page_id = partner_id
+                } else if (window.location.pathname.includes('hotel')) {
+                    pageType = 'hotel';
+                    partnerId = pageId; // For hotels, page_id = partner_id
+                } else if (window.location.pathname.includes('attraction')) {
+                    pageType = 'attraction';
+                    partnerId = pageId; // For attractions, page_id = partner_id
+                }
+
+                if (pageType && pageId) {
+                    trackPageView(pageType, parseInt(pageId), parseInt(partnerId));
+                }
+            }
+
+            // Initialize tracking when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', autoTrack);
+            } else {
+                autoTrack();
+            }
+
+            // Expose tracking function globally for manual tracking
+            window.trackAnalytics = trackPageView;
+        })();
+    </script>
+</body>
+
+</html>
