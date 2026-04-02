@@ -649,7 +649,7 @@
                                     <i class="fas fa-upload"></i> Upload Image
                                 </button>
                                 <span style="color: #718096;">OR</span>
-                                <input type="url" id="imageUrl" placeholder="Paste image URL"
+                                <input type="text" id="imageUrl" placeholder="Paste image URL"
                                     style="flex: 1; min-width: 200px;"
                                     onchange="previewImage(this.value, 'restaurantImagePreview')">
                             </div>
@@ -712,7 +712,7 @@
                                     onclick="document.getElementById('menuItemImageFile').click()">
                                     <i class="fas fa-upload"></i> Upload from Gallery
                                 </button>
-                                <input type="url" id="itemImage" placeholder="Or paste image URL"
+                                <input type="text" id="itemImage" placeholder="Or paste image URL"
                                     onchange="previewImage(this.value, 'menuImagePreview')">
                             </div>
                             <img id="menuImagePreview" class="image-preview" alt="Preview">

@@ -1,6 +1,3 @@
-# routers/partner_hotel_routes.py
-# UPDATED VERSION - Adds status to rooms and hotel updates
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -12,6 +9,44 @@ from models.hotel import Hotel, HotelRoom
 router = APIRouter(prefix="/hotels", tags=["partner-hotels"])
 
 # ==================== SCHEMAS ====================
+
+class HotelInfoUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    opening_hours: Optional[str] = None
+    image_url: Optional[str] = None
+    type: Optional[str] = None
+    offer: Optional[str] = None
+
+@router.put("/{hotel_id}/info")
+async def update_hotel_info(
+    hotel_id: int,
+    data: HotelInfoUpdate,
+    db: Session = Depends(get_db)
+):
+    """Update hotel info - sets to pending for approval"""
+    hotel = db.query(Hotel).filter(Hotel.id == hotel_id).first()
+    if not hotel:
+        raise HTTPException(status_code=404, detail="Hotel not found")
+
+    for key, value in data.dict(exclude_unset=True).items():
+        if value is not None:
+            setattr(hotel, key, value)
+
+    hotel.status = "pending"
+    db.commit()
+    db.refresh(hotel)
+
+    return {
+        "success": True,
+        "message": "Hotel updated. Waiting for admin approval.",
+        "status": "pending"
+    }
 
 class HotelRoomCreate(BaseModel):
     hotel_id: int

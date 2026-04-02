@@ -29,7 +29,7 @@ async def verify_admin_key(key: str = Security(api_key_header)):
 
 # ==================== IMAGE UPLOAD ====================
 
-@router.post("/upload-image" , dependencies=[Depends(verify_admin_key)])
+@router.post("/upload-image")
 async def upload_image(file: UploadFile = File(...)):
     """Upload an image and return the URL"""
     try:

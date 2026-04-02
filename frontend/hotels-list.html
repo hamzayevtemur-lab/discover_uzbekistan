@@ -340,6 +340,7 @@
 
     <script>
         const API_BASE_URL = 'http://127.0.0.1:8000';
+
         let allHotels = [];
         let userPosition = null;
 
@@ -412,7 +413,7 @@
             ];
 
             grid.innerHTML = hotels.map((h, index) => `
-                <div class="hotel-card" onclick="window.location.href='hotel.html?id=${h.id}'">
+                <div class="hotel-card" onclick="window.location.href='/hotels.html?id=${h.id}'">
                     ${h.offer ? `<div class="offer-badge"><i class="fas fa-tag"></i> ${h.offer}</div>` : ''}
                     <div class="hotel-image" style="background: ${h.image_url ? `url(${API_BASE_URL}${h.image_url})` : gradients[index % gradients.length]}; background-size: cover;">
                         ${!h.image_url ? (h.type || 'Hotel') : ''}
@@ -428,7 +429,7 @@
                         <div class="meta-item" style="font-size: 13px; opacity: 0.7;">
                             <i class="fas fa-phone"></i> ${h.phone || 'Not available'}
                         </div>
-                        <button class="view-btn" onclick="event.stopPropagation(); window.location.href='hotel.html?id=${h.id}'">
+                        <button class="view-btn" onclick="event.stopPropagation(); window.location.href='/hotels.html?id=${h.id}'">
                             <i class="fas fa-info-circle"></i> View Details & Rooms
                         </button>
                     </div>
