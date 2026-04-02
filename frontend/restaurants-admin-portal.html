@@ -1,1062 +1,1185 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Partner Portal - Discover Uzbekistan</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            color: #2d3748;
-        }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f7fa;
+        color: #2d3748;
+      }
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
 
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+      .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
 
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
+      .logout-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
 
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
+      .container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+      }
 
-        .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
+      .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+      }
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+      .stat-card.clickable {
+        cursor: pointer;
+      }
+      .stat-label {
+        color: #718096;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+      }
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+      }
 
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
+      .tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e2e8f0;
+        overflow-x: auto;
+      }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
+      .tab {
+        padding: 1rem 2rem;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #718096;
+        transition: all 0.3s;
+        white-space: nowrap;
+      }
+      .tab.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+      }
+      .tab:hover {
+        color: #667eea;
+      }
 
-        .stat-card.clickable {
-            cursor: pointer;
-        }
+      .content-section {
+        display: none;
+      }
+      .content-section.active {
+        display: block;
+      }
 
-        .stat-label {
-            color: #718096;
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-        }
+      .card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
 
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #667eea;
-        }
+      .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #2d3748;
+      }
 
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #e2e8f0;
-            overflow-x: auto;
-        }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .form-group.full-width {
+        grid-column: 1 / -1;
+      }
 
-        .tab {
-            padding: 1rem 2rem;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #718096;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
+      label {
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #4a5568;
+      }
+      .required {
+        color: #e53e3e;
+      }
 
-        .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
+      input,
+      textarea,
+      select {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        font-family: inherit;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
 
-        .tab:hover {
-            color: #667eea;
-        }
+      .btn {
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 1rem;
+        font-family: inherit;
+      }
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+      .btn-secondary {
+        background: #e2e8f0;
+        color: #2d3748;
+      }
+      .btn-secondary:hover:not(:disabled) {
+        background: #cbd5e0;
+      }
+      .btn-danger {
+        background: #fc8181;
+        color: white;
+      }
+      .btn-danger:hover:not(:disabled) {
+        background: #f56565;
+      }
+      .btn-update {
+        background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+        color: white;
+      }
 
-        .content-section {
-            display: none;
-        }
+      #map {
+        height: 400px;
+        border-radius: 8px;
+        margin-top: 1rem;
+      }
 
-        .content-section.active {
-            display: block;
-        }
+      /* Menu Tabs */
+      .menu-tabs {
+        margin-bottom: 40px;
+        overflow-x: auto;
+      }
+      .tabs-container {
+        display: flex;
+        gap: 10px;
+        padding-bottom: 10px;
+      }
+      .tab-btn {
+        padding: 15px 25px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+        transition: all 0.3s;
+        min-width: 120px;
+        justify-content: center;
+        font-family: inherit;
+      }
+      .tab-btn.active {
+        background: rgba(255, 107, 53, 0.2);
+        border-color: #ff6b35;
+        color: #ff6b35;
+      }
+      .tab-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
 
-        .card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
+      /* Menu Items */
+      .menu-items-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        margin-top: 20px;
+      }
 
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: #2d3748;
-        }
+      .menu-item-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .menu-item-card:hover {
+        transform: translateY(-5px);
+        border-color: #ff6b35;
+        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.2);
+      }
 
+      .menu-item-card.pending {
+        border-color: #f6ad55;
+        background: #fffbeb;
+      }
+      .menu-item-card.rejected {
+        border-color: #fc8181;
+        background: #fff5f5;
+      }
+
+      .menu-item-image {
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+      }
+      .menu-item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+      }
+      .menu-item-card:hover .menu-item-image img {
+        transform: scale(1.08);
+      }
+
+      .menu-item-content {
+        padding: 20px;
+      }
+      .menu-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+      }
+      .menu-item-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2d3748;
+      }
+      .menu-item-price {
+        font-size: 1.1rem;
+        font-weight: 600;
+        background: #ff6b35;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 8px;
+      }
+
+      .menu-item-category {
+        display: inline-block;
+        background: #e2e8f0;
+        color: #4a5568;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .pending-badge {
+        display: inline-block;
+        background: #fef3c7;
+        color: #d97706;
+        border: 1px solid #fcd34d;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .rejected-badge {
+        display: inline-block;
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .rejection-reason {
+        background: #fee2e2;
+        border-left: 3px solid #fc8181;
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        color: #742a2a;
+        margin-bottom: 10px;
+      }
+
+      .menu-item-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 15px;
+      }
+
+      .icon-btn {
+        flex: 1;
+        padding: 12px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        color: #667eea;
+        font-size: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .icon-btn:hover {
+        transform: scale(1.05);
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+      }
+      .icon-btn.delete-btn {
+        color: #fc8181;
+      }
+      .icon-btn.delete-btn:hover {
+        border-color: #fc8181;
+        box-shadow: 0 2px 8px rgba(252, 129, 129, 0.2);
+      }
+
+      .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        animation: slideIn 0.3s ease;
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .alert-success {
+        background: #c6f6d5;
+        color: #22543d;
+        border-left: 4px solid #38a169;
+      }
+      .alert-error {
+        background: #fed7d7;
+        color: #742a2a;
+        border-left: 4px solid #e53e3e;
+      }
+      .alert-info {
+        background: #bee3f8;
+        color: #2c5282;
+        border-left: 4px solid #3182ce;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #718096;
+      }
+      .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .image-preview {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        display: none;
+      }
+      .image-preview.show {
+        display: block;
+      }
+
+      .review-card {
+        background: #f7fafc;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+      }
+      .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+      .review-rating {
+        color: #f6ad55;
+        font-weight: 600;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #718096;
+      }
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+      }
+
+      /* Status indicator for restaurant */
+      .status-bar {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      .status-bar.pending {
+        background: #fef3c7;
+        color: #d97706;
+        border-left: 4px solid #f6ad55;
+      }
+      .status-bar.approved {
+        background: #c6f6d5;
+        color: #22543d;
+        border-left: 4px solid #38a169;
+      }
+      .status-bar.rejected {
+        background: #fed7d7;
+        color: #742a2a;
+        border-left: 4px solid #e53e3e;
+      }
+
+      @media (max-width: 768px) {
         .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
+          grid-template-columns: 1fr;
         }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+        .dashboard-grid {
+          grid-template-columns: repeat(2, 1fr);
         }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: #4a5568;
-        }
-
-        .required {
-            color: #e53e3e;
-        }
-
-        input,
-        textarea,
-        select {
-            padding: 0.75rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .btn {
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1rem;
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #2d3748;
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: #cbd5e0;
-        }
-
-        .btn-danger {
-            background: #fc8181;
-            color: white;
-        }
-
-        .btn-danger:hover:not(:disabled) {
-            background: #f56565;
-        }
-
-        .btn-update {
-            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
-        }
-
-        #map {
-            height: 400px;
-            border-radius: 8px;
-            margin-top: 1rem;
-        }
-
-        /* Menu Tabs */
-        .menu-tabs {
-            margin-bottom: 40px;
-            overflow-x: auto;
-        }
-
-        .tabs-container {
-            display: flex;
-            gap: 10px;
-            padding-bottom: 10px;
-        }
-
-        .tab-btn {
-            padding: 15px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            white-space: nowrap;
-            transition: all 0.3s;
-            min-width: 120px;
-            justify-content: center;
-        }
-
-        .tab-btn.active {
-            background: rgba(255, 107, 53, 0.2);
-            border-color: #ff6b35;
-            color: #ff6b35;
-        }
-
-        .tab-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .tab-btn i {
-            font-size: 18px;
-        }
-
-        /* Menu Items */
         .menu-items-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 24px;
-            margin-top: 20px;
+          grid-template-columns: 1fr;
         }
-
-        .menu-item-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .header-content {
+          flex-direction: column;
+          gap: 1rem;
         }
-
-        .menu-item-card:hover {
-            transform: translateY(-5px);
-            border-color: #ff6b35;
-            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.2);
-        }
-
-        .menu-item-image {
-            width: 100%;
-            height: 200px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .menu-item-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .menu-item-image::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.5));
-            pointer-events: none;
-        }
-
-        .menu-item-card:hover .menu-item-image img {
-            transform: scale(1.08);
-        }
-
-        .menu-item-content {
-            padding: 20px;
-        }
-
-        .menu-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .menu-item-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #2d3748;
-        }
-
-        .menu-item-price {
-            font-size: 1.1rem;
-            font-weight: 600;
-            background: #ff6b35;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 8px;
-        }
-
-        .menu-item-category {
-            display: inline-block;
-            background: #e2e8f0;
-            color: #4a5568;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .menu-item-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 15px;
-        }
-
-        .icon-btn {
-            flex: 1;
-            padding: 12px;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            color: #667eea;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .icon-btn:hover {
-            transform: scale(1.05);
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-        }
-
-        .icon-btn.delete-btn {
-            color: #fc8181;
-        }
-
-        .icon-btn.delete-btn:hover {
-            border-color: #fc8181;
-            box-shadow: 0 2px 8px rgba(252, 129, 129, 0.2);
-        }
-
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .alert-success {
-            background: #c6f6d5;
-            color: #22543d;
-            border-left: 4px solid #38a169;
-        }
-
-        .alert-error {
-            background: #fed7d7;
-            color: #742a2a;
-            border-left: 4px solid #e53e3e;
-        }
-
-        .alert-info {
-            background: #bee3f8;
-            color: #2c5282;
-            border-left: 4px solid #3182ce;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #718096;
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .image-preview {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 8px;
-            margin-top: 0.5rem;
-            display: none;
-        }
-
-        .image-preview.show {
-            display: block;
-        }
-
-        .review-card {
-            background: #f7fafc;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            border-left: 4px solid #667eea;
-        }
-
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .review-rating {
-            color: #f6ad55;
-            font-weight: 600;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #718096;
-        }
-
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
-        }
-
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .dashboard-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .menu-items-list {
-                grid-template-columns: 1fr;
-            }
-
-            .header-content {
-                flex-direction: column;
-                gap: 1rem;
-            }
-        }
+      }
     </style>
-</head>
-
-<body>
+  </head>
+  <body>
     <div class="header">
-        <div class="header-content">
-            <div class="logo" id="logo">Partner Portal</div>
-            <div class="user-info">
-                <span id="partnerName">Loading...</span>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
+      <div class="header-content">
+        <div class="logo" id="logo">🍽️ Partner Portal</div>
+        <div class="user-info">
+          <span id="partnerName">Loading...</span>
+          <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
         </div>
+      </div>
     </div>
 
     <div class="container">
-        <!-- Dashboard Stats -->
-        <div class="dashboard-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Restaurants</div>
-                <div class="stat-value" id="totalRestaurants">0</div>
-            </div>
-            <div class="stat-card clickable" onclick="scrollToMenu()">
-                <div class="stat-label">Total Menu Items</div>
-                <div class="stat-value" id="totalMenuItems">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Average Rating</div>
-                <div class="stat-value" id="avgRating">0.0</div>
-            </div>
-            <div class="stat-card clickable" onclick="switchTab('reviews')">
-                <div class="stat-label">Total Reviews</div>
-                <div class="stat-value" id="totalReviews">0</div>
-            </div>
+      <!-- Stats -->
+      <div class="dashboard-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Restaurants</div>
+          <div class="stat-value" id="totalRestaurants">0</div>
         </div>
-
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('restaurant')">
-                <i class="fas fa-utensils"></i> Restaurant Info
-            </button>
-            <button class="tab" onclick="switchTab('menu')">
-                <i class="fas fa-list"></i> Menu Management
-            </button>
-            <button class="tab" onclick="switchTab('location')">
-                <i class="fas fa-map-marker-alt"></i> Location & Hours
-            </button>
-            <button class="tab" onclick="switchTab('reviews')">
-                <i class="fas fa-star"></i> Reviews
-            </button>
-            <button class="tab" onclick="switchTab('analytics')">
-                📊 Analytics
-            </button>
+        <div class="stat-card clickable" onclick="scrollToMenu()">
+          <div class="stat-label">Menu Items</div>
+          <div class="stat-value" id="totalMenuItems">0</div>
         </div>
-
-        <!-- Restaurant Info Section -->
-        <div id="restaurant-section" class="content-section active">
-            <div class="card">
-                <h2 class="card-title">Restaurant Information</h2>
-                <div id="restaurantAlert"></div>
-
-                <form id="restaurantForm">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Restaurant Name <span class="required">*</span></label>
-                            <input type="text" id="restaurantName" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Cuisine Type <span class="required">*</span></label>
-                            <input type="text" id="cuisineType" placeholder="e.g., Uzbek Fine Dining" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Phone Number <span class="required">*</span></label>
-                            <input type="tel" id="phone" placeholder="+998 90 123 4567" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Website</label>
-                            <input type="url" id="website" placeholder="https://yourrestaurant.com">
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label>Description <span class="required">*</span></label>
-                            <textarea id="description" placeholder="Describe your restaurant..." required></textarea>
-                        </div>
-
-
-                        <div class="form-group full-width">
-                            <label>Restaurant Image</label>
-                            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                                <input type="file" id="restaurantImageFile" accept="image/*" style="display: none;"
-                                    onchange="handleImageUpload(this, 'imageUrl', 'restaurantImagePreview')">
-                                <button type="button" class="btn btn-secondary"
-                                    onclick="document.getElementById('restaurantImageFile').click()">
-                                    <i class="fas fa-upload"></i> Upload Image
-                                </button>
-                                <span style="color: #718096;">OR</span>
-                                <input type="text" id="imageUrl" placeholder="Paste image URL"
-                                    style="flex: 1; min-width: 200px;"
-                                    onchange="previewImage(this.value, 'restaurantImagePreview')">
-                            </div>
-                            <img id="restaurantImagePreview" class="image-preview" alt="Preview">
-                            <small style="color: #718096;">Upload an image from your gallery or paste a URL</small>
-                        </div>
-
-                    </div>
-
-                    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Restaurant Info
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="loadRestaurantData()">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <div class="stat-card">
+          <div class="stat-label">Average Rating</div>
+          <div class="stat-value" id="avgRating">0.0</div>
         </div>
-
-        <!-- Menu Management Section -->
-        <div id="menu-section" class="content-section">
-            <div class="card">
-                <h2 class="card-title">Menu Management</h2>
-                <div id="menuAlert"></div>
-
-                <!-- Add Menu Item Form -->
-                <form id="menuForm">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Item Name <span class="required">*</span></label>
-                            <input type="text" id="itemName" placeholder="Plov" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Price ($) <span class="required">*</span></label>
-                            <input type="number" id="itemPrice" step="0.01" min="0" placeholder="15.00" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Category <span class="required">*</span></label>
-                            <select id="itemCategory" required>
-                                <option value="">Select category</option>
-                                <option value="solo">Solo Meals</option>
-                                <option value="fortwo">Two Person Meals</option>
-                                <option value="family">Family Meals</option>
-                                <option value="drinks">Drinks</option>
-                                <option value="desserts">Desserts</option>
-                            </select>
-                        </div>
-
-
-                        <div class="form-group">
-                            <label>Item Image</label>
-                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                <input type="file" id="menuItemImageFile" accept="image/*" style="display: none;"
-                                    onchange="handleImageUpload(this, 'itemImage', 'menuImagePreview')">
-                                <button type="button" class="btn btn-secondary"
-                                    onclick="document.getElementById('menuItemImageFile').click()">
-                                    <i class="fas fa-upload"></i> Upload from Gallery
-                                </button>
-                                <input type="text" id="itemImage" placeholder="Or paste image URL"
-                                    onchange="previewImage(this.value, 'menuImagePreview')">
-                            </div>
-                            <img id="menuImagePreview" class="image-preview" alt="Preview">
-                            <small style="color: #718096;">Upload or paste URL</small>
-                        </div>
-
-                    </div>
-
-                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
-                        <button type="submit" class="btn btn-primary" id="menuSubmitBtn">
-                            <i class="fas fa-plus"></i> Add Menu Item
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="cancelMenuEdit()" id="cancelEditBtn"
-                            style="display: none;">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Menu Categories Tabs -->
-                <nav class="menu-tabs" id="menuTabs">
-                    <div class="tabs-container">
-                        <button class="tab-btn active" data-category="solo">
-                            <i class="fas fa-user"></i>
-                            <span>Solo</span>
-                        </button>
-                        <button class="tab-btn" data-category="fortwo">
-                            <i class="fas fa-user-friends"></i>
-                            <span>For Two</span>
-                        </button>
-                        <button class="tab-btn" data-category="family">
-                            <i class="fas fa-users"></i>
-                            <span>Family</span>
-                        </button>
-                        <button class="tab-btn" data-category="drinks">
-                            <i class="fas fa-glass-cheers"></i>
-                            <span>Drinks</span>
-                        </button>
-                        <button class="tab-btn" data-category="desserts">
-                            <i class="fas fa-ice-cream"></i>
-                            <span>Desserts</span>
-                        </button>
-                    </div>
-                </nav>
-
-                <!-- Menu Items List -->
-                <div style="margin-top: 2rem;">
-                    <h3 style="margin-bottom: 1rem;">Your Menu Items</h3>
-                    <div id="menuItemsList" class="menu-items-list">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            Loading menu items...
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="stat-card clickable" onclick="switchTabByName('reviews')">
+          <div class="stat-label">Total Reviews</div>
+          <div class="stat-value" id="totalReviews">0</div>
         </div>
+      </div>
 
-        <!-- Location & Hours Section -->
-        <div id="location-section" class="content-section">
-            <div class="card">
-                <h2 class="card-title">Location & Opening Hours</h2>
-                <div id="locationAlert"></div>
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-tab="restaurant">
+          <i class="fas fa-utensils"></i> Restaurant Info
+        </button>
+        <button class="tab" data-tab="menu">
+          <i class="fas fa-list"></i> Menu Management
+        </button>
+        <button class="tab" data-tab="location">
+          <i class="fas fa-map-marker-alt"></i> Location & Hours
+        </button>
+        <button class="tab" data-tab="reviews">
+          <i class="fas fa-star"></i> Reviews
+        </button>
+        <button class="tab" data-tab="analytics">📊 Analytics</button>
+      </div>
 
-                <form id="locationForm">
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label>Address <span class="required">*</span></label>
-                            <input type="text" id="address" placeholder="Street, City" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Latitude <span class="required">*</span></label>
-                            <input type="number" id="latitude" step="0.000001" placeholder="41.311081" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Longitude <span class="required">*</span></label>
-                            <input type="number" id="longitude" step="0.000001" placeholder="69.240562" required>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label>Opening Hours <span class="required">*</span></label>
-                            <input type="text" id="openingHours" placeholder="Mon-Sun 10:00-22:00" required>
-                        </div>
-                    </div>
-
-                    <!-- Map -->
-                    <div class="form-group full-width">
-                        <label>Click on map to set location</label>
-                        <div id="map"></div>
-                        <small style="color: #718096; margin-top: 0.5rem; display: block;">
-                            Click anywhere on the map to set your restaurant location
-                        </small>
-                    </div>
-
-                    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Location & Hours
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Reviews Section -->
-        <div id="reviews-section" class="content-section">
-            <div class="card">
-                <h2 class="card-title">Customer Reviews</h2>
-                <div id="reviewsContent">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        Loading reviews...
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <div id="analytics-section" class="content-section">
-            <div class="card">
-                <h2 class="card-title">📊 Analytics Dashboard</h2>
-
-                <!-- Info Message -->
+      <!-- RESTAURANT INFO -->
+      <div id="restaurant-section" class="content-section active">
+        <div class="card">
+          <h2 class="card-title">Restaurant Information</h2>
+          <div id="restaurantStatusBar"></div>
+          <div id="restaurantAlert"></div>
+          <form id="restaurantForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Restaurant Name <span class="required">*</span></label>
+                <input type="text" id="restaurantName" required />
+              </div>
+              <div class="form-group">
+                <label>Cuisine Type <span class="required">*</span></label>
+                <input
+                  type="text"
+                  id="cuisineType"
+                  placeholder="e.g., Uzbek Fine Dining"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label>Phone Number <span class="required">*</span></label>
+                <input
+                  type="tel"
+                  id="phone"
+                  placeholder="+998 90 123 4567"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label>Website</label>
+                <input
+                  type="url"
+                  id="website"
+                  placeholder="https://yourrestaurant.com"
+                />
+              </div>
+              <div class="form-group full-width">
+                <label>Description <span class="required">*</span></label>
+                <textarea
+                  id="description"
+                  placeholder="Describe your restaurant..."
+                  required
+                ></textarea>
+              </div>
+              <div class="form-group full-width">
+                <label>Restaurant Image</label>
                 <div
-                    style="background: #dbeafe; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #3b82f6;">
-                    <h3 style="color: #1e40af; margin-bottom: 0.5rem;">📈 Real-Time Analytics Powered by Google</h3>
-                    <p style="color: #1e40af; margin: 0;">
-                        Your analytics dashboard is ready! Stats will appear here automatically after your page receives
-                        visitors.
-                    </p>
+                  style="
+                    display: flex;
+                    gap: 1rem;
+                    align-items: center;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <input
+                    type="file"
+                    id="restaurantImageFile"
+                    accept="image/*"
+                    style="display: none"
+                    onchange="
+                      handleImageUpload(
+                        this,
+                        'imageUrl',
+                        'restaurantImagePreview',
+                      )
+                    "
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="
+                      document.getElementById('restaurantImageFile').click()
+                    "
+                  >
+                    <i class="fas fa-upload"></i> Upload Image
+                  </button>
+                  <span style="color: #718096">OR</span>
+                  <input
+                    type="text"
+                    id="imageUrl"
+                    placeholder="Paste image URL"
+                    style="flex: 1; min-width: 200px"
+                    onchange="
+                      previewImage(this.value, 'restaurantImagePreview')
+                    "
+                  />
                 </div>
-
-                <!-- Embedded Google Analytics Dashboard -->
-                <iframe
-                    src="https://lookerstudio.google.com/embed/reporting/41a6d4c1-aed0-4ce8-a814-a1716b0acfee/page/kIV1C"
-                    width="100%" height="1000" frameborder="0"
-                    style="border:0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                </iframe>
+                <img
+                  id="restaurantImagePreview"
+                  class="image-preview"
+                  alt="Preview"
+                />
+              </div>
             </div>
+            <div style="margin-top: 2rem; display: flex; gap: 1rem">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Restaurant Info
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="loadRestaurantData()"
+              >
+                <i class="fas fa-undo"></i> Reset
+              </button>
+            </div>
+          </form>
         </div>
+      </div>
 
+      <!-- MENU MANAGEMENT -->
+      <div id="menu-section" class="content-section">
+        <div class="card">
+          <h2 class="card-title">Menu Management</h2>
+          <div id="menuAlert"></div>
+          <form id="menuForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Item Name <span class="required">*</span></label>
+                <input type="text" id="itemName" placeholder="Plov" required />
+              </div>
+              <div class="form-group">
+                <label>Price ($) <span class="required">*</span></label>
+                <input
+                  type="number"
+                  id="itemPrice"
+                  step="0.01"
+                  min="0"
+                  placeholder="15.00"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label>Category <span class="required">*</span></label>
+                <select id="itemCategory" required>
+                  <option value="">Select category</option>
+                  <option value="solo">Solo Meals</option>
+                  <option value="fortwo">Two Person Meals</option>
+                  <option value="family">Family Meals</option>
+                  <option value="drinks">Drinks</option>
+                  <option value="desserts">Desserts</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Item Image</label>
+                <input
+                  type="file"
+                  id="menuItemImageFile"
+                  accept="image/*"
+                  style="display: none"
+                  onchange="
+                    handleImageUpload(this, 'itemImage', 'menuImagePreview')
+                  "
+                />
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="document.getElementById('menuItemImageFile').click()"
+                >
+                  <i class="fas fa-upload"></i> Upload from Gallery
+                </button>
+                <input
+                  type="text"
+                  id="itemImage"
+                  placeholder="Or paste image URL"
+                  style="margin-top: 0.5rem"
+                  onchange="previewImage(this.value, 'menuImagePreview')"
+                />
+                <img
+                  id="menuImagePreview"
+                  class="image-preview"
+                  alt="Preview"
+                />
+              </div>
+            </div>
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem">
+              <button type="submit" class="btn btn-primary" id="menuSubmitBtn">
+                <i class="fas fa-plus"></i> Add Menu Item
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="cancelMenuEdit()"
+                id="cancelEditBtn"
+                style="display: none"
+              >
+                <i class="fas fa-times"></i> Cancel
+              </button>
+            </div>
+          </form>
 
+          <!-- Menu Category Tabs -->
+          <nav class="menu-tabs" id="menuTabs" style="margin-top: 2rem">
+            <div class="tabs-container">
+              <button class="tab-btn active" data-category="solo">
+                <i class="fas fa-user"></i> Solo
+              </button>
+              <button class="tab-btn" data-category="fortwo">
+                <i class="fas fa-user-friends"></i> For Two
+              </button>
+              <button class="tab-btn" data-category="family">
+                <i class="fas fa-users"></i> Family
+              </button>
+              <button class="tab-btn" data-category="drinks">
+                <i class="fas fa-glass-cheers"></i> Drinks
+              </button>
+              <button class="tab-btn" data-category="desserts">
+                <i class="fas fa-ice-cream"></i> Desserts
+              </button>
+            </div>
+          </nav>
+
+          <div style="margin-top: 2rem">
+            <h3 style="margin-bottom: 1rem">Your Menu Items</h3>
+            <div id="menuItemsList" class="menu-items-list">
+              <div class="loading">
+                <div class="spinner"></div>
+                Loading menu items...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOCATION -->
+      <div id="location-section" class="content-section">
+        <div class="card">
+          <h2 class="card-title">Location & Opening Hours</h2>
+          <div id="locationAlert"></div>
+          <form id="locationForm">
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label>Address <span class="required">*</span></label>
+                <input
+                  type="text"
+                  id="address"
+                  placeholder="Street, City"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label>Latitude</label>
+                <input
+                  type="number"
+                  id="latitude"
+                  step="0.000001"
+                  placeholder="41.311081"
+                />
+              </div>
+              <div class="form-group">
+                <label>Longitude</label>
+                <input
+                  type="number"
+                  id="longitude"
+                  step="0.000001"
+                  placeholder="69.240562"
+                />
+              </div>
+              <div class="form-group full-width">
+                <label>Opening Hours <span class="required">*</span></label>
+                <input
+                  type="text"
+                  id="openingHours"
+                  placeholder="Mon-Sun 10:00-22:00"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-group full-width">
+              <label>Click on map to set location</label>
+              <div id="map"></div>
+              <small style="color: #718096; margin-top: 0.5rem; display: block"
+                >Click anywhere on the map to set your restaurant
+                location</small
+              >
+            </div>
+            <div style="margin-top: 2rem">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Location & Hours
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div id="reviews-section" class="content-section">
+        <div class="card">
+          <h2 class="card-title">Customer Reviews</h2>
+          <div id="reviewsContent">
+            <div class="loading">
+              <div class="spinner"></div>
+              Loading reviews...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div id="analytics-section" class="content-section">
+        <div class="card">
+          <h2 class="card-title">📊 Analytics Dashboard</h2>
+          <div
+            style="
+              background: #dbeafe;
+              padding: 1.5rem;
+              border-radius: 12px;
+              margin-bottom: 2rem;
+              border-left: 4px solid #3b82f6;
+            "
+          >
+            <h3 style="color: #1e40af; margin-bottom: 0.5rem">
+              📈 Real-Time Analytics Powered by Google
+            </h3>
+            <p style="color: #1e40af; margin: 0">
+              Stats will appear here automatically after your page receives
+              visitors.
+            </p>
+          </div>
+          <iframe
+            src="https://lookerstudio.google.com/embed/reporting/41a6d4c1-aed0-4ce8-a814-a1716b0acfee/page/kIV1C"
+            width="100%"
+            height="1000"
+            frameborder="0"
+            style="
+              border: 0;
+              border-radius: 12px;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            "
+          >
+          </iframe>
+        </div>
+      </div>
     </div>
 
-
     <script>
-        const API_URL = 'http://localhost:8000';
-        let currentRestaurantId = null;
-        let map = null;
-        let marker = null;
-        let currentMenuCategory = 'solo';
-        let isEditingMenuItem = false;
-        let editingMenuItemId = null;
+      const API_URL = "http://localhost:8000";
+      let currentRestaurantId = null;
+      let map = null,
+        marker = null;
+      let currentMenuCategory = "solo";
+      let isEditingMenuItem = false;
+      let editingMenuItemId = null;
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            loadPartnerData();
-            initMap();
-            setupEventListeners();
-        });
+      // ── AUTH HELPERS ──
+      function getToken() {
+        return localStorage.getItem("partner_token");
+      }
 
-        function checkAuth() {
-            const token = localStorage.getItem('partner_token');
-            if (!token) {
-                window.location.href = 'partner-login.html';
-                return;
-            }
+      function authHeaders() {
+        return {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        };
+      }
+
+      function authHeadersFormData() {
+        // For FormData uploads — don't set Content-Type, browser sets it with boundary
+        return { Authorization: `Bearer ${getToken()}` };
+      }
+
+      // ── INIT ──
+      document.addEventListener("DOMContentLoaded", () => {
+        checkAuth();
+        initMap();
+        setupEventListeners();
+        loadPartnerData();
+      });
+
+      function checkAuth() {
+        if (!getToken()) {
+          window.location.href = "/partner-login.html";
         }
+      }
 
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('partner_token');
-                localStorage.removeItem('partner_email');
-                window.location.href = 'partner-login.html';
-            }
+      function logout() {
+        if (confirm("Are you sure you want to logout?")) {
+          [
+            "partner_token",
+            "partner_email",
+            "partner_type",
+            "partner_name",
+            "partner_record_id",
+            "hotel_id",
+            "restaurant_id",
+          ].forEach((k) => localStorage.removeItem(k));
+          window.location.href = "/partner-login.html";
         }
+      }
 
-        async function loadPartnerData() {
-            try {
-                const email = localStorage.getItem('partner_email');
-                document.getElementById('partnerName').textContent = email;
+      async function loadPartnerData() {
+        const email = localStorage.getItem("partner_email");
+        document.getElementById("partnerName").textContent = email || "";
+        await loadRestaurantData();
+        await loadStats();
+      }
 
-                await loadRestaurantData();
-                await loadStats();
-            } catch (error) {
-                console.error('Error loading partner data:', error);
-                showAlert('restaurantAlert', 'Failed to load partner data', 'error');
-            }
+      // ── LOAD RESTAURANT ──
+      async function loadRestaurantData() {
+        try {
+          // Get restaurant ID from localStorage (set on login)
+          const restaurantId = localStorage.getItem("restaurant_id");
+          if (!restaurantId) {
+            showAlert(
+              "restaurantAlert",
+              "No restaurant linked to this account. Please contact support.",
+              "error",
+            );
+            return;
+          }
+
+          currentRestaurantId = parseInt(restaurantId);
+
+          // Use the PARTNER endpoint with token — not public endpoint
+          const response = await fetch(
+            `${API_URL}/api/partner/restaurant/${currentRestaurantId}`,
+            {
+              headers: authHeaders(),
+            },
+          );
+
+          if (response.status === 401 || response.status === 403) {
+            window.location.href = "/partner-login.html";
+            return;
+          }
+
+          if (!response.ok) throw new Error("Failed to fetch restaurant");
+
+          const restaurant = await response.json();
+
+          document.getElementById("logo").textContent =
+            restaurant.name || "🍽️ Partner Portal";
+
+          // Fill forms
+          document.getElementById("restaurantName").value =
+            restaurant.name || "";
+          document.getElementById("cuisineType").value =
+            restaurant.cuisine_type || "";
+          document.getElementById("phone").value = restaurant.phone || "";
+          document.getElementById("website").value = restaurant.website || "";
+          document.getElementById("description").value =
+            restaurant.description || "";
+          document.getElementById("imageUrl").value =
+            restaurant.image_url || "";
+          document.getElementById("address").value = restaurant.address || "";
+          document.getElementById("latitude").value = restaurant.latitude || "";
+          document.getElementById("longitude").value =
+            restaurant.longitude || "";
+          document.getElementById("openingHours").value =
+            restaurant.opening_hours || "";
+
+          if (restaurant.image_url)
+            previewImage(restaurant.image_url, "restaurantImagePreview");
+          if (restaurant.latitude && restaurant.longitude)
+            updateMapMarker(restaurant.latitude, restaurant.longitude);
+
+          // Show status bar
+          const statusBar = document.getElementById("restaurantStatusBar");
+          const status = restaurant.status || "approved";
+          if (status === "pending") {
+            statusBar.innerHTML =
+              '<div class="status-bar pending">⏳ Your restaurant is pending admin approval. It is not visible to the public yet.</div>';
+          } else if (status === "rejected") {
+            statusBar.innerHTML =
+              '<div class="status-bar rejected">❌ Your restaurant was rejected. Please update your information and save again.</div>';
+          } else {
+            statusBar.innerHTML = "";
+          }
+
+          await loadMenuItems(currentMenuCategory);
+        } catch (error) {
+          console.error("Error loading restaurant:", error);
+          showAlert(
+            "restaurantAlert",
+            "Failed to load restaurant data",
+            "error",
+          );
         }
+      }
 
-        async function loadRestaurantData() {
-            try {
-                const email = localStorage.getItem('partner_email');
-                const response = await fetch(`${API_URL}/restaurants`);
+      // ── STATS ──
+      async function loadStats() {
+        try {
+          if (!currentRestaurantId) return;
+          const response = await fetch(
+            `${API_URL}/api/partner/restaurant/${currentRestaurantId}/stats`,
+            {
+              headers: authHeaders(),
+            },
+          );
+          if (!response.ok) return;
+          const stats = await response.json();
+          document.getElementById("totalRestaurants").textContent =
+            stats.total_restaurants || 1;
+          document.getElementById("totalMenuItems").textContent =
+            stats.total_menu_items || 0;
+          document.getElementById("avgRating").textContent = (
+            stats.avg_rating || 0
+          ).toFixed(1);
+          document.getElementById("totalReviews").textContent =
+            stats.total_reviews || 0;
+        } catch (error) {
+          console.error("Stats error:", error);
+        }
+      }
 
-                if (!response.ok) throw new Error('Failed to fetch restaurants');
+      // ── MENU ITEMS ──
+      async function loadMenuItems(category) {
+        if (!currentRestaurantId) return;
+        const container = document.getElementById("menuItemsList");
+        container.innerHTML =
+          '<div class="loading"><div class="spinner"></div>Loading...</div>';
 
-                const restaurants = await response.json();
+        try {
+          // Public endpoint for reading menu (approved items shown to customers too)
+          const response = await fetch(
+            `${API_URL}/restaurants/${currentRestaurantId}/menu?category=${category}`,
+          );
+          if (!response.ok) throw new Error("Failed to fetch menu items");
+          const items = await response.json();
 
-                // Find restaurant by partner email or use first restaurant
-                const restaurant = restaurants[0];
+          if (!items.length) {
+            container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-utensils"></i>
+                        <p>No menu items in this category yet.</p>
+                        <p style="font-size:0.9rem;margin-top:0.5rem;">Add your first item above!</p>
+                    </div>`;
+            return;
+          }
 
-                if (restaurant) {
-                    currentRestaurantId = restaurant.id;
+          container.innerHTML = items
+            .map((item) => {
+              const status = item.status || "approved";
+              let statusBadge = "";
+              let cardClass = "";
+              let rejectionNote = "";
 
-                    const logoDiv = document.getElementById('logo');
-                    logoDiv.textContent = restaurant.name || 'Partner Portal';
-
-                    // Fill form fields
-                    document.getElementById('restaurantName').value = restaurant.name || '';
-                    document.getElementById('cuisineType').value = restaurant.cuisine_type || '';
-                    document.getElementById('phone').value = restaurant.phone || '';
-                    document.getElementById('website').value = restaurant.website || '';
-                    document.getElementById('description').value = restaurant.description || '';
-                    document.getElementById('imageUrl').value = restaurant.image_url || '';
-                    document.getElementById('address').value = restaurant.address || '';
-                    document.getElementById('latitude').value = restaurant.latitude || '';
-                    document.getElementById('longitude').value = restaurant.longitude || '';
-                    document.getElementById('openingHours').value = restaurant.opening_hours || '';
-
-                    // Preview image if available
-                    if (restaurant.image_url) {
-                        previewImage(restaurant.image_url, 'restaurantImagePreview');
-                    }
-
-                    // Update map
-                    if (restaurant.latitude && restaurant.longitude) {
-                        updateMapMarker(restaurant.latitude, restaurant.longitude);
-                    }
-
-                    // Load menu items
-                    await loadMenuItems(currentMenuCategory);
+              if (status === "pending") {
+                statusBadge =
+                  '<div class="pending-badge">⏳ Pending Approval</div>';
+                cardClass = "pending";
+              } else if (status === "rejected") {
+                statusBadge = '<div class="rejected-badge">❌ Rejected</div>';
+                cardClass = "rejected";
+                if (item.rejection_reason) {
+                  rejectionNote = `<div class="rejection-reason"><strong>Reason:</strong> ${item.rejection_reason}</div>`;
                 }
-            } catch (error) {
-                console.error('Error loading restaurant:', error);
-                showAlert('restaurantAlert', 'Failed to load restaurant data', 'error');
-            }
-        }
+              }
 
-        async function loadReviews() {
-            const reviewsContent = document.getElementById('reviewsContent');
-            reviewsContent.innerHTML = '<div class="loading"><div class="spinner"></div>Loading reviews...</div>';
-
-            try {
-                if (!currentRestaurantId) {
-                    reviewsContent.innerHTML = '<div class="empty-state"><i class="fas fa-info-circle"></i><p>No restaurant selected</p></div>';
-                    return;
-                }
-
-                const response = await fetch(`${API_URL}/api/partner/restaurant/${currentRestaurantId}/reviews`);
-
-                if (!response.ok) throw new Error('Failed to fetch reviews');
-
-                const reviews = await response.json();
-
-                if (reviews.length === 0) {
-                    reviewsContent.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-star"></i>
-                            <p>No reviews yet. Be patient, they're coming!</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                reviewsContent.innerHTML = reviews.map(review => `
-                    <div class="review-card">
-                        <div class="review-header">
-                            <strong>${review.reviewer_name || 'Anonymous'}</strong>
-                            <span class="review-rating">
-                                ${'⭐'.repeat(review.rating)} (${review.rating}/5)
-                            </span>
-                        </div>
-                        <p style="margin: 0.5rem 0;">${review.comment || 'No comment provided'}</p>
-                        <small style="color: #718096;">
-                            <i class="fas fa-clock"></i> ${new Date(review.created_at).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })}
-                        </small>
-                    </div>
-                `).join('');
-
-            } catch (error) {
-                console.error('Error loading reviews:', error);
-                reviewsContent.innerHTML = '<div class="alert alert-error">Failed to load reviews</div>';
-            }
-        }
-
-        async function loadStats() {
-            try {
-                if (!currentRestaurantId) return;
-
-                const response = await fetch(`${API_URL}/api/partner/restaurant/${currentRestaurantId}/stats`);
-
-                if (!response.ok) throw new Error('Failed to fetch stats');
-
-                const stats = await response.json();
-
-                document.getElementById('totalRestaurants').textContent = stats.total_restaurants || 1;
-                document.getElementById('totalMenuItems').textContent = stats.total_menu_items || 0;
-                document.getElementById('avgRating').textContent = (stats.avg_rating || 0).toFixed(1);
-                document.getElementById('totalReviews').textContent = stats.total_reviews || 0;
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
-        }
-
-        async function loadMenuItems(category) {
-            if (!currentRestaurantId) return;
-
-            const container = document.getElementById('menuItemsList');
-            container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading menu items...</div>';
-
-            try {
-                const response = await fetch(`${API_URL}/restaurants/${currentRestaurantId}/menu?category=${category}`);
-
-                if (!response.ok) throw new Error('Failed to fetch menu items');
-
-                const items = await response.json();
-
-                if (items.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-utensils"></i>
-                            <p>No menu items in this category yet.</p>
-                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Add your first item above!</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = items.map(item => `
-                    <div class="menu-item-card">
+              return `
+                    <div class="menu-item-card ${cardClass}">
                         <div class="menu-item-image">
-                            <img src="${item.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}" 
+                            <img src="${item.image_url || "https://via.placeholder.com/300x200?text=No+Image"}"
                                  alt="${item.item_name}"
                                  onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                         </div>
                         <div class="menu-item-content">
                             <div class="menu-item-category">${item.category}</div>
+                            ${statusBadge}
+                            ${rejectionNote}
                             <div class="menu-item-header">
                                 <div class="menu-item-title">${item.item_name}</div>
                                 <div class="menu-item-price">$${parseFloat(item.price).toFixed(2)}</div>
@@ -1070,372 +1193,508 @@
                                 </button>
                             </div>
                         </div>
+                    </div>`;
+            })
+            .join("");
+        } catch (error) {
+          console.error("Menu error:", error);
+          container.innerHTML =
+            '<div class="alert alert-error">Failed to load menu items</div>';
+        }
+      }
+
+      // ── REVIEWS ──
+      async function loadReviews() {
+        const reviewsContent = document.getElementById("reviewsContent");
+        reviewsContent.innerHTML =
+          '<div class="loading"><div class="spinner"></div>Loading reviews...</div>';
+
+        try {
+          if (!currentRestaurantId) {
+            reviewsContent.innerHTML =
+              '<div class="empty-state"><i class="fas fa-info-circle"></i><p>No restaurant selected</p></div>';
+            return;
+          }
+
+          const response = await fetch(
+            `${API_URL}/api/partner/restaurant/${currentRestaurantId}/reviews`,
+            {
+              headers: authHeaders(),
+            },
+          );
+
+          if (!response.ok) throw new Error("Failed to fetch reviews");
+          const reviews = await response.json();
+
+          if (!reviews.length) {
+            reviewsContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-star"></i>
+                        <p>No reviews yet. Be patient, they're coming!</p>
+                    </div>`;
+            return;
+          }
+
+          reviewsContent.innerHTML = reviews
+            .map(
+              (review) => `
+                <div class="review-card">
+                    <div class="review-header">
+                        <strong>${review.reviewer_name || "Anonymous"}</strong>
+                        <span class="review-rating">${"⭐".repeat(review.rating)} (${review.rating}/5)</span>
                     </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error loading menu:', error);
-                container.innerHTML = '<div class="alert alert-error">Failed to load menu items</div>';
-            }
+                    <p style="margin:0.5rem 0;">${review.comment || "No comment provided"}</p>
+                    <small style="color:#718096;">
+                        <i class="fas fa-clock"></i>
+                        ${new Date(review.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                    </small>
+                </div>`,
+            )
+            .join("");
+        } catch (error) {
+          console.error("Reviews error:", error);
+          reviewsContent.innerHTML =
+            '<div class="alert alert-error">Failed to load reviews</div>';
+        }
+      }
+
+      // ── SAVE RESTAURANT INFO ──
+      async function saveRestaurant() {
+        const submitBtn = document.querySelector(
+          '#restaurantForm button[type="submit"]',
+        );
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
+        const data = {
+          name: document.getElementById("restaurantName").value.trim(),
+          cuisine_type: document.getElementById("cuisineType").value.trim(),
+          phone: document.getElementById("phone").value.trim(),
+          website: document.getElementById("website").value.trim() || null,
+          description: document.getElementById("description").value.trim(),
+          image_url: document.getElementById("imageUrl").value.trim() || null,
+        };
+
+        try {
+          const response = await fetch(
+            `${API_URL}/api/partner/restaurant/${currentRestaurantId}/info`,
+            {
+              method: "PUT",
+              headers: authHeaders(),
+              body: JSON.stringify(data),
+            },
+          );
+
+          if (response.status === 401 || response.status === 403) {
+            showAlert(
+              "restaurantAlert",
+              "Session expired. Please log in again.",
+              "error",
+            );
+            setTimeout(
+              () => (window.location.href = "/partner-login.html"),
+              2000,
+            );
+            return;
+          }
+
+          if (!response.ok)
+            throw new Error((await response.json()).detail || "Update failed");
+
+          showAlert(
+            "restaurantAlert",
+            "✅ Restaurant info saved! Waiting for admin approval.",
+            "success",
+          );
+          document.getElementById("logo").textContent = data.name;
+          await loadStats();
+        } catch (error) {
+          showAlert(
+            "restaurantAlert",
+            "Failed to save: " + error.message,
+            "error",
+          );
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML =
+            '<i class="fas fa-save"></i> Save Restaurant Info';
+        }
+      }
+
+      // ── SAVE MENU ITEM ──
+      async function saveMenuItem() {
+        const submitBtn = document.getElementById("menuSubmitBtn");
+        submitBtn.disabled = true;
+
+        const itemName = document.getElementById("itemName").value.trim();
+        const price = parseFloat(document.getElementById("itemPrice").value);
+        const category = document.getElementById("itemCategory").value.trim();
+        const imageUrl =
+          document.getElementById("itemImage").value.trim() || null;
+
+        if (!itemName || isNaN(price) || price <= 0 || !category) {
+          showAlert(
+            "menuAlert",
+            "Please fill in all required fields correctly",
+            "error",
+          );
+          submitBtn.disabled = false;
+          return;
         }
 
-        function setupEventListeners() {
-            // Restaurant form
-            document.getElementById('restaurantForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await saveRestaurant();
-            });
+        const data = {
+          item_name: itemName,
+          price,
+          category,
+          image_url: imageUrl,
+        };
 
-            // Menu form
-            document.getElementById('menuForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await saveMenuItem();
-            });
+        try {
+          let response;
+          if (isEditingMenuItem) {
+            response = await fetch(
+              `${API_URL}/api/partner/menu/${editingMenuItemId}`,
+              {
+                method: "PUT",
+                headers: authHeaders(),
+                body: JSON.stringify(data),
+              },
+            );
+          } else {
+            response = await fetch(
+              `${API_URL}/api/partner/restaurant/${currentRestaurantId}/menu`,
+              {
+                method: "POST",
+                headers: authHeaders(),
+                body: JSON.stringify(data),
+              },
+            );
+          }
 
-            // Menu category tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentMenuCategory = this.dataset.category;
-                    loadMenuItems(currentMenuCategory);
-                });
-            });
+          if (response.status === 401 || response.status === 403) {
+            showAlert(
+              "menuAlert",
+              "Session expired. Please log in again.",
+              "error",
+            );
+            return;
+          }
 
-            // Location form
-            document.getElementById('locationForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await saveLocation();
-            });
+          if (!response.ok)
+            throw new Error(isEditingMenuItem ? "Update failed" : "Add failed");
+
+          showAlert(
+            "menuAlert",
+            isEditingMenuItem
+              ? "✅ Menu item updated! Waiting for admin approval."
+              : "✅ Menu item added! Waiting for admin approval.",
+            "success",
+          );
+
+          cancelMenuEdit();
+          await loadMenuItems(currentMenuCategory);
+          await loadStats();
+        } catch (error) {
+          showAlert(
+            "menuAlert",
+            "Failed to save menu item: " + error.message,
+            "error",
+          );
+        } finally {
+          submitBtn.disabled = false;
+        }
+      }
+
+      // ── EDIT MENU ITEM ──
+      async function editMenuItem(itemId) {
+        try {
+          const response = await fetch(
+            `${API_URL}/api/partner/menu/${itemId}`,
+            {
+              headers: authHeaders(),
+            },
+          );
+          if (!response.ok) throw new Error("Failed to load menu item");
+          const item = await response.json();
+
+          document.getElementById("itemName").value = item.item_name || "";
+          document.getElementById("itemPrice").value = parseFloat(
+            item.price,
+          ).toFixed(2);
+          document.getElementById("itemCategory").value =
+            item.category || currentMenuCategory;
+          document.getElementById("itemImage").value = item.image_url || "";
+
+          if (item.image_url) previewImage(item.image_url, "menuImagePreview");
+
+          isEditingMenuItem = true;
+          editingMenuItemId = itemId;
+
+          const submitBtn = document.getElementById("menuSubmitBtn");
+          submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Menu Item';
+          submitBtn.classList.add("btn-update");
+          document.getElementById("cancelEditBtn").style.display =
+            "inline-block";
+
+          document
+            .getElementById("menuForm")
+            .scrollIntoView({ behavior: "smooth", block: "center" });
+          showAlert(
+            "menuAlert",
+            'Editing menu item. Click "Update Menu Item" when finished.',
+            "info",
+          );
+        } catch (error) {
+          showAlert(
+            "menuAlert",
+            "Failed to load menu item for editing",
+            "error",
+          );
+        }
+      }
+
+      function cancelMenuEdit() {
+        document.getElementById("menuForm").reset();
+        isEditingMenuItem = false;
+        editingMenuItemId = null;
+        const submitBtn = document.getElementById("menuSubmitBtn");
+        submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add Menu Item';
+        submitBtn.classList.remove("btn-update");
+        document.getElementById("cancelEditBtn").style.display = "none";
+        document.getElementById("menuImagePreview").classList.remove("show");
+      }
+
+      // ── DELETE MENU ITEM ──
+      async function deleteMenuItem(itemId) {
+        if (!confirm("Are you sure you want to delete this menu item?")) return;
+        try {
+          const response = await fetch(
+            `${API_URL}/api/partner/menu/${itemId}`,
+            {
+              method: "DELETE",
+              headers: authHeaders(),
+            },
+          );
+          if (!response.ok) throw new Error("Delete failed");
+          await loadMenuItems(currentMenuCategory);
+          await loadStats();
+          showAlert(
+            "menuAlert",
+            "✅ Menu item deleted successfully!",
+            "success",
+          );
+        } catch (error) {
+          showAlert("menuAlert", "Failed to delete menu item", "error");
+        }
+      }
+
+      // ── SAVE LOCATION ──
+      async function saveLocation() {
+        const submitBtn = document.querySelector(
+          '#locationForm button[type="submit"]',
+        );
+        submitBtn.disabled = true;
+
+        const data = {
+          address: document.getElementById("address").value.trim(),
+          latitude: parseFloat(document.getElementById("latitude").value) || 0,
+          longitude:
+            parseFloat(document.getElementById("longitude").value) || 0,
+          opening_hours: document.getElementById("openingHours").value.trim(),
+        };
+
+        try {
+          const response = await fetch(
+            `${API_URL}/api/partner/restaurant/${currentRestaurantId}/location`,
+            {
+              method: "PUT",
+              headers: authHeaders(),
+              body: JSON.stringify(data),
+            },
+          );
+
+          if (response.status === 401 || response.status === 403) {
+            showAlert(
+              "locationAlert",
+              "Session expired. Please log in again.",
+              "error",
+            );
+            return;
+          }
+
+          if (!response.ok)
+            throw new Error((await response.json()).detail || "Update failed");
+
+          showAlert(
+            "locationAlert",
+            "✅ Location and hours saved! Waiting for admin approval.",
+            "success",
+          );
+        } catch (error) {
+          showAlert(
+            "locationAlert",
+            "Failed to save location: " + error.message,
+            "error",
+          );
+        } finally {
+          submitBtn.disabled = false;
+        }
+      }
+
+      // ── IMAGE UPLOAD ──
+      async function handleImageUpload(input, urlInputId, previewId) {
+        const file = input.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+          alert("Please select an image file");
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          alert("Image size should be less than 5MB");
+          return;
         }
 
-        async function saveRestaurant() {
-            const submitBtn = document.querySelector('#restaurantForm button[type="submit"]');
-            submitBtn.disabled = true;
+        const urlInput = document.getElementById(urlInputId);
+        const originalValue = urlInput.value;
+        urlInput.value = "Uploading...";
+        urlInput.disabled = true;
 
-            const data = {
-                name: document.getElementById('restaurantName').value.trim(),
-                cuisine_type: document.getElementById('cuisineType').value.trim(),
-                phone: document.getElementById('phone').value.trim(),
-                website: document.getElementById('website').value.trim() || null,
-                description: document.getElementById('description').value.trim(),
-                image_url: document.getElementById('imageUrl').value.trim() || null
-            };
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
 
-            try {
-                const response = await fetch(`${API_URL}/api/partner/restaurant/${currentRestaurantId}/info`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+          const response = await fetch(`${API_URL}/api/partner/upload-image`, {
+            method: "POST",
+            headers: authHeadersFormData(),
+            body: formData,
+          });
 
-                if (!response.ok) throw new Error('Update failed');
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || "Upload failed");
+          }
 
-                showAlert('restaurantAlert', 'Restaurant information saved successfully!', 'success');
+          const data = await response.json();
+          const fullImageUrl = `${API_URL}${data.url}`;
+          urlInput.value = fullImageUrl;
+          previewImage(fullImageUrl, previewId);
 
-                // Update logo
-                document.getElementById('logo').textContent = data.name;
-
-                await loadStats();
-            } catch (error) {
-                console.error('Save error:', error);
-                showAlert('restaurantAlert', 'Failed to save restaurant info', 'error');
-            } finally {
-                submitBtn.disabled = false;
-            }
+          const alertId = urlInputId.includes("imageUrl")
+            ? "restaurantAlert"
+            : "menuAlert";
+          showAlert(alertId, "✅ Image uploaded successfully!", "success");
+        } catch (error) {
+          alert("Failed to upload image: " + error.message);
+          urlInput.value = originalValue;
+        } finally {
+          urlInput.disabled = false;
         }
+      }
 
-        async function saveMenuItem() {
-            const submitBtn = document.getElementById('menuSubmitBtn');
-            submitBtn.disabled = true;
+      // ── EVENT LISTENERS ──
+      function setupEventListeners() {
+        document
+          .getElementById("restaurantForm")
+          .addEventListener("submit", (e) => {
+            e.preventDefault();
+            saveRestaurant();
+          });
+        document.getElementById("menuForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+          saveMenuItem();
+        });
+        document
+          .getElementById("locationForm")
+          .addEventListener("submit", (e) => {
+            e.preventDefault();
+            saveLocation();
+          });
 
-            const itemName = document.getElementById('itemName').value.trim();
-            const price = parseFloat(document.getElementById('itemPrice').value);
-            const category = document.getElementById('itemCategory').value.trim();
-            const imageUrl = document.getElementById('itemImage').value.trim() || null;
+        // Main tabs
+        document.querySelectorAll(".tab[data-tab]").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            document
+              .querySelectorAll(".tab")
+              .forEach((t) => t.classList.remove("active"));
+            this.classList.add("active");
+            document
+              .querySelectorAll(".content-section")
+              .forEach((s) => s.classList.remove("active"));
+            document
+              .getElementById(`${this.dataset.tab}-section`)
+              .classList.add("active");
+            if (this.dataset.tab === "location" && map)
+              setTimeout(() => map.invalidateSize(), 100);
+            if (this.dataset.tab === "reviews") loadReviews();
+          });
+        });
 
-            if (!itemName || isNaN(price) || price <= 0 || !category) {
-                showAlert('menuAlert', 'Please fill in all required fields correctly', 'error');
-                submitBtn.disabled = false;
-                return;
-            }
+        // Menu category tabs
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            document
+              .querySelectorAll(".tab-btn")
+              .forEach((b) => b.classList.remove("active"));
+            this.classList.add("active");
+            currentMenuCategory = this.dataset.category;
+            loadMenuItems(currentMenuCategory);
+          });
+        });
+      }
 
-            const data = { item_name: itemName, price, category, image_url: imageUrl };
+      function switchTabByName(tabName) {
+        const btn = document.querySelector(`.tab[data-tab="${tabName}"]`);
+        if (btn) btn.click();
+      }
 
-            try {
-                let response;
+      function scrollToMenu() {
+        switchTabByName("menu");
+        setTimeout(
+          () =>
+            document
+              .getElementById("menuTabs")
+              .scrollIntoView({ behavior: "smooth" }),
+          100,
+        );
+      }
 
-                if (isEditingMenuItem) {
-                    response = await fetch(`${API_URL}/api/partner/menu/${editingMenuItemId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                } else {
-                    response = await fetch(`${API_URL}/api/partner/restaurant/${currentRestaurantId}/menu`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                }
+      // ── MAP ──
+      function initMap() {
+        map = L.map("map").setView([41.311081, 69.240562], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "© OpenStreetMap",
+        }).addTo(map);
+        map.on("click", (e) => {
+          updateMapMarker(e.latlng.lat, e.latlng.lng);
+          document.getElementById("latitude").value = e.latlng.lat.toFixed(6);
+          document.getElementById("longitude").value = e.latlng.lng.toFixed(6);
+        });
+      }
 
-                if (!response.ok) throw new Error(isEditingMenuItem ? 'Update failed' : 'Add failed');
+      function updateMapMarker(lat, lng) {
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lng]).addTo(map);
+        map.setView([lat, lng], 15);
+      }
 
-                showAlert('menuAlert',
-                    isEditingMenuItem ? 'Menu item updated successfully!' : 'Menu item added successfully!',
-                    'success'
-                );
-
-                cancelMenuEdit();
-                await loadMenuItems(currentMenuCategory);
-                await loadStats();
-            } catch (error) {
-                console.error('Save error:', error);
-                showAlert('menuAlert', 'Failed to save menu item', 'error');
-            } finally {
-                submitBtn.disabled = false;
-            }
+      function previewImage(url, previewId) {
+        const preview = document.getElementById(previewId);
+        if (url && url.trim()) {
+          preview.src = url;
+          preview.classList.add("show");
+          preview.onerror = () => preview.classList.remove("show");
+        } else {
+          preview.classList.remove("show");
         }
+      }
 
-        async function editMenuItem(itemId) {
-            try {
-                const response = await fetch(`${API_URL}/api/partner/menu/${itemId}`);
-
-                if (!response.ok) throw new Error('Failed to load menu item');
-
-                const item = await response.json();
-
-                // Fill form
-                document.getElementById('itemName').value = item.item_name || '';
-                document.getElementById('itemPrice').value = parseFloat(item.price).toFixed(2);
-                document.getElementById('itemCategory').value = item.category || currentMenuCategory;
-                document.getElementById('itemImage').value = item.image_url || '';
-
-                if (item.image_url) {
-                    previewImage(item.image_url, 'menuImagePreview');
-                }
-
-                // Set edit mode
-                isEditingMenuItem = true;
-                editingMenuItemId = itemId;
-
-                const submitBtn = document.getElementById('menuSubmitBtn');
-                submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Menu Item';
-                submitBtn.classList.add('btn-update');
-
-                document.getElementById('cancelEditBtn').style.display = 'inline-block';
-
-                // Scroll to form
-                document.getElementById('menuForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                showAlert('menuAlert', 'Editing menu item. Click "Update Menu Item" when finished.', 'info');
-            } catch (error) {
-                console.error('Edit error:', error);
-                showAlert('menuAlert', 'Failed to load menu item for editing', 'error');
-            }
-        }
-
-        function cancelMenuEdit() {
-            const form = document.getElementById('menuForm');
-            form.reset();
-
-            isEditingMenuItem = false;
-            editingMenuItemId = null;
-
-            const submitBtn = document.getElementById('menuSubmitBtn');
-            submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add Menu Item';
-            submitBtn.classList.remove('btn-update');
-
-            document.getElementById('cancelEditBtn').style.display = 'none';
-            document.getElementById('menuImagePreview').classList.remove('show');
-        }
-
-        async function deleteMenuItem(itemId) {
-            if (!confirm('Are you sure you want to delete this menu item?')) return;
-
-            try {
-                const response = await fetch(`${API_URL}/api/partner/menu/${itemId}`, {
-                    method: 'DELETE'
-                });
-
-                if (!response.ok) throw new Error('Delete failed');
-
-                await loadMenuItems(currentMenuCategory);
-                await loadStats();
-                showAlert('menuAlert', 'Menu item deleted successfully!', 'success');
-            } catch (error) {
-                console.error('Delete error:', error);
-                showAlert('menuAlert', 'Failed to delete menu item', 'error');
-            }
-        }
-
-        async function saveLocation() {
-            const submitBtn = document.querySelector('#locationForm button[type="submit"]');
-            submitBtn.disabled = true;
-
-            const data = {
-                address: document.getElementById('address').value.trim(),
-                latitude: parseFloat(document.getElementById('latitude').value),
-                longitude: parseFloat(document.getElementById('longitude').value),
-                opening_hours: document.getElementById('openingHours').value.trim()
-            };
-
-            if (isNaN(data.latitude) || isNaN(data.longitude)) {
-                showAlert('locationAlert', 'Please enter valid coordinates', 'error');
-                submitBtn.disabled = false;
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/api/partner/restaurant/${currentRestaurantId}/location`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                if (!response.ok) throw new Error('Update failed');
-
-                showAlert('locationAlert', 'Location and hours saved successfully!', 'success');
-            } catch (error) {
-                console.error('Save error:', error);
-                showAlert('locationAlert', 'Failed to save location', 'error');
-            } finally {
-                submitBtn.disabled = false;
-            }
-        }
-
-        function switchTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // Update content sections
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(`${tabName}-section`).classList.add('active');
-
-            // Load data for specific tabs
-            if (tabName === 'location' && map) {
-                setTimeout(() => map.invalidateSize(), 100);
-            } else if (tabName === 'reviews') {
-                loadReviews();
-
-                setTimeout(() => map.invalidateSize(), 100);
-            }
-        }
-
-        function scrollToMenu() {
-            switchTab('menu');
-            document.getElementById('menuTabs').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function initMap() {
-            map = L.map('map').setView([41.311081, 69.240562], 13);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-
-            map.on('click', function (e) {
-                updateMapMarker(e.latlng.lat, e.latlng.lng);
-                document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
-                document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
-            });
-        }
-
-        function updateMapMarker(lat, lng) {
-            if (marker) {
-                map.removeLayer(marker);
-            }
-
-            marker = L.marker([lat, lng]).addTo(map);
-            map.setView([lat, lng], 15);
-        }
-
-        function previewImage(url, previewId) {
-            const preview = document.getElementById(previewId);
-            if (url && url.trim() !== '') {
-                preview.src = url;
-                preview.classList.add('show');
-                preview.onerror = function () {
-                    this.classList.remove('show');
-                };
-            } else {
-                preview.classList.remove('show');
-            }
-        }
-
-        async function handleImageUpload(input, urlInputId, previewId) {
-
-            const file = input.files[0];
-            if (!file) return;
-
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                alert('Please select an image file');
-                return;
-            }
-
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Image size should be less than 5MB');
-                return;
-            }
-
-            // Show loading state
-            const urlInput = document.getElementById(urlInputId);
-            const originalValue = urlInput.value;
-            urlInput.value = 'Uploading...';
-            urlInput.disabled = true;
-
-            try {
-                // Create form data
-                const formData = new FormData();
-                formData.append('file', file);
-
-                // Upload to partner endpoint
-                const response = await fetch(`${API_URL}/api/partner/upload-image`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Upload failed');
-                }
-
-                const data = await response.json();
-
-                // Set the uploaded image URL
-                const fullImageUrl = `${API_URL}${data.url}`;
-                urlInput.value = fullImageUrl;
-
-                // Show preview
-                previewImage(fullImageUrl, previewId);
-
-                // Show success message
-                const alertId = urlInputId.includes('imageUrl') ? 'restaurantAlert' : 'menuAlert';
-                showAlert(alertId, 'Image uploaded successfully!', 'success');
-
-            } catch (error) {
-                console.error('Upload error:', error);
-                alert(`Failed to upload image: ${error.message}`);
-                urlInput.value = originalValue;
-            } finally {
-                urlInput.disabled = false;
-            }
-        }
-
-        function showAlert(elementId, message, type) {
-            const alertDiv = document.getElementById(elementId);
-            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-
-            setTimeout(() => {
-                alertDiv.innerHTML = '';
-            }, 5000);
-        }
-
+      function showAlert(elementId, message, type) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        el.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        setTimeout(() => (el.innerHTML = ""), 5000);
+      }
     </script>
-</body>
-
+  </body>
 </html>

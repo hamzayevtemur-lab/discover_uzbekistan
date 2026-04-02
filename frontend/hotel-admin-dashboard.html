@@ -1,595 +1,1167 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hotel Partner Dashboard - Discover Uzbekistan</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-light: #6366f1;
-            --primary-dark: #3730a3;
-            --success: #059669;
-            --success-light: #d1fae5;
-            --warning: #d97706;
-            --warning-light: #fef3c7;
-            --danger: #dc2626;
-            --danger-light: #fee2e2;
-            --bg: #f8f7ff;
-            --surface: #ffffff;
-            --border: #e5e3ff;
-            --text: #1e1b4b;
-            --muted: #6b7280;
-            --shadow: 0 4px 24px rgba(79,70,229,0.08);
-            --shadow-lg: 0 12px 40px rgba(79,70,229,0.15);
-        }
+      :root {
+        --primary: #4f46e5;
+        --primary-light: #6366f1;
+        --primary-dark: #3730a3;
+        --success: #059669;
+        --success-light: #d1fae5;
+        --warning: #d97706;
+        --warning-light: #fef3c7;
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+        --bg: #f8f7ff;
+        --surface: #ffffff;
+        --border: #e5e3ff;
+        --text: #1e1b4b;
+        --muted: #6b7280;
+        --shadow: 0 4px 24px rgba(79, 70, 229, 0.08);
+        --shadow-lg: 0 12px 40px rgba(79, 70, 229, 0.15);
+      }
 
-        * { margin:0; padding:0; box-sizing:border-box; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
 
-        /* HEADER */
-        .header {
-            background: var(--surface);
-            border-bottom: 2px solid var(--border);
-            padding: 0 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            height: 64px;
-            display: flex;
-            align-items: center;
-        }
-        .header-inner {
-            max-width: 1300px;
-            margin: 0 auto;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo { font-size:1.2rem; font-weight:800; color:var(--primary); }
-        .partner-email { font-size:0.85rem; color:var(--muted); font-weight:500; }
-        .logout-btn {
-            background: var(--bg);
-            border: 2px solid var(--border);
-            color: var(--text);
-            padding: 0.4rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .logout-btn:hover { border-color:var(--danger); color:var(--danger); }
+      /* HEADER */
+      .header {
+        background: var(--surface);
+        border-bottom: 2px solid var(--border);
+        padding: 0 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        height: 64px;
+        display: flex;
+        align-items: center;
+      }
+      .header-inner {
+        max-width: 1300px;
+        margin: 0 auto;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .logo {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+      .partner-email {
+        font-size: 0.85rem;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .logout-btn {
+        background: var(--bg);
+        border: 2px solid var(--border);
+        color: var(--text);
+        padding: 0.4rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .logout-btn:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
 
-        /* LAYOUT */
+      /* LAYOUT */
+      .layout {
+        display: flex;
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 2rem;
+        gap: 2rem;
+      }
+
+      /* SIDEBAR */
+      .sidebar {
+        width: 220px;
+        flex-shrink: 0;
+      }
+      .sidebar-sticky {
+        position: sticky;
+        top: 84px;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--muted);
+        transition: all 0.2s;
+        margin-bottom: 0.25rem;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+      }
+      .nav-item:hover {
+        background: var(--border);
+        color: var(--primary);
+      }
+      .nav-item.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      /* MAIN */
+      .main {
+        flex: 1;
+        min-width: 0;
+      }
+
+      /* STATS */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .stat-card {
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: 14px;
+        padding: 1.25rem;
+        transition: all 0.2s;
+      }
+      .stat-card:hover {
+        border-color: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+      .stat-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
+      }
+      .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary);
+      }
+
+      /* SECTIONS */
+      .section {
+        display: none;
+      }
+      .section.active {
+        display: block;
+      }
+
+      /* CARD */
+      .card {
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+      }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.75rem;
+      }
+      .card-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+      }
+
+      /* FORM */
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .form-group.full {
+        grid-column: 1/-1;
+      }
+      label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .required {
+        color: var(--danger);
+      }
+      input,
+      textarea,
+      select {
+        padding: 0.7rem 0.9rem;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        color: var(--text);
+        background: var(--bg);
+        transition: all 0.2s;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      }
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+
+      /* BUTTONS */
+      .btn {
+        padding: 0.65rem 1.5rem;
+        border: none;
+        border-radius: 10px;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-primary:hover:not(:disabled) {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      }
+      .btn-secondary {
+        background: var(--bg);
+        border: 2px solid var(--border);
+        color: var(--text);
+      }
+      .btn-secondary:hover:not(:disabled) {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+      .btn-danger {
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 2px solid #fca5a5;
+      }
+      .btn-danger:hover:not(:disabled) {
+        background: var(--danger);
+        color: white;
+      }
+      .btn-edit {
+        background: #dbeafe;
+        color: #1d4ed8;
+        border: 2px solid #93c5fd;
+      }
+      .btn-edit:hover:not(:disabled) {
+        background: #1d4ed8;
+        color: white;
+      }
+      .btn-sm {
+        padding: 0.4rem 0.9rem;
+        font-size: 0.8rem;
+      }
+
+      /* ROOMS */
+      .rooms-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+      }
+      .room-card {
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.25s;
+      }
+      .room-card:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-3px);
+      }
+      .room-card.pending {
+        border-color: #fcd34d;
+        background: #fffbeb;
+      }
+      .room-card.rejected {
+        border-color: #fca5a5;
+        background: #fff5f5;
+      }
+      .room-img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+      }
+      .room-img-placeholder {
+        width: 100%;
+        height: 180px;
+        background: linear-gradient(135deg, var(--border) 0%, #e0e7ff 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+      }
+      .room-body {
+        padding: 1.25rem;
+      }
+      .room-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+      }
+      .room-name {
+        font-size: 1.05rem;
+        font-weight: 800;
+      }
+      .room-price {
+        font-size: 0.95rem;
+        font-weight: 700;
+        background: var(--primary);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+      .room-meta {
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-bottom: 0.4rem;
+      }
+      .room-desc {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+      }
+      .room-badges {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+      .room-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      /* BANNERS */
+      .pending-banner {
+        background: var(--warning-light);
+        border: 1px solid #fcd34d;
+        border-radius: 8px;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--warning);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .rejection-banner {
+        background: var(--danger-light);
+        border: 1px solid #fca5a5;
+        border-radius: 8px;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--danger);
+        margin-bottom: 0.75rem;
+      }
+
+      /* BADGES */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+      .badge-success {
+        background: var(--success-light);
+        color: var(--success);
+      }
+      .badge-warning {
+        background: var(--warning-light);
+        color: var(--warning);
+      }
+      .badge-danger {
+        background: var(--danger-light);
+        color: var(--danger);
+      }
+
+      /* MAP */
+      #map {
+        height: 380px;
+        border-radius: 12px;
+        margin-top: 1rem;
+        border: 2px solid var(--border);
+      }
+
+      /* MODAL */
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(30, 27, 75, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal.active {
+        display: flex;
+      }
+      .modal-box {
+        background: white;
+        border-radius: 20px;
+        max-width: 560px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 80px rgba(79, 70, 229, 0.25);
+      }
+      .modal-head {
+        padding: 1.5rem 2rem;
+        border-bottom: 2px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+      }
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--muted);
+        cursor: pointer;
+        line-height: 1;
+      }
+      .modal-close:hover {
+        color: var(--danger);
+      }
+      .modal-body {
+        padding: 1.75rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .modal-foot {
+        padding: 1.25rem 2rem;
+        border-top: 2px solid var(--border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+      }
+
+      /* IMAGE PREVIEW */
+      .img-preview {
+        max-width: 100%;
+        max-height: 180px;
+        border-radius: 10px;
+        margin-top: 0.5rem;
+        display: none;
+        object-fit: cover;
+      }
+      .img-preview.show {
+        display: block;
+      }
+
+      /* TOAST */
+      .toast-container {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .toast {
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: var(--shadow-lg);
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        max-width: 340px;
+      }
+      .toast-success {
+        background: var(--success-light);
+        color: var(--success);
+        border: 2px solid #6ee7b7;
+      }
+      .toast-error {
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 2px solid #fca5a5;
+      }
+      .toast-info {
+        background: #dbeafe;
+        color: #1d4ed8;
+        border: 2px solid #93c5fd;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      /* EMPTY */
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--muted);
+        grid-column: 1/-1;
+      }
+      .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      /* RESPONSIVE */
+      @media (max-width: 900px) {
         .layout {
-            display: flex;
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 2rem;
-            gap: 2rem;
+          flex-direction: column;
+          padding: 1rem;
         }
-
-        /* SIDEBAR */
-        .sidebar { width:220px; flex-shrink:0; }
-        .sidebar-sticky { position:sticky; top:84px; }
+        .sidebar {
+          width: 100%;
+        }
+        .sidebar-sticky {
+          position: static;
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--muted);
-            transition: all 0.2s;
-            margin-bottom: 0.25rem;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
+          width: auto;
         }
-        .nav-item:hover { background:var(--border); color:var(--primary); }
-        .nav-item.active { background:var(--primary); color:white; }
-
-        /* MAIN */
-        .main { flex:1; min-width:0; }
-
-        /* STATS */
         .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4,1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
+          grid-template-columns: repeat(2, 1fr);
         }
-        .stat-card {
-            background: var(--surface);
-            border: 2px solid var(--border);
-            border-radius: 14px;
-            padding: 1.25rem;
-            transition: all 0.2s;
+        .form-grid {
+          grid-template-columns: 1fr;
         }
-        .stat-card:hover { border-color:var(--primary-light); transform:translateY(-2px); box-shadow:var(--shadow); }
-        .stat-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-bottom:0.5rem; }
-        .stat-value { font-size:1.8rem; font-weight:800; color:var(--primary); }
-
-        /* SECTIONS */
-        .section { display:none; }
-        .section.active { display:block; }
-
-        /* CARD */
-        .card {
-            background: var(--surface);
-            border: 2px solid var(--border);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
+        .rooms-grid {
+          grid-template-columns: 1fr;
         }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.75rem;
-        }
-        .card-title { font-size:1.2rem; font-weight:800; }
-
-        /* FORM */
-        .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; }
-        .form-group { display:flex; flex-direction:column; gap:0.4rem; }
-        .form-group.full { grid-column:1/-1; }
-        label { font-size:0.78rem; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:0.04em; }
-        .required { color:var(--danger); }
-        input, textarea, select {
-            padding: 0.7rem 0.9rem;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            color: var(--text);
-            background: var(--bg);
-            transition: all 0.2s;
-        }
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
-        }
-        textarea { min-height:100px; resize:vertical; }
-
-        /* BUTTONS */
-        .btn {
-            padding: 0.65rem 1.5rem;
-            border: none;
-            border-radius: 10px;
-            font-family: inherit;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-        .btn:disabled { opacity:0.5; cursor:not-allowed; }
-        .btn-primary { background:var(--primary); color:white; }
-        .btn-primary:hover:not(:disabled) { background:var(--primary-dark); transform:translateY(-1px); box-shadow:0 4px 12px rgba(79,70,229,0.3); }
-        .btn-secondary { background:var(--bg); border:2px solid var(--border); color:var(--text); }
-        .btn-secondary:hover:not(:disabled) { border-color:var(--primary); color:var(--primary); }
-        .btn-danger { background:var(--danger-light); color:var(--danger); border:2px solid #fca5a5; }
-        .btn-danger:hover:not(:disabled) { background:var(--danger); color:white; }
-        .btn-edit { background:#dbeafe; color:#1d4ed8; border:2px solid #93c5fd; }
-        .btn-edit:hover:not(:disabled) { background:#1d4ed8; color:white; }
-        .btn-sm { padding:0.4rem 0.9rem; font-size:0.8rem; }
-
-        /* ROOMS */
-        .rooms-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.5rem; }
-        .room-card {
-            background: var(--surface);
-            border: 2px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            transition: all 0.25s;
-        }
-        .room-card:hover { border-color:var(--primary-light); box-shadow:var(--shadow-lg); transform:translateY(-3px); }
-        .room-card.pending { border-color:#fcd34d; background:#fffbeb; }
-        .room-card.rejected { border-color:#fca5a5; background:#fff5f5; }
-        .room-img { width:100%; height:180px; object-fit:cover; }
-        .room-img-placeholder {
-            width:100%; height:180px;
-            background: linear-gradient(135deg,var(--border) 0%,#e0e7ff 100%);
-            display:flex; align-items:center; justify-content:center; font-size:2.5rem;
-        }
-        .room-body { padding:1.25rem; }
-        .room-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; }
-        .room-name { font-size:1.05rem; font-weight:800; }
-        .room-price { font-size:0.95rem; font-weight:700; background:var(--primary); color:white; padding:0.2rem 0.6rem; border-radius:6px; white-space:nowrap; }
-        .room-meta { font-size:0.82rem; color:var(--muted); margin-bottom:0.4rem; }
-        .room-desc { font-size:0.85rem; color:var(--muted); margin-bottom:1rem; line-height:1.5; }
-        .room-badges { display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem; }
-        .room-actions { display:flex; gap:0.5rem; }
-
-        /* BANNERS */
-        .pending-banner {
-            background:var(--warning-light); border:1px solid #fcd34d; border-radius:8px;
-            padding:0.6rem 0.9rem; font-size:0.8rem; font-weight:600; color:var(--warning);
-            margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;
-        }
-        .rejection-banner {
-            background:var(--danger-light); border:1px solid #fca5a5; border-radius:8px;
-            padding:0.6rem 0.9rem; font-size:0.8rem; font-weight:600; color:var(--danger); margin-bottom:0.75rem;
-        }
-
-        /* BADGES */
-        .badge {
-            display:inline-flex; align-items:center; gap:0.25rem;
-            padding:0.2rem 0.6rem; border-radius:20px; font-size:0.72rem; font-weight:700;
-        }
-        .badge-success { background:var(--success-light); color:var(--success); }
-        .badge-warning { background:var(--warning-light); color:var(--warning); }
-        .badge-danger { background:var(--danger-light); color:var(--danger); }
-
-        /* MAP */
-        #map { height:380px; border-radius:12px; margin-top:1rem; border:2px solid var(--border); }
-
-        /* MODAL */
-        .modal {
-            display:none; position:fixed; inset:0;
-            background:rgba(30,27,75,0.5); backdrop-filter:blur(4px);
-            z-index:2000; align-items:center; justify-content:center;
-        }
-        .modal.active { display:flex; }
-        .modal-box {
-            background:white; border-radius:20px; max-width:560px; width:95%;
-            max-height:90vh; overflow-y:auto; box-shadow:0 24px 80px rgba(79,70,229,0.25);
-        }
-        .modal-head {
-            padding:1.5rem 2rem; border-bottom:2px solid var(--border);
-            display:flex; justify-content:space-between; align-items:center;
-        }
-        .modal-title { font-size:1.2rem; font-weight:800; }
-        .modal-close { background:none; border:none; font-size:1.5rem; color:var(--muted); cursor:pointer; line-height:1; }
-        .modal-close:hover { color:var(--danger); }
-        .modal-body { padding:1.75rem 2rem; display:flex; flex-direction:column; gap:1rem; }
-        .modal-foot { padding:1.25rem 2rem; border-top:2px solid var(--border); display:flex; justify-content:flex-end; gap:0.75rem; }
-
-        /* IMAGE PREVIEW */
-        .img-preview { max-width:100%; max-height:180px; border-radius:10px; margin-top:0.5rem; display:none; object-fit:cover; }
-        .img-preview.show { display:block; }
-
-        /* TOAST */
-        .toast-container { position:fixed; bottom:2rem; right:2rem; z-index:9999; display:flex; flex-direction:column; gap:0.75rem; }
-        .toast {
-            padding:1rem 1.5rem; border-radius:12px; font-weight:600; font-size:0.9rem;
-            box-shadow:var(--shadow-lg); animation:slideIn 0.3s ease;
-            display:flex; align-items:center; gap:0.5rem; max-width:340px;
-        }
-        .toast-success { background:var(--success-light); color:var(--success); border:2px solid #6ee7b7; }
-        .toast-error { background:var(--danger-light); color:var(--danger); border:2px solid #fca5a5; }
-        .toast-info { background:#dbeafe; color:#1d4ed8; border:2px solid #93c5fd; }
-        @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
-
-        /* EMPTY */
-        .empty-state { text-align:center; padding:3rem; color:var(--muted); grid-column:1/-1; }
-        .empty-icon { font-size:3rem; margin-bottom:1rem; }
-
-        /* RESPONSIVE */
-        @media (max-width:900px) {
-            .layout { flex-direction:column; padding:1rem; }
-            .sidebar { width:100%; }
-            .sidebar-sticky { position:static; display:flex; gap:0.5rem; flex-wrap:wrap; }
-            .nav-item { width:auto; }
-            .stats-grid { grid-template-columns:repeat(2,1fr); }
-            .form-grid { grid-template-columns:1fr; }
-            .rooms-grid { grid-template-columns:1fr; }
-        }
+      }
     </style>
-</head>
-<body>
-
-<header class="header">
-    <div class="header-inner">
-        <div class="logo">🏨 <span id="hotelNameHeader">Hotel Partner Portal</span></div>
-        <div style="display:flex;align-items:center;gap:1rem;">
-            <span class="partner-email" id="partnerEmail">—</span>
-            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          🏨 <span id="hotelNameHeader">Hotel Partner Portal</span>
         </div>
-    </div>
-</header>
+        <div style="display: flex; align-items: center; gap: 1rem">
+          <span class="partner-email" id="partnerEmail">—</span>
+          <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </div>
+    </header>
 
-<div class="layout">
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
+    <div class="layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
         <div class="sidebar-sticky">
-            <button class="nav-item active" onclick="showSection('info',this)"><i class="fas fa-hotel" style="width:18px;text-align:center"></i> Hotel Info</button>
-            <button class="nav-item" onclick="showSection('rooms',this)"><i class="fas fa-bed" style="width:18px;text-align:center"></i> Rooms</button>
-            <button class="nav-item" onclick="showSection('location',this)"><i class="fas fa-map-marker-alt" style="width:18px;text-align:center"></i> Location</button>
-            <button class="nav-item" onclick="showSection('analytics',this)"><span style="width:18px;text-align:center;display:inline-block">📊</span> Analytics</button>
+          <button class="nav-item active" onclick="showSection('info', this)">
+            <i class="fas fa-hotel" style="width: 18px; text-align: center"></i>
+            Hotel Info
+          </button>
+          <button class="nav-item" onclick="showSection('rooms', this)">
+            <i class="fas fa-bed" style="width: 18px; text-align: center"></i>
+            Rooms
+          </button>
+          <button class="nav-item" onclick="showSection('location', this)">
+            <i
+              class="fas fa-map-marker-alt"
+              style="width: 18px; text-align: center"
+            ></i>
+            Location
+          </button>
+          <button class="nav-item" onclick="showSection('analytics', this)">
+            <span style="width: 18px; text-align: center; display: inline-block"
+              >📊</span
+            >
+            Analytics
+          </button>
         </div>
-    </aside>
+      </aside>
 
-    <!-- MAIN -->
-    <main class="main">
-
+      <!-- MAIN -->
+      <main class="main">
         <!-- STATS -->
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">Total Rooms</div><div class="stat-value" id="statRooms">—</div></div>
-            <div class="stat-card"><div class="stat-label">Rating</div><div class="stat-value" id="statRating">—</div></div>
-            <div class="stat-card"><div class="stat-label">Reviews</div><div class="stat-value" id="statReviews">—</div></div>
-            <div class="stat-card"><div class="stat-label">Status</div><div class="stat-value" id="statStatus">—</div></div>
+          <div class="stat-card">
+            <div class="stat-label">Total Rooms</div>
+            <div class="stat-value" id="statRooms">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Rating</div>
+            <div class="stat-value" id="statRating">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Reviews</div>
+            <div class="stat-value" id="statReviews">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Status</div>
+            <div class="stat-value" id="statStatus">—</div>
+          </div>
         </div>
 
         <!-- HOTEL INFO -->
         <div id="section-info" class="section active">
-            <div class="card">
-                <div class="card-header"><h2 class="card-title">Hotel Information</h2></div>
-                <form id="hotelForm">
-                    <div class="form-grid">
-                        <div class="form-group"><label>Hotel Name <span class="required">*</span></label><input type="text" id="hName" required placeholder="Grand Palace Hotel"></div>
-                        <div class="form-group"><label>Hotel Type <span class="required">*</span></label>
-                            <select id="hType" required>
-                                <option value="">Select type…</option>
-                                <option>5 Star Hotel</option><option>4 Star Hotel</option><option>3 Star Hotel</option>
-                                <option>Boutique Hotel</option><option>Resort</option><option>Guesthouse</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="hPhone" placeholder="+998 90 123 4567" required></div>
-                        <div class="form-group"><label>Website</label><input type="url" id="hWebsite" placeholder="https://yourhotel.com"></div>
-                        <div class="form-group full"><label>Description <span class="required">*</span></label><textarea id="hDesc" placeholder="Describe your hotel…" required></textarea></div>
-                        <div class="form-group"><label>Special Offer</label><input type="text" id="hOffer" placeholder="e.g., 20% off weekends"></div>
-                        <div class="form-group"><label>Opening Hours</label><input type="text" id="hHours" placeholder="24/7"></div>
-                        <div class="form-group full">
-                            <label>Hotel Photo</label>
-                            <input type="file" id="hImageFile" accept="image/*" onchange="uploadImage(this,'hImageUrl','hImagePreview')">
-                            <input type="text" id="hImageUrl" placeholder="Or paste image URL" style="margin-top:0.5rem;">
-                            <img id="hImagePreview" class="img-preview" alt="Preview">
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:0.75rem;margin-top:1.75rem;">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
-                        <button type="button" class="btn btn-secondary" onclick="loadHotelData()"><i class="fas fa-undo"></i> Reset</button>
-                    </div>
-                </form>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Hotel Information</h2>
             </div>
+            <form id="hotelForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Hotel Name <span class="required">*</span></label
+                  ><input
+                    type="text"
+                    id="hName"
+                    required
+                    placeholder="Grand Palace Hotel"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Hotel Type <span class="required">*</span></label>
+                  <select id="hType" required>
+                    <option value="">Select type…</option>
+                    <option>5 Star Hotel</option>
+                    <option>4 Star Hotel</option>
+                    <option>3 Star Hotel</option>
+                    <option>Boutique Hotel</option>
+                    <option>Resort</option>
+                    <option>Guesthouse</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Phone <span class="required">*</span></label
+                  ><input
+                    type="tel"
+                    id="hPhone"
+                    placeholder="+998 90 123 4567"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Website</label
+                  ><input
+                    type="url"
+                    id="hWebsite"
+                    placeholder="https://yourhotel.com"
+                  />
+                </div>
+                <div class="form-group full">
+                  <label>Description <span class="required">*</span></label
+                  ><textarea
+                    id="hDesc"
+                    placeholder="Describe your hotel…"
+                    required
+                  ></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Special Offer</label
+                  ><input
+                    type="text"
+                    id="hOffer"
+                    placeholder="e.g., 20% off weekends"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Opening Hours</label
+                  ><input type="text" id="hHours" placeholder="24/7" />
+                </div>
+                <div class="form-group full">
+                  <label>Hotel Photo</label>
+                  <input
+                    type="file"
+                    id="hImageFile"
+                    accept="image/*"
+                    onchange="uploadImage(this, 'hImageUrl', 'hImagePreview')"
+                  />
+                  <input
+                    type="text"
+                    id="hImageUrl"
+                    placeholder="Or paste image URL"
+                    style="margin-top: 0.5rem"
+                  />
+                  <img id="hImagePreview" class="img-preview" alt="Preview" />
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.75rem; margin-top: 1.75rem">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="loadHotelData()"
+                >
+                  <i class="fas fa-undo"></i> Reset
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- ROOMS -->
         <div id="section-rooms" class="section">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Room Management</h2>
-                    <button class="btn btn-primary" onclick="openRoomModal()"><i class="fas fa-plus"></i> Add Room</button>
-                </div>
-                <div id="roomsGrid" class="rooms-grid"></div>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Room Management</h2>
+              <button class="btn btn-primary" onclick="openRoomModal()">
+                <i class="fas fa-plus"></i> Add Room
+              </button>
             </div>
+            <div id="roomsGrid" class="rooms-grid"></div>
+          </div>
         </div>
 
         <!-- LOCATION -->
         <div id="section-location" class="section">
-            <div class="card">
-                <div class="card-header"><h2 class="card-title">Location & Address</h2></div>
-                <form id="locationForm">
-                    <div class="form-grid">
-                        <div class="form-group full"><label>Address <span class="required">*</span></label><input type="text" id="lAddress" placeholder="Street, City" required></div>
-                        <div class="form-group"><label>Latitude</label><input type="number" id="lLat" step="0.000001" placeholder="41.311081"></div>
-                        <div class="form-group"><label>Longitude</label><input type="number" id="lLng" step="0.000001" placeholder="69.240562"></div>
-                        <div class="form-group full"><label>Click map to set pin</label><div id="map"></div></div>
-                    </div>
-                    <div style="margin-top:1.75rem;">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Location</button>
-                    </div>
-                </form>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Location & Address</h2>
             </div>
+            <form id="locationForm">
+              <div class="form-grid">
+                <div class="form-group full">
+                  <label>Address <span class="required">*</span></label
+                  ><input
+                    type="text"
+                    id="lAddress"
+                    placeholder="Street, City"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Latitude</label
+                  ><input
+                    type="number"
+                    id="lLat"
+                    step="0.000001"
+                    placeholder="41.311081"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Longitude</label
+                  ><input
+                    type="number"
+                    id="lLng"
+                    step="0.000001"
+                    placeholder="69.240562"
+                  />
+                </div>
+                <div class="form-group full">
+                  <label>Click map to set pin</label>
+                  <div id="map"></div>
+                </div>
+              </div>
+              <div style="margin-top: 1.75rem">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> Save Location
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- ANALYTICS -->
         <div id="section-analytics" class="section">
-            <div class="card">
-                <div class="card-header"><h2 class="card-title">📊 Analytics</h2></div>
-                <div style="background:#dbeafe;padding:1.25rem;border-radius:12px;margin-bottom:1.5rem;border-left:4px solid #3b82f6;">
-                    <strong style="color:#1e40af;">Real-Time Analytics via Google</strong>
-                    <p style="color:#1e40af;font-size:0.9rem;margin-top:0.25rem;">Stats appear automatically after your page receives visitors.</p>
-                </div>
-                <iframe src="https://lookerstudio.google.com/embed/reporting/41a6d4c1-aed0-4ce8-a814-a1716b0acfee/page/kIV1C"
-                    width="100%" height="900" frameborder="0"
-                    style="border-radius:12px;border:2px solid var(--border);"></iframe>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">📊 Analytics</h2>
             </div>
+            <div
+              style="
+                background: #dbeafe;
+                padding: 1.25rem;
+                border-radius: 12px;
+                margin-bottom: 1.5rem;
+                border-left: 4px solid #3b82f6;
+              "
+            >
+              <strong style="color: #1e40af"
+                >Real-Time Analytics via Google</strong
+              >
+              <p style="color: #1e40af; font-size: 0.9rem; margin-top: 0.25rem">
+                Stats appear automatically after your page receives visitors.
+              </p>
+            </div>
+            <iframe
+              src="https://lookerstudio.google.com/embed/reporting/41a6d4c1-aed0-4ce8-a814-a1716b0acfee/page/kIV1C"
+              width="100%"
+              height="900"
+              frameborder="0"
+              style="border-radius: 12px; border: 2px solid var(--border)"
+            ></iframe>
+          </div>
         </div>
+      </main>
+    </div>
 
-    </main>
-</div>
-
-<!-- ROOM MODAL -->
-<div id="roomModal" class="modal">
-    <div class="modal-box">
+    <!-- ROOM MODAL -->
+    <div id="roomModal" class="modal">
+      <div class="modal-box">
         <div class="modal-head">
-            <h2 class="modal-title" id="roomModalTitle">Add New Room</h2>
-            <button class="modal-close" onclick="closeRoomModal()">×</button>
+          <h2 class="modal-title" id="roomModalTitle">Add New Room</h2>
+          <button class="modal-close" onclick="closeRoomModal()">×</button>
         </div>
         <form id="roomForm">
-            <div class="modal-body">
-                <input type="hidden" id="editRoomId">
-                <div class="form-group">
-                    <label>Room Type <span class="required">*</span></label>
-                    <select id="rType" required>
-                        <option value="">Select type…</option>
-                        <option>Single Room</option><option>Double Room</option><option>Twin Room</option>
-                        <option>Deluxe Room</option><option>Suite</option><option>Family Room</option>
-                    </select>
-                </div>
-                <div class="form-grid">
-                    <div class="form-group"><label>Price / Night <span class="required">*</span></label><input type="number" id="rPrice" step="0.01" min="0" required placeholder="0.00"></div>
-                    <div class="form-group"><label>Capacity <span class="required">*</span></label><input type="number" id="rCapacity" min="1" required placeholder="2"></div>
-                </div>
-                <div class="form-group"><label>Description</label><textarea id="rDesc" placeholder="Describe this room…"></textarea></div>
-                <div class="form-group">
-                    <label>Room Photo</label>
-                    <input type="file" id="rImageFile" accept="image/*" onchange="uploadImage(this,'rImageUrl','rImagePreview')">
-                    <input type="text" id="rImageUrl" placeholder="Or paste image URL" style="margin-top:0.5rem;">
-                    <img id="rImagePreview" class="img-preview" alt="Preview">
-                </div>
-                <div class="form-group">
-                    <label style="display:flex;align-items:center;gap:0.5rem;text-transform:none;letter-spacing:0;font-size:0.9rem;">
-                        <input type="checkbox" id="rAvailable" checked style="width:auto;">
-                        Available for Booking
-                    </label>
-                </div>
+          <div class="modal-body">
+            <input type="hidden" id="editRoomId" />
+            <div class="form-group">
+              <label>Room Type <span class="required">*</span></label>
+              <select id="rType" required>
+                <option value="">Select type…</option>
+                <option>Single Room</option>
+                <option>Double Room</option>
+                <option>Twin Room</option>
+                <option>Deluxe Room</option>
+                <option>Suite</option>
+                <option>Family Room</option>
+              </select>
             </div>
-            <div class="modal-foot">
-                <button type="button" class="btn btn-secondary" onclick="closeRoomModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="roomSubmitBtn">Save Room</button>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Price / Night <span class="required">*</span></label
+                ><input
+                  type="number"
+                  id="rPrice"
+                  step="0.01"
+                  min="0"
+                  required
+                  placeholder="0.00"
+                />
+              </div>
+              <div class="form-group">
+                <label>Capacity <span class="required">*</span></label
+                ><input
+                  type="number"
+                  id="rCapacity"
+                  min="1"
+                  required
+                  placeholder="2"
+                />
+              </div>
             </div>
+            <div class="form-group">
+              <label>Description</label
+              ><textarea
+                id="rDesc"
+                placeholder="Describe this room…"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label>Room Photo</label>
+              <input
+                type="file"
+                id="rImageFile"
+                accept="image/*"
+                onchange="uploadImage(this, 'rImageUrl', 'rImagePreview')"
+              />
+              <input
+                type="text"
+                id="rImageUrl"
+                placeholder="Or paste image URL"
+                style="margin-top: 0.5rem"
+              />
+              <img id="rImagePreview" class="img-preview" alt="Preview" />
+            </div>
+            <div class="form-group">
+              <label
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                  text-transform: none;
+                  letter-spacing: 0;
+                  font-size: 0.9rem;
+                "
+              >
+                <input
+                  type="checkbox"
+                  id="rAvailable"
+                  checked
+                  style="width: auto"
+                />
+                Available for Booking
+              </label>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeRoomModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" id="roomSubmitBtn">
+              Save Room
+            </button>
+          </div>
         </form>
+      </div>
     </div>
-</div>
 
-<!-- TOAST -->
-<div class="toast-container" id="toastContainer"></div>
+    <!-- TOAST -->
+    <div class="toast-container" id="toastContainer"></div>
 
-<script>
-    const API = 'http://localhost:8000';
-    let hotelId = null;
-    let map = null, marker = null;
+    <script>
+      const API = "http://localhost:8000";
+      let hotelId = null;
+      let map = null,
+        marker = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
+      function authHeaders() {
+        const token = localStorage.getItem("partner_token");
+        return {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
         checkAuth();
         loadHotelData();
         initMap();
-    });
+      });
 
-    function checkAuth() {
-        const token = localStorage.getItem('partner_token');
+      function checkAuth() {
+        const token = localStorage.getItem("partner_token");
         const params = new URLSearchParams(window.location.search);
-        hotelId = params.get('id') || localStorage.getItem('hotel_id');
-        const email = localStorage.getItem('partner_email');
-        if (!token || !hotelId) { window.location.href = '/partner-login.html'; return; }
-        document.getElementById('partnerEmail').textContent = email || '';
-    }
-
-    function logout() {
-        if (!confirm('Logout?')) return;
-        ['partner_token','hotel_id','partner_email','partner_type','partner_name','partner_record_id','restaurant_id']
-            .forEach(k => localStorage.removeItem(k));
-        window.location.href = '/partner-login.html';
-    }
-
-    async function loadHotelData() {
-        try {
-            // Try partner endpoint first (shows all statuses including pending)
-            const res = await fetch(`${API}/hotels`);
-            const hotels = await res.json();
-            let hotel = hotels.find(h => h.id === parseInt(hotelId));
-
-            // Fallback: direct fetch
-            if (!hotel) {
-                const res2 = await fetch(`${API}/hotels/${hotelId}`);
-                if (res2.ok) hotel = await res2.json();
-            }
-
-            if (!hotel) { toast('Hotel not found', 'error'); return; }
-
-            document.getElementById('hotelNameHeader').textContent = hotel.name || 'Hotel Partner Portal';
-
-            // Fill forms
-            document.getElementById('hName').value = hotel.name || '';
-            document.getElementById('hType').value = hotel.type || '';
-            document.getElementById('hPhone').value = hotel.phone || '';
-            document.getElementById('hWebsite').value = hotel.website || '';
-            document.getElementById('hDesc').value = hotel.description || '';
-            document.getElementById('hOffer').value = hotel.offer || '';
-            document.getElementById('hHours').value = hotel.opening_hours || '';
-            document.getElementById('hImageUrl').value = hotel.image_url || '';
-            document.getElementById('lAddress').value = hotel.address || '';
-            document.getElementById('lLat').value = hotel.latitude || '';
-            document.getElementById('lLng').value = hotel.longitude || '';
-
-            if (hotel.image_url) showPreview(hotel.image_url.startsWith('http') ? hotel.image_url : `${API}${hotel.image_url}`, 'hImagePreview');
-
-            // Stats
-            document.getElementById('statRooms').textContent = hotel.rooms?.length ?? '—';
-            document.getElementById('statRating').textContent = hotel.rating?.toFixed(1) ?? '0.0';
-            document.getElementById('statReviews').textContent = hotel.review_count ?? 0;
-
-            const status = hotel.status || 'approved';
-            const el = document.getElementById('statStatus');
-            if (status === 'pending') el.innerHTML = '<span class="badge badge-warning">⏰ Pending</span>';
-            else if (status === 'approved') el.innerHTML = '<span class="badge badge-success">✅ Active</span>';
-            else el.innerHTML = '<span class="badge badge-danger">❌ Rejected</span>';
-
-            if (hotel.latitude && hotel.longitude) updateMapPin(hotel.latitude, hotel.longitude);
-
-            loadRooms();
-        } catch (err) {
-            toast('Failed to load hotel data', 'error');
-            console.error(err);
+        hotelId = params.get("id") || localStorage.getItem("hotel_id");
+        const email = localStorage.getItem("partner_email");
+        if (!token || !hotelId) {
+          window.location.href = "/partner-login.html";
+          return;
         }
-    }
+        document.getElementById("partnerEmail").textContent = email || "";
+      }
 
-    async function loadRooms() {
+      function logout() {
+        if (!confirm("Logout?")) return;
+        [
+          "partner_token",
+          "hotel_id",
+          "partner_email",
+          "partner_type",
+          "partner_name",
+          "partner_record_id",
+          "restaurant_id",
+        ].forEach((k) => localStorage.removeItem(k));
+        window.location.href = "/partner-login.html";
+      }
+
+      async function loadHotelData() {
         try {
-            // Fetch all rooms including pending ones via the partner hotels endpoint
-            const res = await fetch(`${API}/hotels`);
-            const hotels = await res.json();
-            const hotel = hotels.find(h => h.id === parseInt(hotelId));
-            let rooms = hotel?.rooms || [];
+          // Try partner endpoint first (shows all statuses including pending)
+          const res = await fetch(`${API}/hotels`);
+          const hotels = await res.json();
+          let hotel = hotels.find((h) => h.id === parseInt(hotelId));
 
-            // Fallback to public rooms endpoint
-            if (!rooms.length) {
-                const res2 = await fetch(`${API}/hotels/${hotelId}/rooms`);
-                if (res2.ok) rooms = await res2.json();
-            }
+          // Fallback: direct fetch
+          if (!hotel) {
+            const res2 = await fetch(`${API}/hotels/${hotelId}`);
+            if (res2.ok) hotel = await res2.json();
+          }
 
-            const grid = document.getElementById('roomsGrid');
-            document.getElementById('statRooms').textContent = rooms.length;
+          if (!hotel) {
+            toast("Hotel not found", "error");
+            return;
+          }
 
-            if (!rooms.length) {
-                grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🛏️</div><p>No rooms yet — add your first room!</p></div>`;
-                return;
-            }
+          document.getElementById("hotelNameHeader").textContent =
+            hotel.name || "Hotel Partner Portal";
 
-            grid.innerHTML = rooms.map(room => {
-                const status = room.status || 'approved';
-                let statusBadge = '', cardClass = '', banner = '';
+          // Fill forms
+          document.getElementById("hName").value = hotel.name || "";
+          document.getElementById("hType").value = hotel.type || "";
+          document.getElementById("hPhone").value = hotel.phone || "";
+          document.getElementById("hWebsite").value = hotel.website || "";
+          document.getElementById("hDesc").value = hotel.description || "";
+          document.getElementById("hOffer").value = hotel.offer || "";
+          document.getElementById("hHours").value = hotel.opening_hours || "";
+          document.getElementById("hImageUrl").value = hotel.image_url || "";
+          document.getElementById("lAddress").value = hotel.address || "";
+          document.getElementById("lLat").value = hotel.latitude || "";
+          document.getElementById("lLng").value = hotel.longitude || "";
 
-                if (status === 'pending') {
-                    statusBadge = '<span class="badge badge-warning">⏰ Pending Approval</span>';
-                    cardClass = 'pending';
-                    banner = `<div class="pending-banner">⏳ Waiting for admin approval before going live</div>`;
-                } else if (status === 'approved') {
-                    statusBadge = '<span class="badge badge-success">✅ Approved</span>';
-                } else {
-                    statusBadge = '<span class="badge badge-danger">❌ Rejected</span>';
-                    cardClass = 'rejected';
-                    if (room.rejection_reason) {
-                        banner = `<div class="rejection-banner">❌ <strong>Reason:</strong> ${room.rejection_reason}</div>`;
-                    }
+          if (hotel.image_url)
+            showPreview(
+              hotel.image_url.startsWith("http")
+                ? hotel.image_url
+                : `${API}${hotel.image_url}`,
+              "hImagePreview",
+            );
+
+          // Stats
+          document.getElementById("statRooms").textContent =
+            hotel.rooms?.length ?? "—";
+          document.getElementById("statRating").textContent =
+            hotel.rating?.toFixed(1) ?? "0.0";
+          document.getElementById("statReviews").textContent =
+            hotel.review_count ?? 0;
+
+          const status = hotel.status || "approved";
+          const el = document.getElementById("statStatus");
+          if (status === "pending")
+            el.innerHTML =
+              '<span class="badge badge-warning">⏰ Pending</span>';
+          else if (status === "approved")
+            el.innerHTML = '<span class="badge badge-success">✅ Active</span>';
+          else
+            el.innerHTML =
+              '<span class="badge badge-danger">❌ Rejected</span>';
+
+          if (hotel.latitude && hotel.longitude)
+            updateMapPin(hotel.latitude, hotel.longitude);
+
+          loadRooms();
+        } catch (err) {
+          toast("Failed to load hotel data", "error");
+          console.error(err);
+        }
+      }
+
+      async function loadRooms() {
+        try {
+          // Fetch all rooms including pending ones via the partner hotels endpoint
+          const res = await fetch(`${API}/hotels`);
+          const hotels = await res.json();
+          const hotel = hotels.find((h) => h.id === parseInt(hotelId));
+          let rooms = hotel?.rooms || [];
+
+          // Fallback to public rooms endpoint
+          if (!rooms.length) {
+            const res2 = await fetch(`${API}/hotels/${hotelId}/rooms`);
+            if (res2.ok) rooms = await res2.json();
+          }
+
+          const grid = document.getElementById("roomsGrid");
+          document.getElementById("statRooms").textContent = rooms.length;
+
+          if (!rooms.length) {
+            grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🛏️</div><p>No rooms yet — add your first room!</p></div>`;
+            return;
+          }
+
+          grid.innerHTML = rooms
+            .map((room) => {
+              const status = room.status || "approved";
+              let statusBadge = "",
+                cardClass = "",
+                banner = "";
+
+              if (status === "pending") {
+                statusBadge =
+                  '<span class="badge badge-warning">⏰ Pending Approval</span>';
+                cardClass = "pending";
+                banner = `<div class="pending-banner">⏳ Waiting for admin approval before going live</div>`;
+              } else if (status === "approved") {
+                statusBadge =
+                  '<span class="badge badge-success">✅ Approved</span>';
+              } else {
+                statusBadge =
+                  '<span class="badge badge-danger">❌ Rejected</span>';
+                cardClass = "rejected";
+                if (room.rejection_reason) {
+                  banner = `<div class="rejection-banner">❌ <strong>Reason:</strong> ${room.rejection_reason}</div>`;
                 }
+              }
 
-                const imgUrl = room.image_url
-                    ? (room.image_url.startsWith('http') ? room.image_url : `${API}${room.image_url}`)
-                    : null;
+              const imgUrl = room.image_url
+                ? room.image_url.startsWith("http")
+                  ? room.image_url
+                  : `${API}${room.image_url}`
+                : null;
 
-                const imgHtml = imgUrl
-                    ? `<img class="room-img" src="${imgUrl}" alt="${room.room_type}" onerror="this.parentElement.innerHTML='<div class=room-img-placeholder>🛏️</div>'">`
-                    : `<div class="room-img-placeholder">🛏️</div>`;
+              const imgHtml = imgUrl
+                ? `<img class="room-img" src="${imgUrl}" alt="${room.room_type}" onerror="this.parentElement.innerHTML='<div class=room-img-placeholder>🛏️</div>'">`
+                : `<div class="room-img-placeholder">🛏️</div>`;
 
-                // Encode room data safely for the edit button
-                const roomData = encodeURIComponent(JSON.stringify(room));
+              // Encode room data safely for the edit button
+              const roomData = encodeURIComponent(JSON.stringify(room));
 
-                return `
+              return `
                     <div class="room-card ${cardClass}">
                         ${imgHtml}
                         <div class="room-body">
@@ -598,13 +1170,15 @@
                                 <div class="room-price">$${room.price}/night</div>
                             </div>
                             <div class="room-meta">👥 Capacity: ${room.capacity} people</div>
-                            ${room.description ? `<div class="room-desc">${room.description}</div>` : ''}
+                            ${room.description ? `<div class="room-desc">${room.description}</div>` : ""}
                             ${banner}
                             <div class="room-badges">
                                 ${statusBadge}
-                                ${room.available
+                                ${
+                                  room.available
                                     ? '<span class="badge badge-success">Available</span>'
-                                    : '<span class="badge badge-danger">Not Available</span>'}
+                                    : '<span class="badge badge-danger">Not Available</span>'
+                                }
                             </div>
                             <div class="room-actions">
                                 <button class="btn btn-edit btn-sm" onclick="openEditRoomModal(${room.id}, '${roomData}')">
@@ -616,187 +1190,237 @@
                             </div>
                         </div>
                     </div>`;
-            }).join('');
+            })
+            .join("");
         } catch (err) {
-            console.error(err);
+          console.error(err);
         }
-    }
+      }
 
-    // HOTEL INFO SUBMIT
-    document.getElementById('hotelForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const btn = e.target.querySelector('[type=submit]');
-        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
-        const data = {
-            name: document.getElementById('hName').value,
-            type: document.getElementById('hType').value,
-            phone: document.getElementById('hPhone').value,
-            website: document.getElementById('hWebsite').value,
-            description: document.getElementById('hDesc').value,
-            offer: document.getElementById('hOffer').value,
-            opening_hours: document.getElementById('hHours').value,
-            image_url: document.getElementById('hImageUrl').value
-        };
-        try {
+      // HOTEL INFO SUBMIT
+      document
+        .getElementById("hotelForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const btn = e.target.querySelector("[type=submit]");
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+          const data = {
+            name: document.getElementById("hName").value,
+            type: document.getElementById("hType").value,
+            phone: document.getElementById("hPhone").value,
+            website: document.getElementById("hWebsite").value,
+            description: document.getElementById("hDesc").value,
+            offer: document.getElementById("hOffer").value,
+            opening_hours: document.getElementById("hHours").value,
+            image_url: document.getElementById("hImageUrl").value,
+          };
+          try {
             const res = await fetch(`${API}/hotels/${hotelId}/info`, {
-                method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
             });
-            if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
-            toast('Hotel info saved! Waiting for admin approval.', 'info');
+            if (!res.ok) throw new Error((await res.json()).detail || "Failed");
+            toast("Hotel info saved! Waiting for admin approval.", "info");
             loadHotelData();
-        } catch (err) { toast('Error: ' + err.message, 'error'); }
-        finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save Changes'; }
-    });
+          } catch (err) {
+            toast("Error: " + err.message, "error");
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+          }
+        });
 
-    // LOCATION SUBMIT
-    document.getElementById('locationForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const btn = e.target.querySelector('[type=submit]');
-        btn.disabled = true;
-        const data = {
-            address: document.getElementById('lAddress').value,
-            latitude: parseFloat(document.getElementById('lLat').value) || 0,
-            longitude: parseFloat(document.getElementById('lLng').value) || 0
-        };
-        try {
+      // LOCATION SUBMIT
+      document
+        .getElementById("locationForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const btn = e.target.querySelector("[type=submit]");
+          btn.disabled = true;
+          const data = {
+            address: document.getElementById("lAddress").value,
+            latitude: parseFloat(document.getElementById("lLat").value) || 0,
+            longitude: parseFloat(document.getElementById("lLng").value) || 0,
+          };
+          try {
             const res = await fetch(`${API}/hotels/${hotelId}/info`, {
-                method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
             });
-            if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
-            toast('Location saved! Waiting for admin approval.', 'info');
-        } catch (err) { toast('Error: ' + err.message, 'error'); }
-        finally { btn.disabled = false; }
-    });
+            if (!res.ok) throw new Error((await res.json()).detail || "Failed");
+            toast("Location saved! Waiting for admin approval.", "info");
+          } catch (err) {
+            toast("Error: " + err.message, "error");
+          } finally {
+            btn.disabled = false;
+          }
+        });
 
-    // ROOM MODAL OPEN (ADD)
-    function openRoomModal() {
-        document.getElementById('roomForm').reset();
-        document.getElementById('editRoomId').value = '';
-        document.getElementById('roomModalTitle').textContent = 'Add New Room';
-        document.getElementById('roomSubmitBtn').textContent = 'Save Room';
-        document.getElementById('rImagePreview').classList.remove('show');
-        document.getElementById('roomModal').classList.add('active');
-    }
+      // ROOM MODAL OPEN (ADD)
+      function openRoomModal() {
+        document.getElementById("roomForm").reset();
+        document.getElementById("editRoomId").value = "";
+        document.getElementById("roomModalTitle").textContent = "Add New Room";
+        document.getElementById("roomSubmitBtn").textContent = "Save Room";
+        document.getElementById("rImagePreview").classList.remove("show");
+        document.getElementById("roomModal").classList.add("active");
+      }
 
-    // ROOM MODAL OPEN (EDIT)
-    function openEditRoomModal(roomId, encodedRoom) {
+      // ROOM MODAL OPEN (EDIT)
+      function openEditRoomModal(roomId, encodedRoom) {
         const room = JSON.parse(decodeURIComponent(encodedRoom));
-        document.getElementById('editRoomId').value = roomId;
-        document.getElementById('roomModalTitle').textContent = 'Edit Room';
-        document.getElementById('roomSubmitBtn').textContent = 'Update Room';
-        document.getElementById('rType').value = room.room_type || '';
-        document.getElementById('rPrice').value = room.price || '';
-        document.getElementById('rCapacity').value = room.capacity || '';
-        document.getElementById('rDesc').value = room.description || '';
-        document.getElementById('rImageUrl').value = room.image_url || '';
-        document.getElementById('rAvailable').checked = room.available ?? true;
+        document.getElementById("editRoomId").value = roomId;
+        document.getElementById("roomModalTitle").textContent = "Edit Room";
+        document.getElementById("roomSubmitBtn").textContent = "Update Room";
+        document.getElementById("rType").value = room.room_type || "";
+        document.getElementById("rPrice").value = room.price || "";
+        document.getElementById("rCapacity").value = room.capacity || "";
+        document.getElementById("rDesc").value = room.description || "";
+        document.getElementById("rImageUrl").value = room.image_url || "";
+        document.getElementById("rAvailable").checked = room.available ?? true;
         if (room.image_url) {
-            const url = room.image_url.startsWith('http') ? room.image_url : `${API}${room.image_url}`;
-            showPreview(url, 'rImagePreview');
+          const url = room.image_url.startsWith("http")
+            ? room.image_url
+            : `${API}${room.image_url}`;
+          showPreview(url, "rImagePreview");
         } else {
-            document.getElementById('rImagePreview').classList.remove('show');
+          document.getElementById("rImagePreview").classList.remove("show");
         }
-        document.getElementById('roomModal').classList.add('active');
-    }
+        document.getElementById("roomModal").classList.add("active");
+      }
 
-    function closeRoomModal() { document.getElementById('roomModal').classList.remove('active'); }
+      function closeRoomModal() {
+        document.getElementById("roomModal").classList.remove("active");
+      }
 
-    // ROOM FORM SUBMIT (ADD + EDIT)
-    document.getElementById('roomForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const btn = e.target.querySelector('[type=submit]');
-        btn.disabled = true;
-        const editId = document.getElementById('editRoomId').value;
-        const isEdit = !!editId;
+      // ROOM FORM SUBMIT (ADD + EDIT)
+      document
+        .getElementById("roomForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const btn = e.target.querySelector("[type=submit]");
+          btn.disabled = true;
+          const editId = document.getElementById("editRoomId").value;
+          const isEdit = !!editId;
 
-        const data = {
+          const data = {
             hotel_id: parseInt(hotelId),
-            room_type: document.getElementById('rType').value,
-            price: parseFloat(document.getElementById('rPrice').value),
-            capacity: parseInt(document.getElementById('rCapacity').value),
-            description: document.getElementById('rDesc').value,
-            image_url: document.getElementById('rImageUrl').value,
-            available: document.getElementById('rAvailable').checked
-        };
+            room_type: document.getElementById("rType").value,
+            price: parseFloat(document.getElementById("rPrice").value),
+            capacity: parseInt(document.getElementById("rCapacity").value),
+            description: document.getElementById("rDesc").value,
+            image_url: document.getElementById("rImageUrl").value,
+            available: document.getElementById("rAvailable").checked,
+          };
 
-        try {
-            const url = isEdit ? `${API}/hotels/${hotelId}/rooms/${editId}` : `${API}/hotels/${hotelId}/rooms`;
+          try {
+            const url = isEdit
+              ? `${API}/hotels/${hotelId}/rooms/${editId}`
+              : `${API}/hotels/${hotelId}/rooms`;
             const res = await fetch(url, {
-                method: isEdit ? 'PUT' : 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify(data)
+              method: isEdit ? "PUT" : "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
             });
-            if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
-            toast(isEdit ? 'Room updated! Waiting for admin approval.' : 'Room added! Waiting for admin approval.', 'info');
+            if (!res.ok) throw new Error((await res.json()).detail || "Failed");
+            toast(
+              isEdit
+                ? "Room updated! Waiting for admin approval."
+                : "Room added! Waiting for admin approval.",
+              "info",
+            );
             closeRoomModal();
             loadRooms();
-        } catch (err) { toast('Error: ' + err.message, 'error'); }
-        finally { btn.disabled = false; }
-    });
+          } catch (err) {
+            toast("Error: " + err.message, "error");
+          } finally {
+            btn.disabled = false;
+          }
+        });
 
-    async function deleteRoom(roomId) {
-        if (!confirm('Delete this room permanently?')) return;
+      async function deleteRoom(roomId) {
+        if (!confirm("Delete this room permanently?")) return;
         try {
-            const res = await fetch(`${API}/hotels/${hotelId}/rooms/${roomId}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Delete failed');
-            toast('Room deleted.', 'success');
-            loadRooms();
-        } catch (err) { toast('Error: ' + err.message, 'error'); }
-    }
+          const res = await fetch(`${API}/hotels/${hotelId}/rooms/${roomId}`, {
+            method: "DELETE",
+          });
+          if (!res.ok) throw new Error("Delete failed");
+          toast("Room deleted.", "success");
+          loadRooms();
+        } catch (err) {
+          toast("Error: " + err.message, "error");
+        }
+      }
 
-    async function uploadImage(input, urlId, previewId) {
+      async function uploadImage(input, urlId, previewId) {
         const file = input.files[0];
         if (!file) return;
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            const res = await fetch(`${API}/admin/upload-image`, { method: 'POST', body: formData });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail);
-            document.getElementById(urlId).value = data.url;
-            showPreview(`${API}${data.url}`, previewId);
-            toast('Image uploaded!', 'success');
-        } catch (err) { toast('Upload failed: ' + err.message, 'error'); }
-    }
+          const formData = new FormData();
+          formData.append("file", file);
+          const res = await fetch(`${API}/admin/upload-image`, {
+            method: "POST",
+            body: formData,
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail);
+          document.getElementById(urlId).value = data.url;
+          showPreview(`${API}${data.url}`, previewId);
+          toast("Image uploaded!", "success");
+        } catch (err) {
+          toast("Upload failed: " + err.message, "error");
+        }
+      }
 
-    function showPreview(url, previewId) {
+      function showPreview(url, previewId) {
         const el = document.getElementById(previewId);
-        el.src = url; el.classList.add('show');
-    }
+        el.src = url;
+        el.classList.add("show");
+      }
 
-    function showSection(name, btn) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-        document.getElementById(`section-${name}`).classList.add('active');
-        btn.classList.add('active');
-        if (name === 'location' && map) setTimeout(() => map.invalidateSize(), 100);
-    }
+      function showSection(name, btn) {
+        document
+          .querySelectorAll(".section")
+          .forEach((s) => s.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((b) => b.classList.remove("active"));
+        document.getElementById(`section-${name}`).classList.add("active");
+        btn.classList.add("active");
+        if (name === "location" && map)
+          setTimeout(() => map.invalidateSize(), 100);
+      }
 
-    function initMap() {
-        map = L.map('map').setView([41.3111, 69.2797], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        map.on('click', e => {
-            updateMapPin(e.latlng.lat, e.latlng.lng);
-            document.getElementById('lLat').value = e.latlng.lat.toFixed(6);
-            document.getElementById('lLng').value = e.latlng.lng.toFixed(6);
+      function initMap() {
+        map = L.map("map").setView([41.3111, 69.2797], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+          map,
+        );
+        map.on("click", (e) => {
+          updateMapPin(e.latlng.lat, e.latlng.lng);
+          document.getElementById("lLat").value = e.latlng.lat.toFixed(6);
+          document.getElementById("lLng").value = e.latlng.lng.toFixed(6);
         });
-    }
+      }
 
-    function updateMapPin(lat, lng) {
+      function updateMapPin(lat, lng) {
         if (marker) map.removeLayer(marker);
         marker = L.marker([lat, lng]).addTo(map);
         map.setView([lat, lng], 15);
-    }
+      }
 
-    function toast(msg, type = 'info') {
-        const c = document.getElementById('toastContainer');
-        const el = document.createElement('div');
+      function toast(msg, type = "info") {
+        const c = document.getElementById("toastContainer");
+        const el = document.createElement("div");
         el.className = `toast toast-${type}`;
-        const icons = { success:'✅', error:'❌', info:'ℹ️' };
-        el.innerHTML = `<span>${icons[type]||'ℹ️'}</span> ${msg}`;
+        const icons = { success: "✅", error: "❌", info: "ℹ️" };
+        el.innerHTML = `<span>${icons[type] || "ℹ️"}</span> ${msg}`;
         c.appendChild(el);
         setTimeout(() => el.remove(), 4000);
-    }
-</script>
-</body>
+      }
+    </script>
+  </body>
 </html>

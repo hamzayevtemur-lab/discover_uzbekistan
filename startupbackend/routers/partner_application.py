@@ -1,3 +1,11 @@
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
+from sqlalchemy.orm import Session
+from pydantic import BaseModel, EmailStr
+from jose import jwt
+
+from database import get_db, Base
+import os
 import secrets
 import string
 import hashlib
@@ -7,14 +15,6 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
-from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr
-from jose import jwt
-
-from database import get_db, Base
-import os
 
 
 # ══════════════════════════════════════════════════

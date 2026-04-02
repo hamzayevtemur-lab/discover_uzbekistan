@@ -5,6 +5,7 @@ from typing import Optional
 
 from database import get_db
 from models.hotel import Hotel, HotelRoom
+from routers.partner_auth import require_hotel_owner
 
 router = APIRouter(prefix="/hotels", tags=["partner-hotels"])
 
@@ -23,10 +24,12 @@ class HotelInfoUpdate(BaseModel):
     type: Optional[str] = None
     offer: Optional[str] = None
 
+
 @router.put("/{hotel_id}/info")
 async def update_hotel_info(
     hotel_id: int,
     data: HotelInfoUpdate,
+    token: dict = Depends(require_hotel_owner),
     db: Session = Depends(get_db)
 ):
     """Update hotel info - sets to pending for approval"""
@@ -59,8 +62,13 @@ class HotelRoomCreate(BaseModel):
 
 # ==================== GET HOTEL WITH ROOMS ====================
 
-@router.get("")
-async def get_hotels_with_rooms(db: Session = Depends(get_db)):
+# GET hotel with rooms
+@router.get("/{hotel_id}/partner")
+async def get_hotel_with_rooms(
+    hotel_id: int,
+    token: dict = Depends(require_hotel_owner),
+    db: Session = Depends(get_db)
+):
     """Get all hotels with their rooms (including pending for partner)"""
     hotels = db.query(Hotel).all()
     
@@ -112,8 +120,10 @@ async def get_hotels_with_rooms(db: Session = Depends(get_db)):
 async def add_hotel_room(
     hotel_id: int,
     room_data: HotelRoomCreate,
+    token: dict = Depends(require_hotel_owner),
     db: Session = Depends(get_db)
 ):
+
     """Add a new room to hotel - GOES TO PENDING STATUS"""
     
     # Check hotel exists
@@ -155,12 +165,15 @@ async def add_hotel_room(
 
 # ==================== DELETE ROOM ====================
 
+# DELETE room
 @router.delete("/{hotel_id}/rooms/{room_id}")
 async def delete_hotel_room(
     hotel_id: int,
     room_id: int,
+    token: dict = Depends(require_hotel_owner),
     db: Session = Depends(get_db)
 ):
+
     """Delete a hotel room"""
     
     room = db.query(HotelRoom).filter(
@@ -181,11 +194,13 @@ async def delete_hotel_room(
 
 # ==================== UPDATE ROOM ====================
 
+# PUT update room
 @router.put("/{hotel_id}/rooms/{room_id}")
 async def update_hotel_room(
     hotel_id: int,
     room_id: int,
     room_data: dict,
+    token: dict = Depends(require_hotel_owner),
     db: Session = Depends(get_db)
 ):
     """Update a hotel room - GOES TO PENDING"""
