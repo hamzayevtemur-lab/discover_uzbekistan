@@ -37,6 +37,8 @@ class Restaurant(Base):
     menu_items = relationship("RestaurantMenu", back_populates="restaurant")
     reviews    = relationship("Review", back_populates="restaurant")
     
+    review_count = Column(Integer, default=0)
+    
     status = Column(String(20), default="pending")  # pending, approved, rejected
     rejection_reason = Column(Text, nullable=True)  # Why it was rejected
     approved_at = Column(DateTime, nullable=True)

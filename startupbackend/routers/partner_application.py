@@ -25,7 +25,7 @@ SECRET_KEY    = os.environ.get("SECRET_KEY")
 ALGORITHM     = "HS256"
 
 SMTP_HOST     = "smtp.gmail.com"
-SMTP_PORT     = 587
+SMTP_PORT     = os.environ.get("SMTP_PORT", 465)
 SMTP_USER     = os.environ.get("SMTP_USER")
 SMTP_PASS     = os.environ.get("SMTP_PASS")
 FROM_NAME     = "Discover Uzbekistan"
@@ -137,14 +137,17 @@ def login_url_for(business_type: str) -> str:
 # ══════════════════════════════════════════════════
 
 def _send(to_email: str, to_name: str, subject: str, html: str):
+    import ssl
+    import certifi
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"]    = f"{FROM_NAME} <{SMTP_USER}>"
     msg["To"]      = f"{to_name} <{to_email}>"
     msg.attach(MIMEText(html, "html"))
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
-            s.ehlo(); s.starttls(); s.login(SMTP_USER, SMTP_PASS)
+        context = ssl.create_default_context(cafile=certifi.where())
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as s:
+            s.login(SMTP_USER, SMTP_PASS)
             s.sendmail(SMTP_USER, to_email, msg.as_string())
         print(f"✅ Email → {to_email}")
     except Exception as e:
@@ -531,6 +534,9 @@ def _create_business_record(app: PartnerApplication, hashed_pw: str, db: Session
             partner_password = hashed_pw,
             rating           = 0.0,
             review_count     = 0,
+            latitude         = 0.0,
+            longitude        = 0.0,
+            status           = "pending",
         )
 
     elif bt == "hotel":
@@ -540,7 +546,7 @@ def _create_business_record(app: PartnerApplication, hashed_pw: str, db: Session
             db.flush()
             return existing.id
         
-        record = Hotel(   
+        record = Hotel(
             name             = app.business_name,
             partner_email    = app.email,
             phone            = app.phone,
@@ -612,5 +618,54 @@ def _to_dict(a: PartnerApplication) -> dict:
         "credentials_sent": a.credentials_sent,
     }
 
+##################################################################################
+
+@router.post("/admin/{app_id}/resend-credentials")
+async def resend_credentials(app_id: int, bg: BackgroundTasks, db: Session = Depends(get_db)):
+    """Resend login credentials to an already approved partner"""
+    app = _get_app(app_id, db)
+
+    if app.status != "approved":
+        raise HTTPException(400, "Application is not approved yet.")
+
+    if not app.linked_record_id:
+        raise HTTPException(400, "No linked business record found.")
+
+    # Generate a new password
+    plain_pw = generate_password()
+    hashed_pw = hash_password(plain_pw)
+
+    # Update password on the business record
+    _update_business_password(app, hashed_pw, db)
+
+    # Update application record
+    app.generated_password = hashed_pw
+    db.commit()
+
+    # Send email
+    send_approval_email(app, plain_pw, app.linked_record_id, bg)
+
+    return {"message": f"Credentials resent to {app.email}"}
+
+
+def _update_business_password(app: PartnerApplication, hashed_pw: str, db: Session) -> None:
+    """Update password on the actual business record"""
+    from models.travel_agency import TravelAgency
+    from models.restaurant import Restaurant
+    from models.hotel import Hotel
+
+    bt = app.business_type
+    if bt == "travel_agency":
+        rec = db.query(TravelAgency).filter(TravelAgency.id == app.linked_record_id).first()
+    elif bt == "restaurant":
+        rec = db.query(Restaurant).filter(Restaurant.id == app.linked_record_id).first()
+    elif bt == "hotel":
+        rec = db.query(Hotel).filter(Hotel.id == app.linked_record_id).first()
+    else:
+        return
+
+    if rec:
+        rec.partner_password = hashed_pw
+        db.flush()
 
 print("✅ partner_applications router loaded — universal for all business types")

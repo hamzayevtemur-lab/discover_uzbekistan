@@ -36,21 +36,17 @@
         --shadow: 0 4px 24px rgba(79, 70, 229, 0.08);
         --shadow-lg: 0 12px 40px rgba(79, 70, 229, 0.15);
       }
-
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
-
       body {
         font-family: "Plus Jakarta Sans", sans-serif;
         background: var(--bg);
         color: var(--text);
         min-height: 100vh;
       }
-
-      /* HEADER */
       .header {
         background: var(--surface);
         border-bottom: 2px solid var(--border);
@@ -96,8 +92,6 @@
         border-color: var(--danger);
         color: var(--danger);
       }
-
-      /* LAYOUT */
       .layout {
         display: flex;
         max-width: 1300px;
@@ -105,8 +99,6 @@
         padding: 2rem;
         gap: 2rem;
       }
-
-      /* SIDEBAR */
       .sidebar {
         width: 220px;
         flex-shrink: 0;
@@ -131,6 +123,7 @@
         background: none;
         width: 100%;
         text-align: left;
+        font-family: inherit;
       }
       .nav-item:hover {
         background: var(--border);
@@ -140,14 +133,10 @@
         background: var(--primary);
         color: white;
       }
-
-      /* MAIN */
       .main {
         flex: 1;
         min-width: 0;
       }
-
-      /* STATS */
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -179,16 +168,12 @@
         font-weight: 800;
         color: var(--primary);
       }
-
-      /* SECTIONS */
       .section {
         display: none;
       }
       .section.active {
         display: block;
       }
-
-      /* CARD */
       .card {
         background: var(--surface);
         border: 2px solid var(--border);
@@ -206,8 +191,23 @@
         font-size: 1.2rem;
         font-weight: 800;
       }
-
-      /* FORM */
+      .status-bar {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      .status-bar.pending {
+        background: var(--warning-light);
+        color: var(--warning);
+        border-left: 4px solid #fcd34d;
+      }
+      .status-bar.rejected {
+        background: var(--danger-light);
+        color: var(--danger);
+        border-left: 4px solid #fca5a5;
+      }
       .form-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -255,8 +255,6 @@
         min-height: 100px;
         resize: vertical;
       }
-
-      /* BUTTONS */
       .btn {
         padding: 0.65rem 1.5rem;
         border: none;
@@ -314,8 +312,6 @@
         padding: 0.4rem 0.9rem;
         font-size: 0.8rem;
       }
-
-      /* ROOMS */
       .rooms-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -398,8 +394,6 @@
         display: flex;
         gap: 0.5rem;
       }
-
-      /* BANNERS */
       .pending-banner {
         background: var(--warning-light);
         border: 1px solid #fcd34d;
@@ -423,8 +417,6 @@
         color: var(--danger);
         margin-bottom: 0.75rem;
       }
-
-      /* BADGES */
       .badge {
         display: inline-flex;
         align-items: center;
@@ -446,16 +438,12 @@
         background: var(--danger-light);
         color: var(--danger);
       }
-
-      /* MAP */
       #map {
         height: 380px;
         border-radius: 12px;
         margin-top: 1rem;
         border: 2px solid var(--border);
       }
-
-      /* MODAL */
       .modal {
         display: none;
         position: fixed;
@@ -513,8 +501,6 @@
         justify-content: flex-end;
         gap: 0.75rem;
       }
-
-      /* IMAGE PREVIEW */
       .img-preview {
         max-width: 100%;
         max-height: 180px;
@@ -526,8 +512,6 @@
       .img-preview.show {
         display: block;
       }
-
-      /* TOAST */
       .toast-container {
         position: fixed;
         bottom: 2rem;
@@ -574,8 +558,6 @@
           opacity: 1;
         }
       }
-
-      /* EMPTY */
       .empty-state {
         text-align: center;
         padding: 3rem;
@@ -586,8 +568,6 @@
         font-size: 3rem;
         margin-bottom: 1rem;
       }
-
-      /* RESPONSIVE */
       @media (max-width: 900px) {
         .layout {
           flex-direction: column;
@@ -633,7 +613,6 @@
     </header>
 
     <div class="layout">
-      <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-sticky">
           <button class="nav-item active" onclick="showSection('info', this)">
@@ -660,9 +639,7 @@
         </div>
       </aside>
 
-      <!-- MAIN -->
       <main class="main">
-        <!-- STATS -->
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-label">Total Rooms</div>
@@ -688,6 +665,7 @@
             <div class="card-header">
               <h2 class="card-title">Hotel Information</h2>
             </div>
+            <div id="hotelStatusBar"></div>
             <form id="hotelForm">
               <div class="form-grid">
                 <div class="form-group">
@@ -982,7 +960,6 @@
       </div>
     </div>
 
-    <!-- TOAST -->
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
@@ -991,12 +968,19 @@
       let map = null,
         marker = null;
 
+      function getToken() {
+        return localStorage.getItem("partner_token");
+      }
+
       function authHeaders() {
-        const token = localStorage.getItem("partner_token");
         return {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${getToken()}`,
         };
+      }
+
+      function authHeadersFormData() {
+        return { Authorization: `Bearer ${getToken()}` };
       }
 
       document.addEventListener("DOMContentLoaded", () => {
@@ -1006,11 +990,10 @@
       });
 
       function checkAuth() {
-        const token = localStorage.getItem("partner_token");
         const params = new URLSearchParams(window.location.search);
         hotelId = params.get("id") || localStorage.getItem("hotel_id");
         const email = localStorage.getItem("partner_email");
-        if (!token || !hotelId) {
+        if (!getToken() || !hotelId) {
           window.location.href = "/partner-login.html";
           return;
         }
@@ -1033,21 +1016,18 @@
 
       async function loadHotelData() {
         try {
-          // Try partner endpoint first (shows all statuses including pending)
-          const res = await fetch(`${API}/hotels`);
-          const hotels = await res.json();
-          let hotel = hotels.find((h) => h.id === parseInt(hotelId));
+          // Use partner endpoint — returns this hotel with ALL room statuses
+          const res = await fetch(`${API}/hotels/${hotelId}/partner`, {
+            headers: authHeaders(),
+          });
 
-          // Fallback: direct fetch
-          if (!hotel) {
-            const res2 = await fetch(`${API}/hotels/${hotelId}`);
-            if (res2.ok) hotel = await res2.json();
-          }
-
-          if (!hotel) {
-            toast("Hotel not found", "error");
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = "/partner-login.html";
             return;
           }
+          if (!res.ok) throw new Error("Failed to load hotel");
+
+          const hotel = await res.json();
 
           document.getElementById("hotelNameHeader").textContent =
             hotel.name || "Hotel Partner Portal";
@@ -1065,13 +1045,14 @@
           document.getElementById("lLat").value = hotel.latitude || "";
           document.getElementById("lLng").value = hotel.longitude || "";
 
-          if (hotel.image_url)
+          if (hotel.image_url) {
             showPreview(
               hotel.image_url.startsWith("http")
                 ? hotel.image_url
                 : `${API}${hotel.image_url}`,
               "hImagePreview",
             );
+          }
 
           // Stats
           document.getElementById("statRooms").textContent =
@@ -1081,123 +1062,108 @@
           document.getElementById("statReviews").textContent =
             hotel.review_count ?? 0;
 
+          // Status
           const status = hotel.status || "approved";
           const el = document.getElementById("statStatus");
-          if (status === "pending")
+          const statusBar = document.getElementById("hotelStatusBar");
+
+          if (status === "pending") {
             el.innerHTML =
               '<span class="badge badge-warning">⏰ Pending</span>';
-          else if (status === "approved")
+            statusBar.innerHTML =
+              '<div class="status-bar pending">⏳ Your hotel is pending admin approval. It is not visible to the public yet.</div>';
+          } else if (status === "approved") {
             el.innerHTML = '<span class="badge badge-success">✅ Active</span>';
-          else
+            statusBar.innerHTML = "";
+          } else {
             el.innerHTML =
               '<span class="badge badge-danger">❌ Rejected</span>';
+            statusBar.innerHTML =
+              '<div class="status-bar rejected">❌ Your hotel was rejected. Please update your information and save again.</div>';
+          }
 
           if (hotel.latitude && hotel.longitude)
             updateMapPin(hotel.latitude, hotel.longitude);
 
-          loadRooms();
+          renderRooms(hotel.rooms || []);
         } catch (err) {
           toast("Failed to load hotel data", "error");
           console.error(err);
         }
       }
 
-      async function loadRooms() {
-        try {
-          // Fetch all rooms including pending ones via the partner hotels endpoint
-          const res = await fetch(`${API}/hotels`);
-          const hotels = await res.json();
-          const hotel = hotels.find((h) => h.id === parseInt(hotelId));
-          let rooms = hotel?.rooms || [];
+      function renderRooms(rooms) {
+        const grid = document.getElementById("roomsGrid");
+        document.getElementById("statRooms").textContent = rooms.length;
 
-          // Fallback to public rooms endpoint
-          if (!rooms.length) {
-            const res2 = await fetch(`${API}/hotels/${hotelId}/rooms`);
-            if (res2.ok) rooms = await res2.json();
-          }
-
-          const grid = document.getElementById("roomsGrid");
-          document.getElementById("statRooms").textContent = rooms.length;
-
-          if (!rooms.length) {
-            grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🛏️</div><p>No rooms yet — add your first room!</p></div>`;
-            return;
-          }
-
-          grid.innerHTML = rooms
-            .map((room) => {
-              const status = room.status || "approved";
-              let statusBadge = "",
-                cardClass = "",
-                banner = "";
-
-              if (status === "pending") {
-                statusBadge =
-                  '<span class="badge badge-warning">⏰ Pending Approval</span>';
-                cardClass = "pending";
-                banner = `<div class="pending-banner">⏳ Waiting for admin approval before going live</div>`;
-              } else if (status === "approved") {
-                statusBadge =
-                  '<span class="badge badge-success">✅ Approved</span>';
-              } else {
-                statusBadge =
-                  '<span class="badge badge-danger">❌ Rejected</span>';
-                cardClass = "rejected";
-                if (room.rejection_reason) {
-                  banner = `<div class="rejection-banner">❌ <strong>Reason:</strong> ${room.rejection_reason}</div>`;
-                }
-              }
-
-              const imgUrl = room.image_url
-                ? room.image_url.startsWith("http")
-                  ? room.image_url
-                  : `${API}${room.image_url}`
-                : null;
-
-              const imgHtml = imgUrl
-                ? `<img class="room-img" src="${imgUrl}" alt="${room.room_type}" onerror="this.parentElement.innerHTML='<div class=room-img-placeholder>🛏️</div>'">`
-                : `<div class="room-img-placeholder">🛏️</div>`;
-
-              // Encode room data safely for the edit button
-              const roomData = encodeURIComponent(JSON.stringify(room));
-
-              return `
-                    <div class="room-card ${cardClass}">
-                        ${imgHtml}
-                        <div class="room-body">
-                            <div class="room-top">
-                                <div class="room-name">${room.room_type}</div>
-                                <div class="room-price">$${room.price}/night</div>
-                            </div>
-                            <div class="room-meta">👥 Capacity: ${room.capacity} people</div>
-                            ${room.description ? `<div class="room-desc">${room.description}</div>` : ""}
-                            ${banner}
-                            <div class="room-badges">
-                                ${statusBadge}
-                                ${
-                                  room.available
-                                    ? '<span class="badge badge-success">Available</span>'
-                                    : '<span class="badge badge-danger">Not Available</span>'
-                                }
-                            </div>
-                            <div class="room-actions">
-                                <button class="btn btn-edit btn-sm" onclick="openEditRoomModal(${room.id}, '${roomData}')">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteRoom(${room.id})">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </div>
-                        </div>
-                    </div>`;
-            })
-            .join("");
-        } catch (err) {
-          console.error(err);
+        if (!rooms.length) {
+          grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🛏️</div><p>No rooms yet — add your first room!</p></div>`;
+          return;
         }
+
+        grid.innerHTML = rooms
+          .map((room) => {
+            const status = room.status || "approved";
+            let statusBadge = "",
+              cardClass = "",
+              banner = "";
+
+            if (status === "pending") {
+              statusBadge =
+                '<span class="badge badge-warning">⏰ Pending Approval</span>';
+              cardClass = "pending";
+              banner = `<div class="pending-banner">⏳ Waiting for admin approval before going live</div>`;
+            } else if (status === "approved") {
+              statusBadge =
+                '<span class="badge badge-success">✅ Approved</span>';
+            } else {
+              statusBadge =
+                '<span class="badge badge-danger">❌ Rejected</span>';
+              cardClass = "rejected";
+              if (room.rejection_reason)
+                banner = `<div class="rejection-banner">❌ <strong>Reason:</strong> ${room.rejection_reason}</div>`;
+            }
+
+            const imgUrl = room.image_url
+              ? room.image_url.startsWith("http")
+                ? room.image_url
+                : `${API}${room.image_url}`
+              : null;
+            const imgHtml = imgUrl
+              ? `<img class="room-img" src="${imgUrl}" alt="${room.room_type}" onerror="this.parentElement.innerHTML='<div class=room-img-placeholder>🛏️</div>'">`
+              : `<div class="room-img-placeholder">🛏️</div>`;
+
+            const roomData = encodeURIComponent(JSON.stringify(room));
+
+            return `
+                <div class="room-card ${cardClass}">
+                    ${imgHtml}
+                    <div class="room-body">
+                        <div class="room-top">
+                            <div class="room-name">${room.room_type}</div>
+                            <div class="room-price">$${room.price}/night</div>
+                        </div>
+                        <div class="room-meta">👥 Capacity: ${room.capacity} people</div>
+                        ${room.description ? `<div class="room-desc">${room.description}</div>` : ""}
+                        ${banner}
+                        <div class="room-badges">
+                            ${statusBadge}
+                            ${room.available ? '<span class="badge badge-success">Available</span>' : '<span class="badge badge-danger">Not Available</span>'}
+                        </div>
+                        <div class="room-actions">
+                            <button class="btn btn-edit btn-sm" onclick="openEditRoomModal(${room.id},'${roomData}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteRoom(${room.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+          })
+          .join("");
       }
 
-      // HOTEL INFO SUBMIT
       document
         .getElementById("hotelForm")
         .addEventListener("submit", async (e) => {
@@ -1218,9 +1184,17 @@
           try {
             const res = await fetch(`${API}/hotels/${hotelId}/info`, {
               method: "PUT",
-              headers: { "Content-Type": "application/json" },
+              headers: authHeaders(),
               body: JSON.stringify(data),
             });
+            if (res.status === 401 || res.status === 403) {
+              toast("Session expired. Please log in again.", "error");
+              setTimeout(
+                () => (window.location.href = "/partner-login.html"),
+                2000,
+              );
+              return;
+            }
             if (!res.ok) throw new Error((await res.json()).detail || "Failed");
             toast("Hotel info saved! Waiting for admin approval.", "info");
             loadHotelData();
@@ -1232,7 +1206,6 @@
           }
         });
 
-      // LOCATION SUBMIT
       document
         .getElementById("locationForm")
         .addEventListener("submit", async (e) => {
@@ -1247,9 +1220,13 @@
           try {
             const res = await fetch(`${API}/hotels/${hotelId}/info`, {
               method: "PUT",
-              headers: { "Content-Type": "application/json" },
+              headers: authHeaders(),
               body: JSON.stringify(data),
             });
+            if (res.status === 401 || res.status === 403) {
+              toast("Session expired.", "error");
+              return;
+            }
             if (!res.ok) throw new Error((await res.json()).detail || "Failed");
             toast("Location saved! Waiting for admin approval.", "info");
           } catch (err) {
@@ -1259,7 +1236,6 @@
           }
         });
 
-      // ROOM MODAL OPEN (ADD)
       function openRoomModal() {
         document.getElementById("roomForm").reset();
         document.getElementById("editRoomId").value = "";
@@ -1269,7 +1245,6 @@
         document.getElementById("roomModal").classList.add("active");
       }
 
-      // ROOM MODAL OPEN (EDIT)
       function openEditRoomModal(roomId, encodedRoom) {
         const room = JSON.parse(decodeURIComponent(encodedRoom));
         document.getElementById("editRoomId").value = roomId;
@@ -1282,10 +1257,12 @@
         document.getElementById("rImageUrl").value = room.image_url || "";
         document.getElementById("rAvailable").checked = room.available ?? true;
         if (room.image_url) {
-          const url = room.image_url.startsWith("http")
-            ? room.image_url
-            : `${API}${room.image_url}`;
-          showPreview(url, "rImagePreview");
+          showPreview(
+            room.image_url.startsWith("http")
+              ? room.image_url
+              : `${API}${room.image_url}`,
+            "rImagePreview",
+          );
         } else {
           document.getElementById("rImagePreview").classList.remove("show");
         }
@@ -1296,7 +1273,6 @@
         document.getElementById("roomModal").classList.remove("active");
       }
 
-      // ROOM FORM SUBMIT (ADD + EDIT)
       document
         .getElementById("roomForm")
         .addEventListener("submit", async (e) => {
@@ -1305,7 +1281,6 @@
           btn.disabled = true;
           const editId = document.getElementById("editRoomId").value;
           const isEdit = !!editId;
-
           const data = {
             hotel_id: parseInt(hotelId),
             room_type: document.getElementById("rType").value,
@@ -1315,16 +1290,19 @@
             image_url: document.getElementById("rImageUrl").value,
             available: document.getElementById("rAvailable").checked,
           };
-
           try {
             const url = isEdit
               ? `${API}/hotels/${hotelId}/rooms/${editId}`
               : `${API}/hotels/${hotelId}/rooms`;
             const res = await fetch(url, {
               method: isEdit ? "PUT" : "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: authHeaders(),
               body: JSON.stringify(data),
             });
+            if (res.status === 401 || res.status === 403) {
+              toast("Session expired.", "error");
+              return;
+            }
             if (!res.ok) throw new Error((await res.json()).detail || "Failed");
             toast(
               isEdit
@@ -1333,7 +1311,7 @@
               "info",
             );
             closeRoomModal();
-            loadRooms();
+            loadHotelData();
           } catch (err) {
             toast("Error: " + err.message, "error");
           } finally {
@@ -1346,10 +1324,15 @@
         try {
           const res = await fetch(`${API}/hotels/${hotelId}/rooms/${roomId}`, {
             method: "DELETE",
+            headers: authHeaders(),
           });
+          if (res.status === 401 || res.status === 403) {
+            toast("Session expired.", "error");
+            return;
+          }
           if (!res.ok) throw new Error("Delete failed");
           toast("Room deleted.", "success");
-          loadRooms();
+          loadHotelData();
         } catch (err) {
           toast("Error: " + err.message, "error");
         }
@@ -1363,6 +1346,7 @@
           formData.append("file", file);
           const res = await fetch(`${API}/admin/upload-image`, {
             method: "POST",
+            headers: authHeadersFormData(),
             body: formData,
           });
           const data = await res.json();

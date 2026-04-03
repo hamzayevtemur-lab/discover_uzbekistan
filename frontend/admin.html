@@ -4263,7 +4263,9 @@
     <div class="pa-actions">
       ${canApprove ? `<button class="pa-btn-approve" onclick="paApprove(${a.id})">✓ Approve & Send Credentials</button>` : ''}
       ${canReject ? `<button class="pa-btn-reject"  onclick="paShowReject(${a.id})">✕ Reject</button>` : ''}
-      ${a.status === 'approved' ? `<span style="font-size:.76rem;color:#64748b">✅ Credentials sent to ${a.email}</span>` : ''}
+      ${a.status === 'approved' ? `
+        <span style="font-size:.76rem;color:#64748b">✅ Credentials sent to ${a.email}</span>
+        <button class="pa-btn-approve" style="background:#0891b2;" onclick="paResend(${a.id})">↺ Resend Credentials</button>` : ''}
       ${a.status === 'rejected' ? `<span style="font-size:.76rem;color:#64748b">✕ Rejection email sent${a.rejection_reason ? ' — ' + a.rejection_reason : ''}</span>` : ''}
       ${a.status === 'pending' ? `<span style="font-size:.74rem;color:#c2410c">⚠️ Waiting for email verification</span>` : ''}
       <span class="pa-date">Applied ${fmtDate(a.applied_at)}</span>
@@ -4275,6 +4277,19 @@
     </div>
   </div>`;
             }
+
+            window.paResend = async function (id) {
+                if (!confirm('Generate a new password and resend credentials by email?')) return;
+                try {
+                    const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/resend-credentials`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                    });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || 'Resend failed.');
+                alert('✅ ' + data.message);
+                } catch (e) { alert('❌ ' + e.message); }
+            };
 
             window.paApprove = async function (id) {
                 if (!confirm('Approve this application and send login credentials by email?')) return;
