@@ -1,6 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "./venv/lib/python3.13/site-packages"
-    ],
-    "python-envs.defaultEnvManager": "ms-python.python:venv"
-}
