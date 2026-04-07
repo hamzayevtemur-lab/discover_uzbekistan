@@ -45,19 +45,35 @@ def get_partner_token(
         raise HTTPException(status_code=401, detail="Invalid token.")
 
 # ── OWNERSHIP CHECK HELPERS ──
-def require_hotel_owner(hotel_id: int, token: dict = Depends(get_partner_token)):
-    if token.get("type") != "hotel":
+def require_hotel_owner(
+    hotel_id: int,
+    token: dict = Depends(get_partner_token)
+):
+    # Token uses 'business_type' and 'record_id' (from partner_application login)
+    # Also support 'type' and 'id' (from partner_auth direct login)
+    biz_type = token.get("business_type") or token.get("type")
+    biz_id = token.get("record_id") or token.get("id")
+
+    if biz_type != "hotel":
         raise HTTPException(status_code=403, detail="Not a hotel partner account.")
-    if token.get("id") != hotel_id:
+    if biz_id != hotel_id:
         raise HTTPException(status_code=403, detail="You can only modify your own hotel.")
     return token
 
-def require_restaurant_owner(restaurant_id: int, token: dict = Depends(get_partner_token)):
-    if token.get("type") != "restaurant":
+
+def require_restaurant_owner(
+    restaurant_id: int,
+    token: dict = Depends(get_partner_token)
+):
+    biz_type = token.get("business_type") or token.get("type")
+    biz_id = token.get("record_id") or token.get("id")
+
+    if biz_type != "restaurant":
         raise HTTPException(status_code=403, detail="Not a restaurant partner account.")
-    if token.get("id") != restaurant_id:
+    if biz_id != restaurant_id:
         raise HTTPException(status_code=403, detail="You can only modify your own restaurant.")
     return token
+
 
 # ── LOGIN ──
 @router.post("/login")

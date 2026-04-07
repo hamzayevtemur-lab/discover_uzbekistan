@@ -1,447 +1,407 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session, joinedload
-from typing import Optional, List
+from __future__ import annotations
+
+import hashlib
+import os
+import shutil
+import uuid
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt
 from pydantic import BaseModel
-import hashlib
-import shutil
-from pathlib import Path
-import uuid
-import os
+from sqlalchemy.orm import Session, joinedload
 
 from database import get_db
-from models.travel_agency import TravelAgency, Tour, AgencyReview, TourItinerary, TourDestination
+from models.travel_agency import (
+    TravelAgency, Tour, AgencyReview,
+    TourItinerary, TourDestination,
+)
 
-router = APIRouter(prefix="/agency-partner", tags=["agency-partner"])
-security = HTTPBearer()
+# ─────────────────────────────────────────────
+# Router & security
+# ─────────────────────────────────────────────
 
-# ── Reuse same secret as partner.py ────────────────────────────
+router   = APIRouter(prefix="/agency-partner", tags=["Agency Partner"])
+security = HTTPBearer(auto_error=False)
+
 SECRET_KEY = os.environ.get("SECRET_KEY")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 43200  # 30 days
+ALGORITHM  = "HS256"
+TOKEN_DAYS = 30
 
-# ==================== PASSWORD HELPERS ====================
 
-def hash_password(password: str) -> str:
+# ─────────────────────────────────────────────
+# Helpers
+# ─────────────────────────────────────────────
+
+def _hash(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
-def verify_password(plain: str, hashed: str) -> bool:
-    return hash_password(plain) == hashed
 
-# ==================== AGENCY PARTNERS STORE ====================
-# Same in-memory pattern as PARTNERS in partner.py
-# Add real agencies here, or migrate to DB later
-
-AGENCY_PARTNERS = {
-    "agency@example.com": {
-        "id": 1,
-        "email": "agency@example.com",
-        "password_hash": hash_password("agency123"),
-        "business_name": "Demo Tour Agency",
-        "phone": "+998 71 234 5678",
-        "is_active": True,
-        "agency_id": 1,          # links to travel_agencies.id
-    },
-    "test@agency.com": {
-        "id": 2,
-        "email": "test@agency.com",
-        "password_hash": hash_password("test123"),
-        "business_name": "Test Agency",
-        "phone": "+998 90 000 0000",
-        "is_active": True,
-        "agency_id": None,        # no agency yet, can create one
-    },
-}
-
-def add_agency_partner(email: str, password: str, business_name: str,
-                        phone: str = None, agency_id: int = None):
-    """Helper to add a new agency partner account"""
-    AGENCY_PARTNERS[email] = {
-        "id": len(AGENCY_PARTNERS) + 1,
-        "email": email,
-        "password_hash": hash_password(password),
-        "business_name": business_name,
-        "phone": phone,
-        "is_active": True,
-        "agency_id": agency_id,
+def _encode_token(email: str, agency_id: int) -> str:
+    payload = {
+        "sub":           email,
+        "business_type": "travel_agency",
+        "record_id":     agency_id,
+        "exp":           datetime.utcnow() + timedelta(days=TOKEN_DAYS),
     }
-
-# ==================== TOKEN HELPERS ====================
-
-def create_token(data: dict) -> str:
-    payload = data.copy()
-    payload["exp"] = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
-def decode_token(token: str) -> dict:
+
+def _decode_token(token: str) -> dict:
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token has expired")
+        raise HTTPException(status_code=401, detail="Token expired. Please log in again.")
     except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="Invalid token.")
 
-def get_current_agency_partner(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-) -> dict:
-    payload = decode_token(credentials.credentials)
-    email = payload.get("sub")
-    if not email or email not in AGENCY_PARTNERS:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    partner = AGENCY_PARTNERS[email]
-    if not partner["is_active"]:
-        raise HTTPException(status_code=403, detail="Account is inactive")
-    return partner
 
-# ==================== PYDANTIC SCHEMAS ====================
+# ─────────────────────────────────────────────
+# Auth dependency
+# ─────────────────────────────────────────────
 
-class AgencyLoginRequest(BaseModel):
-    email: str
+def get_current_agency(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+) -> TravelAgency:
+    """
+    Decode JWT → verify business_type is travel_agency
+    → load agency from DB → return the ORM object.
+    Any endpoint that uses this dependency is fully authenticated.
+    """
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated.")
+
+    payload    = _decode_token(credentials.credentials)
+    biz_type   = payload.get("business_type")
+    agency_id  = payload.get("record_id")
+
+    if biz_type != "travel_agency" or not agency_id:
+        raise HTTPException(status_code=403, detail="Not a travel agency account.")
+
+    agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first()
+    if not agency:
+        raise HTTPException(status_code=404, detail="Agency not found.")
+
+    return agency
+
+
+# ─────────────────────────────────────────────
+# Schemas
+# ─────────────────────────────────────────────
+
+class LoginRequest(BaseModel):
+    email:    str
     password: str
 
-class AgencyCreate(BaseModel):
-    name: str
-    agency_type: Optional[str] = "Tour Operator"
-    description: Optional[str] = None
-    city: Optional[str] = None
-    country: Optional[str] = None
-    address: Optional[str] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
-    website: Optional[str] = None
-    languages: Optional[str] = "English, Russian, Uzbek"
-    image_url: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    specializations: Optional[list] = []
+class AgencyUpdate(BaseModel):
+    name:            Optional[str]   = None
+    agency_type:     Optional[str]   = None
+    description:     Optional[str]   = None
+    city:            Optional[str]   = None
+    address:         Optional[str]   = None
+    phone:           Optional[str]   = None
+    email:           Optional[str]   = None
+    website:         Optional[str]   = None
+    languages:       Optional[str]   = None
+    image_url:       Optional[str]   = None
+    latitude:        Optional[float] = None
+    longitude:       Optional[float] = None
+    specializations: Optional[list]  = None
 
 class TourCreate(BaseModel):
-    tour_name: str
-    tour_type: Optional[str] = None
-    description: Optional[str] = None
-    duration_days: Optional[int] = None
-    price: Optional[float] = None
-    currency: Optional[str] = "USD"
-    max_group_size: Optional[int] = None
-    image_url: Optional[str] = None
-    highlights: Optional[list] = []
-    included_services: Optional[list] = []
-    excluded_services: Optional[list] = []
-    difficulty_level: Optional[str] = None
-    best_season: Optional[str] = None
+    tour_name:         str
+    tour_type:         Optional[str]   = None
+    description:       Optional[str]   = None
+    duration_days:     Optional[int]   = None
+    price:             Optional[float] = None
+    currency:          Optional[str]   = "USD"
+    max_group_size:    Optional[int]   = None
+    image_url:         Optional[str]   = None
+    highlights:        Optional[list]  = []
+    included_services: Optional[list]  = []
+    excluded_services: Optional[list]  = []
+    difficulty_level:  Optional[str]   = None
+    best_season:       Optional[str]   = None
 
 class TourUpdate(TourCreate):
     pass
 
 class ItineraryDayCreate(BaseModel):
-    day_number: int
-    day_title: str
-    activities: str
-    meals: Optional[str] = None
-    accommodation: Optional[str] = None
-    destinations: Optional[list] = []
-    coordinates: Optional[list] = []
+    day_number:    int
+    day_title:     str
+    activities:    str
+    meals:         Optional[str]  = None
+    accommodation: Optional[str]  = None
+    destinations:  Optional[list] = []
+    coordinates:   Optional[list] = []
 
 class DestinationCreate(BaseModel):
     destination_name: str
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    visit_order: Optional[int] = 0
-    nights_stay: Optional[int] = 0
-    description: Optional[str] = None
+    latitude:         Optional[float] = None
+    longitude:        Optional[float] = None
+    visit_order:      Optional[int]   = 0
+    nights_stay:      Optional[int]   = 0
+    description:      Optional[str]   = None
 
-# ==================== AUTH ====================
 
-@router.post("/login")
-async def agency_partner_login(request: AgencyLoginRequest):
-    """Login for travel agency partners"""
-    if request.email not in AGENCY_PARTNERS:
-        raise HTTPException(status_code=401, detail="Incorrect email or password")
+# ─────────────────────────────────────────────
+# AUTH
+# ─────────────────────────────────────────────
 
-    partner = AGENCY_PARTNERS[request.email]
+@router.post("/login", summary="Agency partner login")
+async def login(data: LoginRequest, db: Session = Depends(get_db)):
+    """
+    Authenticate a travel agency partner.
+    Checks partner_email + partner_password on the travel_agencies table.
+    """
+    agency = db.query(TravelAgency).filter(
+        TravelAgency.email == data.email
+    ).first()
 
-    if not verify_password(request.password, partner["password_hash"]):
-        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    if not agency or not agency.partner_password:
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
 
-    if not partner["is_active"]:
-        raise HTTPException(status_code=403, detail="Account is inactive")
+    if agency.partner_password != _hash(data.password):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
 
-    token = create_token({"sub": partner["email"]})
+    token = _encode_token(data.email, agency.id)
 
     return {
-        "access_token": token,
-        "token_type": "bearer",
-        "partner": {
-            "id": partner["id"],
-            "email": partner["email"],
-            "business_name": partner["business_name"],
-            "phone": partner["phone"],
-            "agency_id": partner.get("agency_id"),
-        }
+        "access_token":  token,
+        "token_type":    "bearer",
+        "business_type": "travel_agency",
+        "business_name": agency.name,
+        "record_id":     agency.id,
+        "dashboard_url": f"http://localhost:8000/travel-agency-admin-dashboard.html?id={agency.id}",
     }
 
-@router.get("/me")
-async def get_me(current: dict = Depends(get_current_agency_partner)):
-    return {
-        "id": current["id"],
-        "email": current["email"],
-        "business_name": current["business_name"],
-        "phone": current["phone"],
-        "agency_id": current.get("agency_id"),
-        "is_active": current["is_active"],
-    }
 
-# ==================== IMAGE UPLOAD ====================
+# ─────────────────────────────────────────────
+# PROFILE
+# ─────────────────────────────────────────────
 
-@router.post("/upload-image")
-async def upload_agency_image(
-    file: UploadFile = File(...),
-    current: dict = Depends(get_current_agency_partner)
-):
-    """Upload image — same logic as /admin/upload-image"""
-    try:
-        upload_dir = Path("static/uploads")
-        upload_dir.mkdir(parents=True, exist_ok=True)
-        ext = Path(file.filename).suffix
-        filename = f"{uuid.uuid4()}{ext}"
-        filepath = upload_dir / filename
-        with filepath.open("wb") as buf:
-            shutil.copyfileobj(file.file, buf)
-        return {"url": f"/static/uploads/{filename}", "filename": filename}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
-
-# ==================== AGENCY PROFILE ====================
-
-@router.get("/agency")
-async def get_my_agency(
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
-):
-    """Get the agency this partner manages"""
-    agency_id = current.get("agency_id")
-    if not agency_id:
-        return None
-
-    agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first()
-    if not agency:
-        raise HTTPException(status_code=404, detail="Agency not found")
-
+@router.get("/me", summary="Get current agency info")
+async def get_me(agency: TravelAgency = Depends(get_current_agency), db: Session = Depends(get_db)):
     return _agency_dict(agency, db)
 
 
-@router.post("/agency", status_code=201)
-async def create_my_agency(
-    data: AgencyCreate,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+@router.get("/agency", summary="Get partner's agency profile")
+async def get_agency(agency: TravelAgency = Depends(get_current_agency), db: Session = Depends(get_db)):
+    return _agency_dict(agency, db)
+
+
+@router.put("/agency", summary="Update agency profile")
+async def update_agency(
+    data:   AgencyUpdate,
+    agency: TravelAgency = Depends(get_current_agency),
+    db:     Session      = Depends(get_db),
 ):
-    """Create a new agency (submitted as pending for CEO approval)"""
-    agency = TravelAgency(
-        name=data.name,
-        agency_type=data.agency_type,
-        description=data.description,
-        city=data.city,
-        address=data.address,
-        phone=data.phone,
-        email=data.email,
-        website=data.website,
-        languages=data.languages,
-        image_url=data.image_url,
-        latitude=data.latitude,
-        longitude=data.longitude,
-        specializations=data.specializations or [],
-        rating=0.0,
-        tours_count=0,
-        is_verified=False,
-        is_partner=True,
-        status="pending",        # goes to CEO approval queue
-    )
-    db.add(agency)
-    db.commit()
-    db.refresh(agency)
-
-    # Link agency_id to this partner account in memory
-    AGENCY_PARTNERS[current["email"]]["agency_id"] = agency.id
-
-    return {"id": agency.id, "message": "Agency submitted for approval", "status": "pending"}
-
-
-@router.put("/agency")
-async def update_my_agency(
-    data: AgencyCreate,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
-):
-    """Update agency profile"""
-    agency_id = current.get("agency_id")
-    if not agency_id:
-        raise HTTPException(status_code=404, detail="No agency linked to this account")
-
-    agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first()
-    if not agency:
-        raise HTTPException(status_code=404, detail="Agency not found")
-
     for field, value in data.dict(exclude_unset=True).items():
-        if hasattr(agency, field):
+        if value is not None and hasattr(agency, field):
             setattr(agency, field, value)
 
+    # Re-submit for approval after any profile change
+    agency.status = "pending"
     db.commit()
     db.refresh(agency)
-    return {"message": "Agency updated", "id": agency.id}
+
+    return {"success": True, "message": "Agency updated. Waiting for admin approval.", "id": agency.id}
 
 
-# ==================== TOURS ====================
+# ─────────────────────────────────────────────
+# IMAGE UPLOAD
+# ─────────────────────────────────────────────
 
-@router.get("/tours")
-async def get_my_tours(
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+@router.post("/upload-image", summary="Upload an image")
+async def upload_image(
+    file:   UploadFile = File(...),
+    agency: TravelAgency = Depends(get_current_agency),
 ):
-    """Get all tours for this partner's agency"""
-    agency_id = current.get("agency_id")
-    if not agency_id:
-        return []
+    try:
+        allowed = {"image/jpeg", "image/png", "image/jpg", "image/webp", "image/gif"}
+        if file.content_type not in allowed:
+            raise HTTPException(status_code=400, detail="Invalid file type.")
 
-    tours = db.query(Tour).options(
-        joinedload(Tour.destinations),
-        joinedload(Tour.itinerary_days).joinedload(TourItinerary.images)
-    ).filter(Tour.agency_id == agency_id).all()
+        file.file.seek(0, 2)
+        if file.file.tell() > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large. Max 5 MB.")
+        file.file.seek(0)
 
+        upload_dir = Path("static/uploads/agencies")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+        filename = f"{uuid.uuid4()}{Path(file.filename).suffix}"
+        with (upload_dir / filename).open("wb") as buf:
+            shutil.copyfileobj(file.file, buf)
+
+        return {"url": f"/static/uploads/agencies/{filename}"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {e}")
+
+
+# ─────────────────────────────────────────────
+# STATS
+# ─────────────────────────────────────────────
+
+@router.get("/stats", summary="Dashboard statistics")
+async def get_stats(
+    agency: TravelAgency = Depends(get_current_agency),
+    db:     Session      = Depends(get_db),
+):
+    total    = db.query(Tour).filter(Tour.agency_id == agency.id).count()
+    pending  = db.query(Tour).filter(Tour.agency_id == agency.id, Tour.status == "pending").count()
+    approved = db.query(Tour).filter(Tour.agency_id == agency.id, Tour.status == "approved").count()
+    reviews  = db.query(AgencyReview).filter(AgencyReview.agency_id == agency.id).count()
+
+    return {
+        "agency_name":   agency.name,
+        "agency_status": getattr(agency, "status", "approved"),
+        "total_tours":   total,
+        "pending_tours": pending,
+        "approved_tours":approved,
+        "total_reviews": reviews,
+        "avg_rating":    float(agency.rating) if agency.rating else 0.0,
+    }
+
+
+# ─────────────────────────────────────────────
+# TOURS
+# ─────────────────────────────────────────────
+
+@router.get("/tours", summary="Get all tours for this agency")
+async def get_tours(
+    agency: TravelAgency = Depends(get_current_agency),
+    db:     Session      = Depends(get_db),
+):
+    tours = (
+        db.query(Tour)
+        .options(
+            joinedload(Tour.destinations),
+            joinedload(Tour.itinerary_days),
+        )
+        .filter(Tour.agency_id == agency.id)
+        .all()
+    )
     return [_tour_dict(t) for t in tours]
 
 
-@router.post("/tours", status_code=201)
+@router.post("/tours", status_code=201, summary="Create a new tour")
 async def create_tour(
-    data: TourCreate,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    data:   TourCreate,
+    agency: TravelAgency = Depends(get_current_agency),
+    db:     Session      = Depends(get_db),
 ):
-    """Create a new tour (submitted as pending for CEO approval)"""
-    agency_id = current.get("agency_id")
-    if not agency_id:
-        raise HTTPException(status_code=400, detail="No agency linked. Create an agency first.")
-
-    agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first()
-    if not agency:
-        raise HTTPException(status_code=404, detail="Agency not found")
-
     tour = Tour(
-        agency_id=agency_id,
-        tour_name=data.tour_name,
-        tour_type=data.tour_type,
-        description=data.description,
-        duration_days=data.duration_days,
-        price=data.price,
-        currency=data.currency or "USD",
-        max_group_size=data.max_group_size,
-        image_url=data.image_url,
-        highlights=data.highlights or [],
-        included_services=data.included_services or [],
-        excluded_services=data.excluded_services or [],
-        difficulty_level=data.difficulty_level,
-        best_season=data.best_season,
-        is_active=True,
-        status="pending",        # goes to CEO approval queue
+        agency_id         = agency.id,
+        tour_name         = data.tour_name,
+        tour_type         = data.tour_type,
+        description       = data.description,
+        duration_days     = data.duration_days,
+        price             = data.price,
+        currency          = data.currency or "USD",
+        max_group_size    = data.max_group_size,
+        image_url         = data.image_url,
+        highlights        = data.highlights        or [],
+        included_services = data.included_services or [],
+        excluded_services = data.excluded_services or [],
+        difficulty_level  = data.difficulty_level,
+        best_season       = data.best_season,
+        is_active         = True,
+        status            = "pending",
     )
     db.add(tour)
-
-    agency.tours_count = db.query(Tour).filter(Tour.agency_id == agency_id).count() + 1
+    agency.tours_count = db.query(Tour).filter(Tour.agency_id == agency.id).count() + 1
     db.commit()
     db.refresh(tour)
 
-    return {"id": tour.id, "message": "Tour submitted for approval", "status": "pending"}
+    return {"success": True, "message": "Tour submitted for admin approval.", "id": tour.id, "status": "pending"}
 
 
-@router.put("/tours/{tour_id}")
+@router.put("/tours/{tour_id}", summary="Update a tour")
 async def update_tour(
     tour_id: int,
-    data: TourUpdate,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    data:    TourUpdate,
+    agency:  TravelAgency = Depends(get_current_agency),
+    db:      Session      = Depends(get_db),
 ):
-    """Update a tour (only if it belongs to this partner's agency)"""
-    agency_id = current.get("agency_id")
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
-    if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or not yours")
+    tour = _get_tour(tour_id, agency.id, db)
 
     for field, value in data.dict(exclude_unset=True).items():
         if hasattr(tour, field):
             setattr(tour, field, value)
 
+    # Re-submit for approval after edit
+    tour.status           = "pending"
+    tour.rejection_reason = None
     db.commit()
     db.refresh(tour)
-    return {"message": "Tour updated", "id": tour.id}
+
+    return {"success": True, "message": "Tour updated. Waiting for admin approval.", "id": tour.id}
 
 
-@router.delete("/tours/{tour_id}")
+@router.delete("/tours/{tour_id}", summary="Delete a tour")
 async def delete_tour(
     tour_id: int,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    agency:  TravelAgency = Depends(get_current_agency),
+    db:      Session      = Depends(get_db),
 ):
-    """Delete a tour (only if it belongs to this partner's agency)"""
-    agency_id = current.get("agency_id")
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
-    if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or not yours")
+    tour = _get_tour(tour_id, agency.id, db)
 
     db.query(TourItinerary).filter(TourItinerary.tour_id == tour_id).delete()
     db.query(TourDestination).filter(TourDestination.tour_id == tour_id).delete()
     db.delete(tour)
 
-    agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first()
-    if agency:
-        agency.tours_count = db.query(Tour).filter(Tour.agency_id == agency_id).count()
-
+    agency.tours_count = max(0, (agency.tours_count or 1) - 1)
     db.commit()
-    return {"message": "Tour deleted"}
+
+    return {"success": True, "message": "Tour deleted."}
 
 
-# ==================== ITINERARY ====================
+# ─────────────────────────────────────────────
+# ITINERARY
+# ─────────────────────────────────────────────
 
-@router.get("/tours/{tour_id}/itinerary")
+@router.get("/tours/{tour_id}/itinerary", summary="Get itinerary days")
 async def get_itinerary(
     tour_id: int,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    agency:  TravelAgency = Depends(get_current_agency),
+    db:      Session      = Depends(get_db),
 ):
-    agency_id = current.get("agency_id")
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
-    if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or not yours")
-
-    days = db.query(TourItinerary).options(
-        joinedload(TourItinerary.images)
-    ).filter(TourItinerary.tour_id == tour_id).order_by(TourItinerary.day_number).all()
-
+    _get_tour(tour_id, agency.id, db)  # ownership check
+    days = (
+        db.query(TourItinerary)
+        .filter(TourItinerary.tour_id == tour_id)
+        .order_by(TourItinerary.day_number)
+        .all()
+    )
     return [_day_dict(d) for d in days]
 
 
-@router.post("/tours/{tour_id}/itinerary", status_code=201)
+@router.post("/tours/{tour_id}/itinerary", status_code=201, summary="Add an itinerary day")
 async def add_itinerary_day(
     tour_id: int,
-    data: ItineraryDayCreate,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    data:    ItineraryDayCreate,
+    agency:  TravelAgency = Depends(get_current_agency),
+    db:      Session      = Depends(get_db),
 ):
-    agency_id = current.get("agency_id")
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
-    if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or not yours")
+    _get_tour(tour_id, agency.id, db)
 
     day = TourItinerary(
-        tour_id=tour_id,
-        day_number=data.day_number,
-        day_title=data.day_title,
-        activities=data.activities,
-        meals=data.meals,
-        accommodation=data.accommodation,
-        destinations=data.destinations or [],
-        coordinates=data.coordinates or [],
+        tour_id       = tour_id,
+        day_number    = data.day_number,
+        day_title     = data.day_title,
+        activities    = data.activities,
+        meals         = data.meals,
+        accommodation = data.accommodation,
+        destinations  = data.destinations or [],
+        coordinates   = data.coordinates  or [],
     )
     db.add(day)
     db.commit()
@@ -449,24 +409,16 @@ async def add_itinerary_day(
     return _day_dict(day)
 
 
-@router.put("/tours/{tour_id}/itinerary/{day_id}")
+@router.put("/tours/{tour_id}/itinerary/{day_id}", summary="Update an itinerary day")
 async def update_itinerary_day(
     tour_id: int,
-    day_id: int,
-    data: ItineraryDayCreate,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    day_id:  int,
+    data:    ItineraryDayCreate,
+    agency:  TravelAgency = Depends(get_current_agency),
+    db:      Session      = Depends(get_db),
 ):
-    agency_id = current.get("agency_id")
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
-    if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or not yours")
-
-    day = db.query(TourItinerary).filter(
-        TourItinerary.id == day_id, TourItinerary.tour_id == tour_id
-    ).first()
-    if not day:
-        raise HTTPException(status_code=404, detail="Day not found")
+    _get_tour(tour_id, agency.id, db)
+    day = _get_day(day_id, tour_id, db)
 
     for field, value in data.dict(exclude_unset=True).items():
         setattr(day, field, value)
@@ -476,68 +428,57 @@ async def update_itinerary_day(
     return _day_dict(day)
 
 
-@router.delete("/tours/{tour_id}/itinerary/{day_id}")
+@router.delete("/tours/{tour_id}/itinerary/{day_id}", summary="Delete an itinerary day")
 async def delete_itinerary_day(
     tour_id: int,
-    day_id: int,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    day_id:  int,
+    agency:  TravelAgency = Depends(get_current_agency),
+    db:      Session      = Depends(get_db),
 ):
-    agency_id = current.get("agency_id")
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
-    if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or not yours")
-
-    day = db.query(TourItinerary).filter(
-        TourItinerary.id == day_id, TourItinerary.tour_id == tour_id
-    ).first()
-    if not day:
-        raise HTTPException(status_code=404, detail="Day not found")
-
+    _get_tour(tour_id, agency.id, db)
+    day = _get_day(day_id, tour_id, db)
     db.delete(day)
     db.commit()
-    return {"message": "Day deleted"}
+    return {"success": True, "message": "Day deleted."}
 
 
-# ==================== DESTINATIONS ====================
+# ─────────────────────────────────────────────
+# DESTINATIONS
+# ─────────────────────────────────────────────
 
-@router.get("/tours/{tour_id}/destinations")
+@router.get("/tours/{tour_id}/destinations", summary="Get tour destinations")
 async def get_destinations(
     tour_id: int,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    agency:  TravelAgency = Depends(get_current_agency),
+    db:      Session      = Depends(get_db),
 ):
-    agency_id = current.get("agency_id")
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
-    if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or not yours")
-
-    dests = db.query(TourDestination).filter(
-        TourDestination.tour_id == tour_id
-    ).order_by(TourDestination.visit_order).all()
+    _get_tour(tour_id, agency.id, db)
+    dests = (
+        db.query(TourDestination)
+        .filter(TourDestination.tour_id == tour_id)
+        .order_by(TourDestination.visit_order)
+        .all()
+    )
     return [_dest_dict(d) for d in dests]
 
 
-@router.post("/tours/{tour_id}/destinations", status_code=201)
+@router.post("/tours/{tour_id}/destinations", status_code=201, summary="Add a destination")
 async def add_destination(
     tour_id: int,
-    data: DestinationCreate,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    data:    DestinationCreate,
+    agency:  TravelAgency = Depends(get_current_agency),
+    db:      Session      = Depends(get_db),
 ):
-    agency_id = current.get("agency_id")
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
-    if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or not yours")
+    _get_tour(tour_id, agency.id, db)
 
     dest = TourDestination(
-        tour_id=tour_id,
-        destination_name=data.destination_name,
-        latitude=data.latitude,
-        longitude=data.longitude,
-        visit_order=data.visit_order or 0,
-        nights_stay=data.nights_stay or 0,
-        description=data.description,
+        tour_id          = tour_id,
+        destination_name = data.destination_name,
+        latitude         = data.latitude,
+        longitude        = data.longitude,
+        visit_order      = data.visit_order  or 0,
+        nights_stay      = data.nights_stay  or 0,
+        description      = data.description,
     )
     db.add(dest)
     db.commit()
@@ -545,135 +486,119 @@ async def add_destination(
     return _dest_dict(dest)
 
 
-@router.delete("/tours/{tour_id}/destinations/{dest_id}")
+@router.delete("/tours/{tour_id}/destinations/{dest_id}", summary="Delete a destination")
 async def delete_destination(
     tour_id: int,
     dest_id: int,
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
+    agency:  TravelAgency = Depends(get_current_agency),
+    db:      Session      = Depends(get_db),
 ):
-    agency_id = current.get("agency_id")
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
-    if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or not yours")
-
+    _get_tour(tour_id, agency.id, db)
     dest = db.query(TourDestination).filter(
-        TourDestination.id == dest_id, TourDestination.tour_id == tour_id
+        TourDestination.id == dest_id,
+        TourDestination.tour_id == tour_id,
     ).first()
     if not dest:
-        raise HTTPException(status_code=404, detail="Destination not found")
-
+        raise HTTPException(status_code=404, detail="Destination not found.")
     db.delete(dest)
     db.commit()
-    return {"message": "Destination deleted"}
+    return {"success": True, "message": "Destination deleted."}
 
 
-# ==================== DASHBOARD STATS ====================
+# ─────────────────────────────────────────────
+# INTERNAL HELPERS  (not exposed as endpoints)
+# ─────────────────────────────────────────────
 
-@router.get("/stats")
-async def get_agency_stats(
-    current: dict = Depends(get_current_agency_partner),
-    db: Session = Depends(get_db)
-):
-    """Dashboard stats for the agency partner"""
-    agency_id = current.get("agency_id")
-    if not agency_id:
-        return {"agency": None, "tours": 0, "pending_tours": 0, "approved_tours": 0, "reviews": 0, "avg_rating": 0.0}
-
-    agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first()
-    total_tours   = db.query(Tour).filter(Tour.agency_id == agency_id).count()
-    pending_tours = db.query(Tour).filter(Tour.agency_id == agency_id, Tour.status == "pending").count()
-    approved_tours = db.query(Tour).filter(Tour.agency_id == agency_id, Tour.status == "approved").count()
-    total_reviews = db.query(AgencyReview).filter(AgencyReview.agency_id == agency_id).count()
-
-    return {
-        "agency": agency.name if agency else None,
-        "agency_status": getattr(agency, "status", "approved") if agency else None,
-        "tours": total_tours,
-        "pending_tours": pending_tours,
-        "approved_tours": approved_tours,
-        "reviews": total_reviews,
-        "avg_rating": float(agency.rating) if agency and agency.rating else 0.0,
-    }
+def _get_tour(tour_id: int, agency_id: int, db: Session) -> Tour:
+    """Fetch a tour and verify it belongs to this agency."""
+    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
+    if not tour:
+        raise HTTPException(status_code=404, detail="Tour not found or does not belong to your agency.")
+    return tour
 
 
-# ==================== INTERNAL HELPERS ====================
+def _get_day(day_id: int, tour_id: int, db: Session) -> TourItinerary:
+    day = db.query(TourItinerary).filter(
+        TourItinerary.id == day_id,
+        TourItinerary.tour_id == tour_id,
+    ).first()
+    if not day:
+        raise HTTPException(status_code=404, detail="Itinerary day not found.")
+    return day
+
 
 def _agency_dict(agency: TravelAgency, db: Session) -> dict:
-    tour_count   = db.query(Tour).filter(Tour.agency_id == agency.id).count()
-    review_count = db.query(AgencyReview).filter(AgencyReview.agency_id == agency.id).count()
     return {
-        "id": agency.id,
-        "name": agency.name,
-        "agency_type": agency.agency_type,
-        "image_url": agency.image_url,
-        "city": agency.city,
-        "address": agency.address,
-        "phone": agency.phone,
-        "email": agency.email,
-        "website": agency.website,
-        "description": agency.description,
+        "id":              agency.id,
+        "name":            agency.name,
+        "agency_type":     agency.agency_type,
+        "image_url":       agency.image_url,
+        "city":            agency.city,
+        "address":         agency.address,
+        "phone":           agency.phone,
+        "email":           agency.email,
+        "website":         agency.website,
+        "description":     agency.description,
         "specializations": agency.specializations,
-        "languages": agency.languages,
-        "rating": float(agency.rating) if agency.rating else 0.0,
-        "tours_count": tour_count,
-        "review_count": review_count,
-        "is_verified": agency.is_verified,
-        "is_partner": agency.is_partner,
-        "latitude": float(agency.latitude) if agency.latitude else None,
-        "longitude": float(agency.longitude) if agency.longitude else None,
-        "status": getattr(agency, "status", "approved"),
+        "languages":       agency.languages,
+        "rating":          float(agency.rating) if agency.rating else 0.0,
+        "tours_count":     db.query(Tour).filter(Tour.agency_id == agency.id).count(),
+        "review_count":    db.query(AgencyReview).filter(AgencyReview.agency_id == agency.id).count(),
+        "is_verified":     agency.is_verified,
+        "is_partner":      agency.is_partner,
+        "latitude":        float(agency.latitude)  if agency.latitude  else None,
+        "longitude":       float(agency.longitude) if agency.longitude else None,
+        "status":          getattr(agency, "status", "approved"),
     }
+
 
 def _tour_dict(tour: Tour) -> dict:
     return {
-        "id": tour.id,
-        "agency_id": tour.agency_id,
-        "tour_name": tour.tour_name,
-        "tour_type": tour.tour_type,
-        "description": tour.description,
-        "duration_days": tour.duration_days,
-        "price": float(tour.price) if tour.price else None,
-        "currency": tour.currency,
-        "max_group_size": tour.max_group_size,
-        "image_url": tour.image_url,
-        "highlights": tour.highlights,
+        "id":                tour.id,
+        "agency_id":         tour.agency_id,
+        "tour_name":         tour.tour_name,
+        "tour_type":         tour.tour_type,
+        "description":       tour.description,
+        "duration_days":     tour.duration_days,
+        "price":             float(tour.price) if tour.price else None,
+        "currency":          tour.currency,
+        "max_group_size":    tour.max_group_size,
+        "image_url":         tour.image_url,
+        "highlights":        tour.highlights,
         "included_services": tour.included_services,
         "excluded_services": tour.excluded_services,
-        "difficulty_level": tour.difficulty_level,
-        "best_season": tour.best_season,
-        "is_active": tour.is_active,
-        "status": getattr(tour, "status", "approved"),
-        "destinations": [_dest_dict(d) for d in (tour.destinations or [])],
-        "itinerary_days": [_day_dict(d) for d in (tour.itinerary_days or [])],
+        "difficulty_level":  tour.difficulty_level,
+        "best_season":       tour.best_season,
+        "is_active":         tour.is_active,
+        "status":            getattr(tour, "status", "approved"),
+        "rejection_reason":  getattr(tour, "rejection_reason", None),
+        "destinations":      [_dest_dict(d) for d in (tour.destinations    or [])],
+        "itinerary_days":    [_day_dict(d)  for d in (tour.itinerary_days  or [])],
     }
+
 
 def _day_dict(day: TourItinerary) -> dict:
     return {
-        "id": day.id,
-        "tour_id": day.tour_id,
-        "day_number": day.day_number,
-        "day_title": day.day_title,
-        "activities": day.activities,
-        "meals": day.meals,
+        "id":            day.id,
+        "tour_id":       day.tour_id,
+        "day_number":    day.day_number,
+        "day_title":     day.day_title,
+        "activities":    day.activities,
+        "meals":         day.meals,
         "accommodation": day.accommodation,
-        "destinations": day.destinations,
-        "coordinates": day.coordinates,
-        "images": [{"id": img.id, "image_url": img.image_url, "caption": img.caption}
-                   for img in (day.images or [])],
+        "destinations":  day.destinations,
+        "coordinates":   day.coordinates,
     }
+
 
 def _dest_dict(dest: TourDestination) -> dict:
     return {
-        "id": dest.id,
-        "tour_id": dest.tour_id,
+        "id":               dest.id,
+        "tour_id":          dest.tour_id,
         "destination_name": dest.destination_name,
-        "latitude": float(dest.latitude) if dest.latitude else None,
-        "longitude": float(dest.longitude) if dest.longitude else None,
-        "visit_order": dest.visit_order,
-        "nights_stay": dest.nights_stay,
-        "description": dest.description,
+        "latitude":         float(dest.latitude)  if dest.latitude  else None,
+        "longitude":        float(dest.longitude) if dest.longitude else None,
+        "visit_order":      dest.visit_order,
+        "nights_stay":      dest.nights_stay,
+        "description":      dest.description,
     }
-
-
-print("✅ Agency partner router loaded")

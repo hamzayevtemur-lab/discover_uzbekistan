@@ -1,1747 +1,2091 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJHCVBY91E"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-KJHCVBY91E"
+    ></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-KJHCVBY91E');
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-KJHCVBY91E");
     </script>
 
     <title>Discover Uzbekistan - Your Complete Travel Guide</title>
+    
     <style>
-        /* ==================== GLOBAL STYLES ==================== */
+      /* ==================== GLOBAL STYLES ==================== */
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background: #000;
+        color: white;
+        overflow-x: hidden;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* ==================== HEADER ==================== */
+
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        padding: 15px 20px;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.9) 0%,
+          rgba(0, 0, 0, 0) 100%
+        );
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: bold;
+        font-size: 18px;
+        letter-spacing: 2px;
+      }
+
+      .logo-dot {
+        width: 12px;
+        height: 12px;
+        background: #ff4444;
+        border-radius: 50%;
+      }
+
+      .header-content ul {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .header-content ul li a {
+        color: white;
+        text-decoration: none;
+        font-weight: 700;
+        transition: opacity 0.3s;
+      }
+
+      .header-content ul li a:hover {
+        opacity: 0.8;
+      }
+
+      .header-right {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .lang-toggle {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s;
+      }
+
+      .lang-toggle:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .hamburger {
+        display: none;
+      }
+
+      /* ==================== HERO SECTION ==================== */
+
+      .hero {
+        height: 100vh;
+        background:
+          linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+          url(images/uzb2.jpg);
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .hero-content h1 {
+        font-size: clamp(40px, 10vw, 72px);
+        font-weight: 900;
+        line-height: 1.1;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: -2px;
+      }
+
+      .hero-content p {
+        font-size: clamp(16px, 4vw, 24px);
+        margin-bottom: 40px;
+        opacity: 0.9;
+      }
+
+      .hero-cta {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .cta-btn {
+        padding: 15px 35px;
+        border-radius: 30px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .cta-primary {
+        background: #ff6b35;
+        color: white;
+        border: none;
+      }
+
+      .cta-primary:hover {
+        background: #ff5722;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
+      }
+
+      .cta-secondary {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+      }
+
+      .cta-secondary:hover {
+        background: white;
+        color: #000;
+      }
+
+      /* ==================== SECTIONS ==================== */
+
+      .quick-access,
+      .featured {
+        position: relative;
+        padding: 80px 20px;
+        background: #000;
+      }
+
+      .featured {
+        background: #0a0a0a;
+      }
+
+      .section-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .section-subtitle {
+        font-size: 14px;
+        opacity: 0.7;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .section-title {
+        font-size: clamp(28px, 6vw, 42px);
+        font-weight: bold;
+        letter-spacing: -1px;
+      }
+
+      /* ==================== CATEGORIES ==================== */
+
+      .categories-grid {
+        display: flex;
+        gap: 25px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding: 10px 0;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .categories-grid::-webkit-scrollbar {
+        display: none;
+      }
+
+      .category-card {
+        position: relative;
+        min-width: 320px;
+        flex: 0 0 320px;
+        height: 300px;
+        border-radius: 20px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .category-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .category-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+      }
+
+      .category-card:hover img {
+        transform: scale(1.05);
+      }
+
+      .category-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 25px;
+        background: linear-gradient(
+          to top,
+          rgba(0, 0, 0, 0.9) 0%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        color: white;
+        z-index: 2;
+      }
+
+      .category-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .category-desc {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 15px;
+      }
+
+      .category-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .category-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
+      /* ==================== FILTERS ==================== */
+
+      .filter-container {
+        max-width: 800px;
+        margin: 0 auto 50px;
+        padding: 0 20px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .filter-select {
+        padding: 12px 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 25px;
+        color: white;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        min-width: 180px;
+      }
+
+      .filter-select:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .filter-select option {
+        background: #1a1a1a;
+        color: white;
+      }
+
+      .filter-reset {
+        padding: 12px 30px;
+        background: #ff6b35;
+        border: none;
+        border-radius: 25px;
+        color: white;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .filter-reset:hover {
+        background: #ff5722;
+        transform: scale(1.05);
+      }
+
+      /* ==================== PLACES CAROUSEL ==================== */
+
+      .places-carousel {
+        display: flex;
+        gap: 25px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        scroll-snap-type: x mandatory;
+        padding: 10px 0;
+      }
+
+      .places-carousel::-webkit-scrollbar {
+        display: none;
+      }
+
+      .place-card {
+        position: relative;
+        min-width: 350px;
+        flex: 0 0 350px;
+        height: 500px;
+        border-radius: 20px;
+        overflow: hidden;
+        cursor: pointer;
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+        scroll-snap-align: start;
+      }
+
+      .place-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(255, 255, 255, 0.2);
+      }
+
+      .place-image {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      /* ==================== LIKE BUTTON ==================== */
+
+      .like-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50px;
+        padding: 10px 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        z-index: 10;
+        backdrop-filter: blur(10px);
+      }
+
+      .like-btn:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.05);
+      }
+
+      .heart-icon {
+        font-size: 22px;
+        color: #666;
+        transition: all 0.3s;
+      }
+
+      .like-btn.liked .heart-icon {
+        color: #ff4757;
+      }
+
+      .like-count {
+        color: #333;
+        font-size: 16px;
+        font-weight: bold;
+        min-width: 35px;
+        text-align: left;
+      }
+
+      @keyframes heartBeat {
+        0%,
+        100% {
+          transform: scale(1);
         }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background: #000;
-            color: white;
-            overflow-x: hidden;
+        25% {
+          transform: scale(1.3);
         }
 
-        html {
-            scroll-behavior: smooth;
+        50% {
+          transform: scale(1.1);
         }
+      }
 
-        /* ==================== HEADER ==================== */
+      /* ==================== PLACE INFO ==================== */
 
+      .place-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 30px;
+        background: linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.95) 0%,
+          rgba(0, 0, 0, 0.7) 50%,
+          rgba(0, 0, 0, 0) 100%
+        );
+      }
+
+      .place-rank {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #ff6b35;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .place-name {
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 5px;
+      }
+
+      .place-city {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .results-info {
+        text-align: center;
+        margin-top: 30px;
+        padding: 0 20px;
+      }
+
+      .results-info p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+      }
+
+      /* ==================== SERVICES ==================== */
+
+      .services {
+        padding: 80px 20px;
+        background: #0d0d0d;
+      }
+
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .service-item {
+        text-align: center;
+        padding: 40px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        transition: all 0.3s;
+        cursor: pointer;
+      }
+
+      .service-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
+      }
+
+      .service-icon {
+        font-size: 52px;
+        margin-bottom: 20px;
+      }
+
+      .service-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .service-desc {
+        font-size: 14px;
+        opacity: 0.8;
+        line-height: 1.6;
+      }
+
+      /* ==================== CONTACT CTA ==================== */
+
+      .contact-cta {
+        position: relative;
+        padding: 100px 20px;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 600px;
+      }
+
+      .contact-cta img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+      }
+
+      .contact-cta::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 2;
+      }
+
+      .contact-cta h2 {
+        font-size: clamp(32px, 7vw, 52px);
+        font-weight: bold;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 3;
+        max-width: 800px;
+      }
+
+      .contact-cta p {
+        font-size: clamp(16px, 2.5vw, 18px);
+        margin-bottom: 40px;
+        opacity: 0.9;
+        position: relative;
+        z-index: 3;
+        max-width: 700px;
+        line-height: 1.6;
+      }
+
+      .contact-info {
+        display: flex;
+        gap: 40px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+        position: relative;
+        z-index: 3;
+      }
+
+      .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: clamp(16px, 2vw, 18px);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px 25px;
+        border-radius: 20px;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s;
+      }
+
+      .contact-item:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .contact-item span {
+        font-size: 24px;
+      }
+
+      .contact-cta .cta-btn {
+        position: relative;
+        z-index: 3;
+      }
+
+      /* ==================== PARTNER SECTION ==================== */
+
+      .partner-cta-section {
+        background: #0d0d0d;
+        padding: 5rem 2rem;
+      }
+
+      .partner-cta-container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .partner-cta-content {
+        text-align: center;
+        color: white;
+      }
+
+      .partner-cta-content h2 {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 900;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+      }
+
+      .partner-cta-content > p {
+        font-size: clamp(1rem, 2vw, 1.25rem);
+        opacity: 0.95;
+        margin-bottom: 2.5rem;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .partner-benefits {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+      }
+
+      .benefit-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        padding: 1.5rem;
+        border-radius: 20px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s;
+      }
+
+      .benefit-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
+      }
+
+      .benefit-icon {
+        font-size: 2rem;
+      }
+
+      .partner-cta-button {
+        display: inline-block;
+        background: white;
+        color: #6366f1;
+        padding: 1.25rem 3rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.125rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .partner-cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      /* ==================== FOOTER ==================== */
+
+      footer {
+        background: #0a0a0a;
+        padding: 60px 20px 30px;
+      }
+
+      .footer-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 40px;
+        margin-bottom: 40px;
+      }
+
+      .footer-section h3 {
+        font-size: 18px;
+        margin-bottom: 20px;
+        color: #ff6b35;
+      }
+
+      .footer-section ul {
+        list-style: none;
+      }
+
+      .footer-section ul li {
+        margin-bottom: 10px;
+      }
+
+      .footer-section a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+
+      .footer-section a:hover {
+        color: white;
+      }
+
+      .footer-bottom {
+        text-align: center;
+        padding-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      /* ==================== MOBILE RESPONSIVE ==================== */
+
+      @media (max-width: 768px) {
+        /* HEADER */
         header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            padding: 15px 20px;
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1400px;
-            margin: 0 auto;
+          padding: 12px 16px;
+          background: rgba(0, 0, 0, 0.95);
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-            font-size: 18px;
-            letter-spacing: 2px;
+          font-size: 14px;
+          letter-spacing: 1px;
         }
 
         .logo-dot {
-            width: 12px;
-            height: 12px;
-            background: #ff4444;
-            border-radius: 50%;
-        }
-
-        .header-content ul {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .header-content ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: 700;
-            transition: opacity 0.3s;
-        }
-
-        .header-content ul li a:hover {
-            opacity: 0.8;
-        }
-
-        .header-right {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .lang-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .lang-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
+          width: 8px;
+          height: 8px;
         }
 
         .hamburger {
-            display: none;
+          display: block;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: white;
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-size: 1.5rem;
+          cursor: pointer;
+          transition: all 0.3s;
         }
 
-        /* ==================== HERO SECTION ==================== */
+        #mainNav {
+          display: none;
+        }
 
+        #mainNav.active {
+          display: flex;
+          position: fixed;
+          top: 60px;
+          left: 0;
+          right: 0;
+          background: rgba(0, 0, 0, 0.98);
+          backdrop-filter: blur(10px);
+          flex-direction: column;
+          padding: 0;
+          gap: 0;
+          z-index: 999;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #mainNav.active li {
+          width: 100%;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #mainNav.active li:last-child {
+          border-bottom: none;
+        }
+
+        #mainNav.active li a {
+          display: block;
+          width: 100%;
+          padding: 1rem 1.5rem;
+          font-size: 1rem;
+          text-align: left;
+        }
+
+        .lang-toggle {
+          padding: 8px 12px;
+          font-size: 12px;
+        }
+
+        /* HERO */
         .hero {
-            height: 100vh;
-            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-                url(images/uzb2.jpg);
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
+          height: 80vh;
+          padding: 1rem;
         }
 
         .hero-content h1 {
-            font-size: clamp(40px, 10vw, 72px);
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: -2px;
+          font-size: 2rem;
         }
 
         .hero-content p {
-            font-size: clamp(16px, 4vw, 24px);
-            margin-bottom: 40px;
-            opacity: 0.9;
+          font-size: 1rem;
         }
 
         .hero-cta {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
+          flex-direction: column;
+          width: 100%;
+          max-width: 300px;
+          margin: 0 auto;
         }
 
         .cta-btn {
-            padding: 15px 35px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
+          width: 100%;
+          padding: 12px 24px;
+          font-size: 14px;
         }
 
-        .cta-primary {
-            background: #ff6b35;
-            color: white;
-            border: none;
-        }
-
-        .cta-primary:hover {
-            background: #ff5722;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
-        }
-
-        .cta-secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid white;
-        }
-
-        .cta-secondary:hover {
-            background: white;
-            color: #000;
-        }
-
-        /* ==================== SECTIONS ==================== */
-
+        /* SECTIONS */
         .quick-access,
-        .featured {
-            position: relative;
-            padding: 80px 20px;
-            background: #000;
-        }
-
-        .featured {
-            background: #0a0a0a;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .section-subtitle {
-            font-size: 14px;
-            opacity: 0.7;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+        .featured,
+        .services {
+          padding: 60px 16px;
         }
 
         .section-title {
-            font-size: clamp(28px, 6vw, 42px);
-            font-weight: bold;
-            letter-spacing: -1px;
+          font-size: 1.75rem;
         }
 
-        /* ==================== CATEGORIES ==================== */
-
+        /* CATEGORIES */
         .categories-grid {
-            display: flex;
-            gap: 25px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            padding: 10px 0;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .categories-grid::-webkit-scrollbar {
-            display: none;
+          gap: 16px;
+          padding: 8px;
         }
 
         .category-card {
-            position: relative;
-            min-width: 320px;
-            flex: 0 0 320px;
-            height: 300px;
-            border-radius: 20px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .category-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .category-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .category-card:hover img {
-            transform: scale(1.05);
-        }
-
-        .category-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 25px;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 100%);
-            color: white;
-            z-index: 2;
+          min-width: 280px;
+          flex: 0 0 280px;
+          height: 250px;
         }
 
         .category-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
+          font-size: 20px;
         }
 
         .category-desc {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 15px;
+          font-size: 13px;
         }
 
-        .category-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .category-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        /* ==================== FILTERS ==================== */
-
+        /* FILTERS */
         .filter-container {
-            max-width: 800px;
-            margin: 0 auto 50px;
-            padding: 0 20px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
+          flex-direction: column;
+          gap: 12px;
         }
 
-        .filter-select {
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 25px;
-            color: white;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-width: 180px;
-        }
-
-        .filter-select:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .filter-select option {
-            background: #1a1a1a;
-            color: white;
-        }
-
+        .filter-select,
         .filter-reset {
-            padding: 12px 30px;
-            background: #ff6b35;
-            border: none;
-            border-radius: 25px;
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
+          width: 100%;
+          min-width: auto;
         }
 
-        .filter-reset:hover {
-            background: #ff5722;
-            transform: scale(1.05);
-        }
-
-        /* ==================== PLACES CAROUSEL ==================== */
-
+        /* PLACES */
         .places-carousel {
-            display: flex;
-            gap: 25px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            scrollbar-width: none;
-            scroll-snap-type: x mandatory;
-            padding: 10px 0;
-        }
-
-        .places-carousel::-webkit-scrollbar {
-            display: none;
+          gap: 16px;
+          padding: 8px;
         }
 
         .place-card {
-            position: relative;
-            min-width: 350px;
-            flex: 0 0 350px;
-            height: 500px;
-            border-radius: 20px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            scroll-snap-align: start;
+          min-width: 300px;
+          flex: 0 0 300px;
+          height: 450px;
         }
-
-        .place-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(255, 255, 255, 0.2);
-        }
-
-        .place-image {
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        /* ==================== LIKE BUTTON ==================== */
-
-        .like-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            border-radius: 50px;
-            padding: 10px 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-        }
-
-        .like-btn:hover {
-            background: rgba(255, 255, 255, 1);
-            transform: scale(1.05);
-        }
-
-        .heart-icon {
-            font-size: 22px;
-            color: #666;
-            transition: all 0.3s;
-        }
-
-        .like-btn.liked .heart-icon {
-            color: #ff4757;
-        }
-
-        .like-count {
-            color: #333;
-            font-size: 16px;
-            font-weight: bold;
-            min-width: 35px;
-            text-align: left;
-        }
-
-        @keyframes heartBeat {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            25% {
-                transform: scale(1.3);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-        }
-
-        .like-btn.liked .heart-icon {
-            animation: heartBeat 0.6s ease;
-        }
-
-        /* ==================== PLACE INFO ==================== */
 
         .place-info {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 30px;
-            background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
-        }
-
-        .place-rank {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #ff6b35;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+          padding: 20px;
         }
 
         .place-name {
-            font-size: 24px;
-            font-weight: bold;
-            color: #fff;
-            margin-bottom: 5px;
+          font-size: 20px;
         }
 
-        .place-city {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.8);
+        .like-btn {
+          top: 12px;
+          right: 12px;
+          padding: 8px 14px;
         }
 
-        .results-info {
-            text-align: center;
-            margin-top: 30px;
-            padding: 0 20px;
+        .heart-icon {
+          font-size: 18px;
         }
 
-        .results-info p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
+        .like-count {
+          font-size: 14px;
+          min-width: 30px;
         }
 
-        /* ==================== SERVICES ==================== */
-
-        .services {
-            padding: 80px 20px;
-            background: #0d0d0d;
-        }
-
+        /* SERVICES */
         .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            max-width: 1400px;
-            margin: 0 auto;
+          grid-template-columns: 1fr;
+          gap: 20px;
         }
 
         .service-item {
-            text-align: center;
-            padding: 40px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .service-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-5px);
+          padding: 30px 20px;
         }
 
         .service-icon {
-            font-size: 52px;
-            margin-bottom: 20px;
+          font-size: 40px;
         }
 
-        .service-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .service-desc {
-            font-size: 14px;
-            opacity: 0.8;
-            line-height: 1.6;
-        }
-
-        /* ==================== CONTACT CTA ==================== */
-
+        /* CONTACT */
         .contact-cta {
-            position: relative;
-            padding: 100px 20px;
-            text-align: center;
-            color: white;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 600px;
-        }
-
-        .contact-cta img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-        }
-
-        .contact-cta::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 2;
-        }
-
-        .contact-cta h2 {
-            font-size: clamp(32px, 7vw, 52px);
-            font-weight: bold;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 3;
-            max-width: 800px;
-        }
-
-        .contact-cta p {
-            font-size: clamp(16px, 2.5vw, 18px);
-            margin-bottom: 40px;
-            opacity: 0.9;
-            position: relative;
-            z-index: 3;
-            max-width: 700px;
-            line-height: 1.6;
+          padding: 60px 20px;
+          min-height: 500px;
         }
 
         .contact-info {
-            display: flex;
-            gap: 40px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 40px;
-            position: relative;
-            z-index: 3;
+          flex-direction: column;
+          gap: 12px;
+          width: 100%;
         }
 
         .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: clamp(16px, 2vw, 18px);
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px 25px;
-            border-radius: 20px;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s;
+          width: 100%;
+          max-width: 100%;
+          padding: 12px 20px;
+          justify-content: center;
         }
 
-        .contact-item:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .contact-item span {
-            font-size: 24px;
-        }
-
-        .contact-cta .cta-btn {
-            position: relative;
-            z-index: 3;
-        }
-
-        /* ==================== PARTNER SECTION ==================== */
-
+        /* PARTNER */
         .partner-cta-section {
-            background: #0d0d0d;
-            padding: 5rem 2rem;
-        }
-
-        .partner-cta-container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .partner-cta-content {
-            text-align: center;
-            color: white;
-        }
-
-        .partner-cta-content h2 {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: 900;
-            margin-bottom: 1rem;
-            line-height: 1.2;
-        }
-
-        .partner-cta-content>p {
-            font-size: clamp(1rem, 2vw, 1.25rem);
-            opacity: 0.95;
-            margin-bottom: 2.5rem;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
+          padding: 60px 20px;
         }
 
         .partner-benefits {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-bottom: 2.5rem;
-            flex-wrap: wrap;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
         }
 
         .benefit-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            padding: 1.5rem;
-            border-radius: 20px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s;
+          width: 100%;
+          max-width: 280px;
         }
 
-        .benefit-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-5px);
-        }
-
-        .benefit-icon {
-            font-size: 2rem;
-        }
-
-        .partner-cta-button {
-            display: inline-block;
-            background: white;
-            color: #6366f1;
-            padding: 1.25rem 3rem;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 1.125rem;
-            text-decoration: none;
-            transition: all 0.3s;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .partner-cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        /* ==================== FOOTER ==================== */
-
+        /* FOOTER */
         footer {
-            background: #0a0a0a;
-            padding: 60px 20px 30px;
+          padding: 40px 20px 20px;
         }
 
         .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 32px 24px;
+          max-width: 100%;
+        }
+
+        .footer-section {
+          text-align: left;
         }
 
         .footer-section h3 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #ff6b35;
+          font-size: 15px;
+          margin-bottom: 14px;
+          font-weight: 700;
         }
 
         .footer-section ul {
-            list-style: none;
+          padding: 0;
         }
 
         .footer-section ul li {
-            margin-bottom: 10px;
+          margin-bottom: 10px;
+          line-height: 1.4;
         }
 
         .footer-section a {
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-section a:hover {
-            color: white;
+          font-size: 13px;
+          display: block;
         }
 
         .footer-bottom {
-            text-align: center;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.6);
+          padding-top: 24px;
+          margin-top: 24px;
+          font-size: 12px;
+          line-height: 1.6;
         }
-
-        /* ==================== MOBILE RESPONSIVE ==================== */
-
-        @media (max-width: 768px) {
-
-            /* HEADER */
-            header {
-                padding: 12px 16px;
-                background: rgba(0, 0, 0, 0.95);
-            }
-
-            .logo {
-                font-size: 14px;
-                letter-spacing: 1px;
-            }
-
-            .logo-dot {
-                width: 8px;
-                height: 8px;
-            }
-
-            .hamburger {
-                display: block;
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                color: white;
-                padding: 8px 12px;
-                border-radius: 8px;
-                font-size: 1.5rem;
-                cursor: pointer;
-                transition: all 0.3s;
-            }
-
-            #mainNav {
-                display: none;
-            }
-
-            #mainNav.active {
-                display: flex;
-                position: fixed;
-                top: 60px;
-                left: 0;
-                right: 0;
-                background: rgba(0, 0, 0, 0.98);
-                backdrop-filter: blur(10px);
-                flex-direction: column;
-                padding: 0;
-                gap: 0;
-                z-index: 999;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            }
-
-            #mainNav.active li {
-                width: 100%;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            }
-
-            #mainNav.active li:last-child {
-                border-bottom: none;
-            }
-
-            #mainNav.active li a {
-                display: block;
-                width: 100%;
-                padding: 1rem 1.5rem;
-                font-size: 1rem;
-                text-align: left;
-            }
-
-            .lang-toggle {
-                padding: 8px 12px;
-                font-size: 12px;
-            }
-
-            /* HERO */
-            .hero {
-                height: 80vh;
-                padding: 1rem;
-            }
-
-            .hero-content h1 {
-                font-size: 2rem;
-            }
-
-            .hero-content p {
-                font-size: 1rem;
-            }
-
-            .hero-cta {
-                flex-direction: column;
-                width: 100%;
-                max-width: 300px;
-                margin: 0 auto;
-            }
-
-            .cta-btn {
-                width: 100%;
-                padding: 12px 24px;
-                font-size: 14px;
-            }
-
-            /* SECTIONS */
-            .quick-access,
-            .featured,
-            .services {
-                padding: 60px 16px;
-            }
-
-            .section-title {
-                font-size: 1.75rem;
-            }
-
-            /* CATEGORIES */
-            .categories-grid {
-                gap: 16px;
-                padding: 8px;
-            }
-
-            .category-card {
-                min-width: 280px;
-                flex: 0 0 280px;
-                height: 250px;
-            }
-
-            .category-title {
-                font-size: 20px;
-            }
-
-            .category-desc {
-                font-size: 13px;
-            }
-
-            /* FILTERS */
-            .filter-container {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .filter-select,
-            .filter-reset {
-                width: 100%;
-                min-width: auto;
-            }
-
-            /* PLACES */
-            .places-carousel {
-                gap: 16px;
-                padding: 8px;
-            }
-
-            .place-card {
-                min-width: 300px;
-                flex: 0 0 300px;
-                height: 450px;
-            }
-
-            .place-info {
-                padding: 20px;
-            }
-
-            .place-name {
-                font-size: 20px;
-            }
-
-            .like-btn {
-                top: 12px;
-                right: 12px;
-                padding: 8px 14px;
-            }
-
-            .heart-icon {
-                font-size: 18px;
-            }
-
-            .like-count {
-                font-size: 14px;
-                min-width: 30px;
-            }
-
-            /* SERVICES */
-            .services-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .service-item {
-                padding: 30px 20px;
-            }
-
-            .service-icon {
-                font-size: 40px;
-            }
-
-            /* CONTACT */
-            .contact-cta {
-                padding: 60px 20px;
-                min-height: 500px;
-            }
-
-            .contact-info {
-                flex-direction: column;
-                gap: 12px;
-                width: 100%;
-            }
-
-            .contact-item {
-                width: 100%;
-                max-width: 100%;
-                padding: 12px 20px;
-                justify-content: center;
-            }
-
-            /* PARTNER */
-            .partner-cta-section {
-                padding: 60px 20px;
-            }
-
-            .partner-benefits {
-                flex-direction: column;
-                align-items: center;
-                gap: 16px;
-            }
-
-            .benefit-item {
-                width: 100%;
-                max-width: 280px;
-            }
-
-            /* FOOTER */
-            footer {
-                padding: 40px 20px 20px;
-            }
-
-            .footer-content {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 32px 24px;
-                max-width: 100%;
-            }
-
-            .footer-section {
-                text-align: left;
-            }
-
-            .footer-section h3 {
-                font-size: 15px;
-                margin-bottom: 14px;
-                font-weight: 700;
-            }
-
-            .footer-section ul {
-                padding: 0;
-            }
-
-            .footer-section ul li {
-                margin-bottom: 10px;
-                line-height: 1.4;
-            }
-
-            .footer-section a {
-                font-size: 13px;
-                display: block;
-            }
-
-            .footer-bottom {
-                padding-top: 24px;
-                margin-top: 24px;
-                font-size: 12px;
-                line-height: 1.6;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <!-- Header -->
     <header>
-
-        <div class="header-content">
-            <div class="logo">
-                <div class="logo-dot"></div>
-                <span data-en="DISCOVER UZBEKISTAN" data-uz="O'ZBEKISTONNI KASHF ETING">DISCOVER UZBEKISTAN</span>
-            </div>
-
-            <!-- Hamburger Menu Button (Mobile) -->
-            <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
-                ☰
-            </button>
-
-            <ul id="mainNav">
-                <li><a href="#home" data-en="Home" data-uz="Bosh sahifa">Home</a></li>
-                <li><a href="#about" data-en="About Us" data-uz="Biz haqimizda">About Us</a></li>
-                <li><a href="#categories" data-en="Historical Information" data-uz="Tarixiy ma'lumotlar">Historical
-                        Information</a></li>
-                <li><a href="#featured" data-en="Destinations" data-uz="Manzillar">Destinations</a></li>
-                <li><a href="#services" data-en="Services" data-uz="Xizmatlar">Services</a></li>
-                <li><a href="#contact" data-en="Contact" data-uz="Aloqa">Contact</a></li>
-            </ul>
-
-            <div class="header-right">
-                <button class="lang-toggle" onclick="toggleLanguage()">
-                    <span id="lang-text">O'zbekcha</span>
-                </button>
-            </div>
-
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-dot"></div>
+          <span
+            data-en="DISCOVER UZBEKISTAN"
+            data-uz="O'ZBEKISTONNI KASHF ETING"
+            >DISCOVER UZBEKISTAN</span
+          >
         </div>
 
+        <!-- Hamburger Menu Button (Mobile) -->
+        <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+          ☰
+        </button>
+
+        <ul id="mainNav">
+          <li><a href="#home" data-en="Home" data-uz="Bosh sahifa">Home</a></li>
+          <li>
+            <a href="#about" data-en="About Us" data-uz="Biz haqimizda"
+              >About Us</a
+            >
+          </li>
+          <li>
+            <a
+              href="#categories"
+              data-en="Historical Information"
+              data-uz="Tarixiy ma'lumotlar"
+              >Historical Information</a
+            >
+          </li>
+          <li>
+            <a href="#featured" data-en="Destinations" data-uz="Manzillar"
+              >Destinations</a
+            >
+          </li>
+          <li>
+            <a href="#services" data-en="Services" data-uz="Xizmatlar"
+              >Services</a
+            >
+          </li>
+          <li>
+            <a href="#contact" data-en="Contact" data-uz="Aloqa">Contact</a>
+          </li>
+        </ul>
+
+        <div class="header-right">
+          <button class="lang-toggle" onclick="toggleLanguage()">
+            <span id="lang-text">O'zbekcha</span>
+          </button>
+        </div>
+      </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>
-                <span data-en="EXPLORE THE PEARL OF" data-uz="KASHF ETING">EXPLORE THE PEARL OF</span><br>
-                <span data-en="THE SILK ROAD" data-uz="IPAK YO'LI DURDONASINI">THE SILK ROAD</span>
-            </h1>
-            <p data-en="Your complete travel companion for exploring Uzbekistan's ancient cities, culture & cuisine"
-                data-uz="O'zbekistonning qadimiy shaharlari, madaniyati va oshxonasini kashf qilish uchun to'liq yo'riqnoma">
-                Your complete travel companion for exploring Uzbekistan's ancient cities, culture & cuisine</p>
-            <div class="hero-cta">
-                <a href="#categories" class="cta-btn cta-primary" data-en="Start Exploring"
-                    data-uz="Kashf qilishni boshlash">Start Exploring</a>
-                <a href="#contact" class="cta-btn cta-secondary" data-en="Contact Agency"
-                    data-uz="Agentlik bilan bog'lanish">Contact Agency</a>
-            </div>
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <h1>
+          <span data-en="EXPLORE THE PEARL OF" data-uz="KASHF ETING"
+            >EXPLORE THE PEARL OF</span
+          ><br />
+          <span data-en="THE SILK ROAD" data-uz="IPAK YO'LI DURDONASINI"
+            >THE SILK ROAD</span
+          >
+        </h1>
+        <p
+          data-en="Your complete travel companion for exploring Uzbekistan's ancient cities, culture & cuisine"
+          data-uz="O'zbekistonning qadimiy shaharlari, madaniyati va oshxonasini kashf qilish uchun to'liq yo'riqnoma"
+        >
+          Your complete travel companion for exploring Uzbekistan's ancient
+          cities, culture & cuisine
+        </p>
+        <div class="hero-cta">
+          <a
+            href="#categories"
+            class="cta-btn cta-primary"
+            data-en="Start Exploring"
+            data-uz="Kashf qilishni boshlash"
+            >Start Exploring</a
+          >
+          <a
+            href="#contact"
+            class="cta-btn cta-secondary"
+            data-en="Contact Agency"
+            data-uz="Agentlik bilan bog'lanish"
+            >Contact Agency</a
+          >
         </div>
+      </div>
     </section>
 
     <!-- Quick Access Categories -->
+    <span id="about"></span>
     <section class="quick-access" id="categories">
-        <div class="section-header">
-            <p class="section-subtitle" data-en="Everything you need" data-uz="Sizga kerak bo'lgan hamma narsa">
-                Everything you need</p>
-            <h2 class="section-title" data-en="What are you looking for?" data-uz="Nimani qidiryapsiz?">What are you
-                looking for?</h2>
+      <div class="section-header">
+        <p
+          class="section-subtitle"
+          data-en="Everything you need"
+          data-uz="Sizga kerak bo'lgan hamma narsa"
+        >
+          Everything you need
+        </p>
+        <h2
+          class="section-title"
+          data-en="What are you looking for?"
+          data-uz="Nimani qidiryapsiz?"
+        >
+          What are you looking for?
+        </h2>
+      </div>
+
+      <!-- <button class="nav-arrow nav-arrow-left" onclick="scrollPlaces('left')">‹</button>    -->
+
+      <div class="categories-grid" id="placesCarousel">
+        <!-- Historical Places -->
+        <div class="category-card" onclick="navigateTo('attractions')">
+          <img src="images/historylogo.png" alt="history" />
+          <div class="category-overlay">
+            <div
+              class="category-title"
+              data-en="Historical Sites"
+              data-uz="Tarixiy joylar"
+            >
+              Historical Sites
+            </div>
+            <div
+              class="category-desc"
+              data-en="Explore 2,500+ years of history"
+              data-uz="2500+ yillik tarixni kashf qiling"
+            >
+              Explore 2,500+ years of history
+            </div>
+            <button class="category-btn" data-en="Explore" data-uz="Ko'rish">
+              Explore
+            </button>
+          </div>
         </div>
 
-        <!-- <button class="nav-arrow nav-arrow-left" onclick="scrollPlaces('left')">‹</button>    -->
-
-        <div class="categories-grid" id="placesCarousel">
-
-            <!-- Historical Places -->
-            <div class="category-card" onclick="navigateTo('attractions')">
-                <img src="images/historylogo.png" alt="history">
-                <div class="category-overlay">
-                    <div class="category-title" data-en="Historical Sites" data-uz="Tarixiy joylar">Historical Sites
-                    </div>
-                    <div class="category-desc" data-en="Explore 2,500+ years of history"
-                        data-uz="2500+ yillik tarixni kashf qiling">Explore 2,500+ years of history</div>
-                    <button class="category-btn" data-en="Explore" data-uz="Ko'rish">Explore</button>
-                </div>
+        <!-- Restaurants -->
+        <div class="category-card" onclick="navigateTo('restaurants')">
+          <img src="images/restaurantlogo.jpg" alt="history" />
+          <div class="category-overlay">
+            <div
+              class="category-title"
+              data-en="Restaurants"
+              data-uz="Restoranlar"
+            >
+              Restaurants
             </div>
-
-            <!-- Restaurants -->
-            <div class="category-card" onclick="navigateTo('restaurants')">
-                <img src="images/restaurantlogo.jpg" alt="history">
-                <div class="category-overlay">
-                    <div class="category-title" data-en="Restaurants" data-uz="Restoranlar">Restaurants</div>
-                    <div class="category-desc" data-en="Taste authentic Uzbek cuisine"
-                        data-uz="Asl o'zbek taomlarini tatib ko'ring">Taste authentic Uzbek cuisine</div>
-                    <button class="category-btn" data-en="Find Food" data-uz="Ovqat topish">Find Food</button>
-                </div>
+            <div
+              class="category-desc"
+              data-en="Taste authentic Uzbek cuisine"
+              data-uz="Asl o'zbek taomlarini tatib ko'ring"
+            >
+              Taste authentic Uzbek cuisine
             </div>
-
-            <!-- Hotels -->
-            <div class="category-card" onclick="navigateTo('hotels')">
-                <img src="images/hotels.jpg" alt="Hotels">
-                <div class="category-overlay">
-                    <div class="category-title" data-en="Hotels & Stays" data-uz="Mehmonxonalar">Hotels & Stays</div>
-                    <div class="category-desc" data-en="Book your perfect accommodation"
-                        data-uz="O'zingizga mos joyni toping">Book your perfect accommodation</div>
-                    <button class="category-btn" data-en="Book Now" data-uz="Bron qilish">Book Now</button>
-                </div>
-            </div>
-
-            <!-- Travel Agencies -->
-            <div class="category-card" onclick="navigateTo('travel-agencies')">
-                <img src="images/travel_agency.jpg" alt="Travel Agencies">
-                <div class="category-overlay">
-                    <div class="category-title" data-en="Travel Agencies" data-uz="Sayohat agentliklari">Travel Agencies
-                    </div>
-                    <div class="category-desc" data-en="Guided tours & travel packages"
-                        data-uz="Yo'lboshchi bilan sayohatlar">Guided tours & travel packages</div>
-                    <button class="category-btn" data-en="View Agencies" data-uz="Agentliklar">View Agencies</button>
-                </div>
-            </div>
-
-            <!-- Transportation -->
-            <div class="category-card" onclick="navigateTo('locations')">
-                <img src="images/transportation.webp" alt="Transportation">
-                <div class="category-overlay">
-                    <div class="category-title" data-en="Transportation" data-uz="Transport">Transportation</div>
-                    <div class="category-desc" data-en="Travel between cities easily"
-                        data-uz="Shaharlar orasida sayohat qiling">Travel between cities easily</div>
-                    <button class="category-btn" data-en="View Routes" data-uz="Yo'nalishlar">View Routes</button>
-                </div>
-            </div>
-
-            <!-- Travel Guide -->
-            <div class="category-card" onclick="navigateTo('guide')">
-                <img src="images/guide.webp" alt="Local Guide">
-                <div class="category-overlay">
-                    <div class="category-title" data-en="Local Guide" data-uz="Mahalliy qo'llanma">Local Guide</div>
-                    <div class="category-desc" data-en="Tips, customs & local advice"
-                        data-uz="Maslahatlar va ma'lumotlar">Tips, customs & local advice</div>
-                    <button class="category-btn" data-en="Learn More" data-uz="Ko'proq">Learn More</button>
-                </div>
-            </div>
-
-            <!-- Emergency -->
-            <div class="category-card" onclick="navigateTo('emergency')">
-                <img src="images/emergency.webp" alt="Emergency contact">
-                <div class="category-overlay">
-                    <div class="category-title" data-en="Emergency Contacts" data-uz="Favqulodda raqamlar">Emergency
-                        Contacts</div>
-                    <div class="category-desc" data-en="Important numbers & support" data-uz="Muhim raqamlar va yordam">
-                        Important numbers & support</div>
-                    <button class="category-btn" data-en="View All" data-uz="Ko'rish">View All</button>
-                </div>
-            </div>
-
+            <button
+              class="category-btn"
+              data-en="Find Food"
+              data-uz="Ovqat topish"
+            >
+              Find Food
+            </button>
+          </div>
         </div>
 
-        <!-- <button class="nav-arrow nav-arrow-right" onclick="scrollPlaces('right')">›</button> -->
+        <!-- Hotels -->
+        <div class="category-card" onclick="navigateTo('hotels')">
+          <img src="images/hotels.jpg" alt="Hotels" />
+          <div class="category-overlay">
+            <div
+              class="category-title"
+              data-en="Hotels & Stays"
+              data-uz="Mehmonxonalar"
+            >
+              Hotels & Stays
+            </div>
+            <div
+              class="category-desc"
+              data-en="Book your perfect accommodation"
+              data-uz="O'zingizga mos joyni toping"
+            >
+              Book your perfect accommodation
+            </div>
+            <button
+              class="category-btn"
+              data-en="Book Now"
+              data-uz="Bron qilish"
+            >
+              Book Now
+            </button>
+          </div>
+        </div>
+
+        <!-- Travel Agencies -->
+        <div class="category-card" onclick="navigateTo('travel-agencies')">
+          <img src="images/travel_agency.jpg" alt="Travel Agencies" />
+          <div class="category-overlay">
+            <div
+              class="category-title"
+              data-en="Travel Agencies"
+              data-uz="Sayohat agentliklari"
+            >
+              Travel Agencies
+            </div>
+            <div
+              class="category-desc"
+              data-en="Guided tours & travel packages"
+              data-uz="Yo'lboshchi bilan sayohatlar"
+            >
+              Guided tours & travel packages
+            </div>
+            <button
+              class="category-btn"
+              data-en="View Agencies"
+              data-uz="Agentliklar"
+            >
+              View Agencies
+            </button>
+          </div>
+        </div>
+
+        <!-- Transportation -->
+        <div class="category-card" onclick="navigateTo('locations')">
+          <img src="images/transportation.webp" alt="Transportation" />
+          <div class="category-overlay">
+            <div
+              class="category-title"
+              data-en="Transportation"
+              data-uz="Transport"
+            >
+              Transportation
+            </div>
+            <div
+              class="category-desc"
+              data-en="Travel between cities easily"
+              data-uz="Shaharlar orasida sayohat qiling"
+            >
+              Travel between cities easily
+            </div>
+            <button
+              class="category-btn"
+              data-en="View Routes"
+              data-uz="Yo'nalishlar"
+            >
+              View Routes
+            </button>
+          </div>
+        </div>
+
+        <!-- Travel Guide -->
+        <div class="category-card" onclick="navigateTo('guide')">
+          <img src="images/guide.webp" alt="Local Guide" />
+          <div class="category-overlay">
+            <div
+              class="category-title"
+              data-en="Local Guide"
+              data-uz="Mahalliy qo'llanma"
+            >
+              Local Guide
+            </div>
+            <div
+              class="category-desc"
+              data-en="Tips, customs & local advice"
+              data-uz="Maslahatlar va ma'lumotlar"
+            >
+              Tips, customs & local advice
+            </div>
+            <button class="category-btn" data-en="Learn More" data-uz="Ko'proq">
+              Learn More
+            </button>
+          </div>
+        </div>
+
+        <!-- Emergency -->
+        <div class="category-card" onclick="navigateTo('emergency')">
+          <img src="images/emergency.webp" alt="Emergency contact" />
+          <div class="category-overlay">
+            <div
+              class="category-title"
+              data-en="Emergency Contacts"
+              data-uz="Favqulodda raqamlar"
+            >
+              Emergency Contacts
+            </div>
+            <div
+              class="category-desc"
+              data-en="Important numbers & support"
+              data-uz="Muhim raqamlar va yordam"
+            >
+              Important numbers & support
+            </div>
+            <button class="category-btn" data-en="View All" data-uz="Ko'rish">
+              View All
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- <button class="nav-arrow nav-arrow-right" onclick="scrollPlaces('right')">›</button> -->
     </section>
 
     <!-- Featured Destinations -->
-    <section class="featured">
-        <div class="section-header">
-            <p class="section-subtitle" data-en="Top picks" data-uz="Eng yaxshilari">Top picks</p>
-            <h2 class="section-title" data-en="Most Popular Destinations" data-uz="Eng mashhur joylar">Most Popular
-                Destinations</h2>
-        </div>
+    <section class="featured" id="featured">
+      <div class="section-header">
+        <p
+          class="section-subtitle"
+          data-en="Top picks"
+          data-uz="Eng yaxshilari"
+        >
+          Top picks
+        </p>
+        <h2
+          class="section-title"
+          data-en="Most Popular Destinations"
+          data-uz="Eng mashhur joylar"
+        >
+          Most Popular Destinations
+        </h2>
+      </div>
 
-        <!-- Filter Options -->
-        <div class="filter-container">
+      <!-- Filter Options -->
+      <div class="filter-container">
+        <select id="cityFilter" class="filter-select" onchange="filterPlaces()">
+          <option value="all" data-en="All Cities" data-uz="Barcha shaharlar">
+            All Cities
+          </option>
+          <option value="samarkand" data-en="Samarkand" data-uz="Samarqand">
+            Samarkand
+          </option>
+          <option value="bukhara" data-en="Bukhara" data-uz="Buxoro">
+            Bukhara
+          </option>
+          <option value="khiva" data-en="Khiva" data-uz="Xiva">Khiva</option>
+          <option value="tashkent" data-en="Tashkent" data-uz="Toshkent">
+            Tashkent
+          </option>
+          <option
+            value="shakhrisabz"
+            data-en="Shakhrisabz"
+            data-uz="Shakhrisabz"
+          >
+            Shakhrisabz
+          </option>
+          <option value="fergana" data-en="Fergana Valley" data-uz="Fargona">
+            Fergana Valley
+          </option>
+          <option
+            value="karakalpakistan"
+            data-en="Karakalpakstan"
+            data-uz="Karakalpakstan"
+          >
+            Karakalpakstan
+          </option>
+        </select>
 
-            <select id="cityFilter" class="filter-select" onchange="filterPlaces()">
-                <option value="all" data-en="All Cities" data-uz="Barcha shaharlar">All Cities</option>
-                <option value="samarkand" data-en="Samarkand" data-uz="Samarqand">Samarkand</option>
-                <option value="bukhara" data-en="Bukhara" data-uz="Buxoro">Bukhara</option>
-                <option value="khiva" data-en="Khiva" data-uz="Xiva">Khiva</option>
-                <option value="tashkent" data-en="Tashkent" data-uz="Toshkent">Tashkent</option>
-                <option value="shakhrisabz" data-en="Shakhrisabz" data-uz="Shakhrisabz">Shakhrisabz</option>
-                <option value="fergana" data-en="Fergana Valley" data-uz="Fargona">Fergana Valley</option>
-                <option value="karakalpakistan" data-en="Karakalpakstan" data-uz="Karakalpakstan">Karakalpakstan
-                </option>
-            </select>
+        <select id="typeFilter" class="filter-select" onchange="filterPlaces()">
+          <option value="all" data-en="All Types" data-uz="Barcha turlar">
+            All Types
+          </option>
+          <option
+            value="historical"
+            data-en="Historical Sites"
+            data-uz="🏛 Tarixiy joylar"
+          >
+            🏛 Historical
+          </option>
+          <option value="nature" data-en="Nature" data-uz="🌿 Tabiat">
+            🌿 Nature
+          </option>
+          <option value="cultural" data-en="Culture" data-uz="🕌 Madaniyat">
+            🕌 Culture
+          </option>
+          <option value="adventure" data-en="Adventure" data-uz="🏔 Sarguzasht">
+            🏔 Adventure
+          </option>
+        </select>
 
-            <select id="typeFilter" class="filter-select" onchange="filterPlaces()">
-                <option value="all" data-en="All Types" data-uz="Barcha turlar">All Types</option>
-                <option value="historical" data-en="Historical Sites" data-uz="🏛 Tarixiy joylar">🏛 Historical</option>
-                <option value="nature" data-en="Nature" data-uz="🌿 Tabiat">🌿 Nature</option>
-                <option value="cultural" data-en="Culture" data-uz="🕌 Madaniyat">🕌 Culture</option>
-                <option value="adventure" data-en="Adventure" data-uz="🏔 Sarguzasht">🏔 Adventure</option>
-            </select>
+        <button
+          class="filter-reset"
+          onclick="resetFilters()"
+          data-en="Reset"
+          data-uz="Qayta tiklash"
+        >
+          Reset
+        </button>
+      </div>
 
-            <button class="filter-reset" onclick="resetFilters()" data-en="Reset" data-uz="Qayta tiklash">Reset</button>
-        </div>
+      <!-- <button class="nav-arrow nav-arrow-left" onclick="scrollPlace('left')">‹</button> -->
 
-        <!-- <button class="nav-arrow nav-arrow-left" onclick="scrollPlace('left')">‹</button> -->
+      <div class="places-carousel" id="Carousel">
+        <!-- Cards will be loaded from database -->
+      </div>
 
-        <div class="places-carousel" id="Carousel">
-            <!-- Cards will be loaded from database -->
-        </div>
+      <!-- <button class="nav-arrow nav-arrow-right" onclick="scrollPlace('right')">›</button> -->
 
-        <!-- <button class="nav-arrow nav-arrow-right" onclick="scrollPlace('right')">›</button> -->
-
-        <div class="results-info">
-            <p id="resultsCount" data-en="Showing all destinations" data-uz="Barcha joylar ko'rsatilmoqda">Showing all
-                destinations</p>
-        </div>
-
+      <div class="results-info">
+        <p
+          id="resultsCount"
+          data-en="Showing all destinations"
+          data-uz="Barcha joylar ko'rsatilmoqda"
+        >
+          Showing all destinations
+        </p>
+      </div>
     </section>
 
     <!-- Services -->
-    <section class="services">
-        <div class="section-header">
-            <p class="section-subtitle" data-en="How we help" data-uz="Biz sizga qanday yordam beramiz">How we help</p>
-            <h2 class="section-title" data-en="Our Services" data-uz="Bizning xizmatlar">Our Services</h2>
+    <section class="services" id="services">
+      <div class="section-header">
+        <p
+          class="section-subtitle"
+          data-en="How we help"
+          data-uz="Biz sizga qanday yordam beramiz"
+        >
+          How we help
+        </p>
+        <h2
+          class="section-title"
+          data-en="Our Services"
+          data-uz="Bizning xizmatlar"
+        >
+          Our Services
+        </h2>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-item" onclick="navigateTo('location')">
+          <div class="service-icon">📍</div>
+          <div
+            class="service-title"
+            data-en="Location-Based Discovery"
+            data-uz="Joylashuv bo'yicha qidiruv"
+          >
+            Location-Based Discovery
+          </div>
+          <div
+            class="service-desc"
+            data-en="Find attractions, restaurants near you instantly"
+            data-uz="Yaqin atrofdagi joylarni toping"
+          >
+            Find attractions, restaurants near you instantly
+          </div>
         </div>
 
-        <div class="services-grid">
-            <div class="service-item" onclick="navigateTo('location')">
-                <div class="service-icon">📍</div>
-                <div class="service-title" data-en="Location-Based Discovery" data-uz="Joylashuv bo'yicha qidiruv">
-                    Location-Based Discovery</div>
-                <div class="service-desc" data-en="Find attractions, restaurants near you instantly"
-                    data-uz="Yaqin atrofdagi joylarni toping">Find attractions, restaurants near you instantly</div>
-            </div>
-
-            <div class="service-item" onclick="navigateTo('location')">
-                <div class="service-icon">🗺️</div>
-                <div class="service-title" data-en="Smart Route Planning" data-uz="Aqlli marshrutlar">Smart Route
-                    Planning</div>
-                <div class="service-desc" data-en="Get optimized travel routes between cities"
-                    data-uz="Eng yaxshi yo'nalishlarni oling">Get optimized travel routes between cities</div>
-            </div>
-
-            <div class="service-item" onclick="navigateTo('attractions')">
-                <div class="service-icon">📚</div>
-                <div class="service-title" data-en="Historical Context" data-uz="Tarixiy ma'lumot">Historical Context
-                </div>
-                <div class="service-desc" data-en="Learn the story behind every monument"
-                    data-uz="Har bir yodgorlik tarixini bilib oling">Learn the story behind every monument</div>
-            </div>
-
-            <div class="service-item" onclick="navigateTo('tips')">
-                <div class="service-icon">💡</div>
-                <div class="service-title" data-en="Local Tips & Advice" data-uz="Mahalliy maslahatlar">Local Tips &
-                    Advice</div>
-                <div class="service-desc" data-en="Insider knowledge tourists usually miss"
-                    data-uz="Mahalliy bilimlar va maslahatlar">Insider knowledge tourists usually miss</div>
-            </div>
+        <div class="service-item" onclick="navigateTo('location')">
+          <div class="service-icon">🗺️</div>
+          <div
+            class="service-title"
+            data-en="Smart Route Planning"
+            data-uz="Aqlli marshrutlar"
+          >
+            Smart Route Planning
+          </div>
+          <div
+            class="service-desc"
+            data-en="Get optimized travel routes between cities"
+            data-uz="Eng yaxshi yo'nalishlarni oling"
+          >
+            Get optimized travel routes between cities
+          </div>
         </div>
+
+        <div class="service-item" onclick="navigateTo('attractions')">
+          <div class="service-icon">📚</div>
+          <div
+            class="service-title"
+            data-en="Historical Context"
+            data-uz="Tarixiy ma'lumot"
+          >
+            Historical Context
+          </div>
+          <div
+            class="service-desc"
+            data-en="Learn the story behind every monument"
+            data-uz="Har bir yodgorlik tarixini bilib oling"
+          >
+            Learn the story behind every monument
+          </div>
+        </div>
+
+        <div class="service-item" onclick="navigateTo('tips')">
+          <div class="service-icon">💡</div>
+          <div
+            class="service-title"
+            data-en="Local Tips & Advice"
+            data-uz="Mahalliy maslahatlar"
+          >
+            Local Tips & Advice
+          </div>
+          <div
+            class="service-desc"
+            data-en="Insider knowledge tourists usually miss"
+            data-uz="Mahalliy bilimlar va maslahatlar"
+          >
+            Insider knowledge tourists usually miss
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Contact CTA -->
     <section class="contact-cta" id="contact">
+      <img src="images/assistant.jpg" alt="Background image" />
 
-        <img src="images/assistant.jpg" alt="Background image">
+      <h2 data-en="Need Travel Assistance?" data-uz="Sayohat yordami kerakmi?">
+        Need Travel Assistance?
+      </h2>
+      <p
+        data-en="Contact our travel agency for personalized tour packages and support"
+        data-uz="Shaxsiy tur paketlari va yordam uchun agentligimiz bilan bog'laning"
+      >
+        Contact our travel agency for personalized tour packages and support
+      </p>
 
-        <h2 data-en="Need Travel Assistance?" data-uz="Sayohat yordami kerakmi?">Need Travel Assistance?</h2>
-        <p data-en="Contact our travel agency for personalized tour packages and support"
-            data-uz="Shaxsiy tur paketlari va yordam uchun agentligimiz bilan bog'laning">Contact our travel agency for
-            personalized tour packages and support</p>
-
-        <div class="contact-info">
-            <div class="contact-item">
-                <span>📞</span>
-                <div>+998 71 123-45-67</div>
-            </div>
-            <div class="contact-item">
-                <span>✉️</span>
-                <div>info@discoveruzbekistan.uz</div>
-            </div>
-            <div class="contact-item">
-                <span>📍</span>
-                <div>Tashkent, Uzbekistan</div>
-            </div>
+      <div class="contact-info">
+        <div class="contact-item">
+          <span>📞</span>
+          <div>+998 71 123-45-67</div>
         </div>
+        <div class="contact-item">
+          <span>✉️</span>
+          <div>
+            <a href="mailto:info@discoveruzbekistan.com"
+              >info@discoveruzbekistan.com</a
+            >
+          </div>
+        </div>
+        <div class="contact-item">
+          <span>📍</span>
+          <div>Tashkent, Uzbekistan</div>
+        </div>
+      </div>
 
-        <a href="#" class="cta-btn cta-secondary" data-en="Contact Us Now" data-uz="Hozir bog'laning"
-            style="background: white; color: #667eea;">Contact Us Now</a>
+      <a
+        href="#"
+        class="cta-btn cta-secondary"
+        data-en="Contact Us Now"
+        data-uz="Hozir bog'laning"
+        style="background: white; color: #667eea"
+        >Contact Us Now</a
+      >
     </section>
 
     <!-- In your homepage, before footer -->
     <section class="partner-cta-section">
-        <div class="partner-cta-container">
-            <div class="partner-cta-content">
-                <h2>Want to Grow Your Business?</h2>
-                <p>Join hundreds of restaurants, hotels, and attractions reaching thousands of travelers across
-                    Uzbekistan</p>
-                <div class="partner-benefits">
-                    <div class="benefit-item">
-                        <span class="benefit-icon">🌟</span>
-                        <span>Increased Visibility</span>
-                    </div>
-                    <div class="benefit-item">
-                        <span class="benefit-icon">📊</span>
-                        <span>Real-time Analytics</span>
-                    </div>
-                    <div class="benefit-item">
-                        <span class="benefit-icon">💼</span>
-                        <span>Easy Management</span>
-                    </div>
-                </div>
-                <a href="partner-portal.html" class="partner-cta-button">
-                    🚀 Become a Partner Today
-                </a>
+      <div class="partner-cta-container">
+        <div class="partner-cta-content">
+          <h2>Want to Grow Your Business?</h2>
+          <p>
+            Join hundreds of restaurants, hotels, and attractions reaching
+            thousands of travelers across Uzbekistan
+          </p>
+          <div class="partner-benefits">
+            <div class="benefit-item">
+              <span class="benefit-icon">🌟</span>
+              <span>Increased Visibility</span>
             </div>
+            <div class="benefit-item">
+              <span class="benefit-icon">📊</span>
+              <span>Real-time Analytics</span>
+            </div>
+            <div class="benefit-item">
+              <span class="benefit-icon">💼</span>
+              <span>Easy Management</span>
+            </div>
+          </div>
+          <a href="partner-portal.html" class="partner-cta-button">
+            🚀 Become a Partner Today
+          </a>
         </div>
+      </div>
     </section>
 
     <!-- Footer -->
     <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3 data-en="Destinations" data-uz="Manzillar">Destinations</h3>
-                <ul>
-                    <li><a href="#" data-en="Samarkand" data-uz="Samarqand">Samarkand</a></li>
-                    <li><a href="#" data-en="Bukhara" data-uz="Buxoro">Bukhara</a></li>
-                    <li><a href="#" data-en="Khiva" data-uz="Xiva">Khiva</a></li>
-                    <li><a href="#" data-en="Tashkent" data-uz="Toshkent">Tashkent</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h3 data-en="Services" data-uz="Xizmatlar">Services</h3>
-                <ul>
-                    <li><a href="#" data-en="Hotels" data-uz="Mehmonxonalar">Hotels</a></li>
-                    <li><a href="#" data-en="Restaurants" data-uz="Restoranlar">Restaurants</a></li>
-                    <li><a href="#" data-en="Transportation" data-uz="Transport">Transportation</a></li>
-                    <li><a href="#" data-en="Tour Guides" data-uz="Gidlar">Tour Guides</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h3 data-en="Company" data-uz="Kompaniya">Company</h3>
-                <ul>
-                    <li><a href="#" data-en="About Us" data-uz="Biz haqimizda">About Us</a></li>
-                    <li><a href="#" data-en="Contact" data-uz="Aloqa">Contact</a></li>
-                    <li><a href="#" data-en="Privacy Policy" data-uz="Maxfiylik siyosati">Privacy Policy</a></li>
-                    <li><a href="#" data-en="Terms of Service" data-uz="Foydalanish shartlari">Terms of Service</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h3 data-en="Follow Us" data-uz="Bizni kuzating">Follow Us</h3>
-                <ul>
-                    <li><a href="#">📘 Facebook</a></li>
-                    <li><a href="#">📷 Instagram</a></li>
-                    <li><a href="#">🐦 Twitter</a></li>
-                    <li><a href="#">📹 YouTube</a></li>
-                </ul>
-            </div>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 data-en="Destinations" data-uz="Manzillar">Destinations</h3>
+          <ul>
+            <li>
+              <a href="#" data-en="Samarkand" data-uz="Samarqand">Samarkand</a>
+            </li>
+            <li><a href="#" data-en="Bukhara" data-uz="Buxoro">Bukhara</a></li>
+            <li><a href="#" data-en="Khiva" data-uz="Xiva">Khiva</a></li>
+            <li>
+              <a href="#" data-en="Tashkent" data-uz="Toshkent">Tashkent</a>
+            </li>
+          </ul>
         </div>
 
-        <div class="footer-bottom">
-            <p>&copy; 2025 Discover Uzbekistan. <span data-en="All rights reserved."
-                    data-uz="Barcha huquqlar himoyalangan.">All rights reserved.</span></p>
+        <div class="footer-section">
+          <h3 data-en="Services" data-uz="Xizmatlar">Services</h3>
+          <ul>
+            <li>
+              <a href="#" data-en="Hotels" data-uz="Mehmonxonalar">Hotels</a>
+            </li>
+            <li>
+              <a href="#" data-en="Restaurants" data-uz="Restoranlar"
+                >Restaurants</a
+              >
+            </li>
+            <li>
+              <a href="#" data-en="Transportation" data-uz="Transport"
+                >Transportation</a
+              >
+            </li>
+            <li>
+              <a href="#" data-en="Tour Guides" data-uz="Gidlar">Tour Guides</a>
+            </li>
+          </ul>
         </div>
+
+        <div class="footer-section">
+          <h3 data-en="Company" data-uz="Kompaniya">Company</h3>
+          <ul>
+            <li>
+              <a href="#" data-en="About Us" data-uz="Biz haqimizda"
+                >About Us</a
+              >
+            </li>
+            <li><a href="#" data-en="Contact" data-uz="Aloqa">Contact</a></li>
+            <li>
+              <a href="#" data-en="Privacy Policy" data-uz="Maxfiylik siyosati"
+                >Privacy Policy</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                data-en="Terms of Service"
+                data-uz="Foydalanish shartlari"
+                >Terms of Service</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h3 data-en="Follow Us" data-uz="Bizni kuzating">Follow Us</h3>
+          <ul>
+            <li><a href="#">📘 Facebook</a></li>
+            <li><a href="#">📷 Instagram</a></li>
+            <li><a href="#">🐦 Twitter</a></li>
+            <li><a href="#">📹 YouTube</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>
+          &copy; 2025 Discover Uzbekistan.
+          <span
+            data-en="All rights reserved."
+            data-uz="Barcha huquqlar himoyalangan."
+            >All rights reserved.</span
+          >
+        </p>
+      </div>
     </footer>
 
     <script>
-        const API_BASE_URL = 'http://127.0.0.1:8000';
-        let currentLang = 'en';
-        let userPosition = null;
+      // Use relative URL in production, localhost for development
+      const API_BASE_URL =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"
+          ? "http://127.0.0.1:8000"
+          : "";
+      let currentLang = "en";
+      let userPosition = null;
 
-        // ==================== INITIALIZATION ====================
+      // ==================== INITIALIZATION ====================
 
-        document.addEventListener('DOMContentLoaded', function () {
-            getUserLocation();
-            loadAttractions();
-            setupMobileMenu();
+      document.addEventListener("DOMContentLoaded", function () {
+        getUserLocation();
+        loadAttractions();
+        setupMobileMenu();
+      });
 
+      // ==================== MOBILE MENU ====================
+
+      function setupMobileMenu() {
+        // Close menu when clicking on navigation links
+        const navLinks = document.querySelectorAll("#mainNav a");
+        navLinks.forEach((link) => {
+          link.addEventListener("click", closeMenu);
         });
 
-        // ==================== MOBILE MENU ====================
+        // Close menu when clicking outside
+        document.addEventListener("click", function (event) {
+          const nav = document.getElementById("mainNav");
+          const hamburger = document.querySelector(".hamburger");
 
-        function setupMobileMenu() {
-            // Close menu when clicking on navigation links
-            const navLinks = document.querySelectorAll('#mainNav a');
-            navLinks.forEach(link => {
-                link.addEventListener('click', closeMenu);
-            });
-
-            // Close menu when clicking outside
-            document.addEventListener('click', function (event) {
-                const nav = document.getElementById('mainNav');
-                const hamburger = document.querySelector('.hamburger');
-
-                if (nav && nav.classList.contains('active')) {
-                    if (!nav.contains(event.target) && !hamburger.contains(event.target)) {
-                        closeMenu();
-                    }
-                }
-            });
-        }
-
-        function toggleMenu() {
-            const mainNav = document.getElementById('mainNav');
-            const hamburger = document.querySelector('.hamburger');
-
-            if (mainNav.classList.contains('active')) {
-                closeMenu();
-            } else {
-                mainNav.classList.add('active');
-                hamburger.textContent = '✕';
+          if (nav && nav.classList.contains("active")) {
+            if (
+              !nav.contains(event.target) &&
+              !hamburger.contains(event.target)
+            ) {
+              closeMenu();
             }
+          }
+        });
+      }
+
+      function toggleMenu() {
+        const mainNav = document.getElementById("mainNav");
+        const hamburger = document.querySelector(".hamburger");
+
+        if (mainNav.classList.contains("active")) {
+          closeMenu();
+        } else {
+          mainNav.classList.add("active");
+          hamburger.textContent = "✕";
         }
+      }
 
-        function closeMenu() {
-            const mainNav = document.getElementById('mainNav');
-            const hamburger = document.querySelector('.hamburger');
+      function closeMenu() {
+        const mainNav = document.getElementById("mainNav");
+        const hamburger = document.querySelector(".hamburger");
 
-            mainNav.classList.remove('active');
-            hamburger.textContent = '☰';
-        }
+        mainNav.classList.remove("active");
+        hamburger.textContent = "☰";
+      }
 
-        // ==================== LOCATION ====================
+      // ==================== LOCATION ====================
 
-        async function getUserLocation() {
-            if (navigator.geolocation) {
-                try {
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                            maximumAge: 60000
-                        });
-                    });
-
-                    userPosition = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-
-                    console.log('User location obtained:', userPosition);
-                } catch (err) {
-                    console.warn('User location not obtained:', err);
-                    userPosition = null;
-                }
-            }
-        }
-
-        // ==================== LANGUAGE ====================
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'en' ? 'uz' : 'en';
-            document.getElementById('lang-text').textContent = currentLang === 'en' ? "O'zbekcha" : "English";
-
-            document.querySelectorAll('[data-en]').forEach(elem => {
-                const text = elem.getAttribute(`data-${currentLang}`);
-                if (text) {
-                    if (elem.tagName === 'INPUT') {
-                        elem.placeholder = text;
-                    } else {
-                        elem.textContent = text;
-                    }
-                }
+      async function getUserLocation() {
+        if (navigator.geolocation) {
+          try {
+            const position = await new Promise((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000,
+              });
             });
-        }
 
-        // ==================== NAVIGATION ====================
-
-        function navigateTo(section) {
-            const pageMap = {
-                'historical': 'attractions-list.html?category=historical',
-                'attractions': 'attractions-list.html',
-                'restaurants': 'restaurants-list.html',
-                'hotels': 'hotels-list.html',
-                'travel-agencies': 'travel-agencies.html',
-                'transport': 'transportation.html',
-                'locations': 'location.html',
-                'guide': 'guide.html',
-                'emergency': 'emergency.html',
-                'location': 'location.html',
-                'routes': 'location.html#routes',
-                'history': 'about.html',
-                'tips': 'tips.html'
+            userPosition = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
             };
 
-            const targetPage = pageMap[section] || `${section}.html`;
-            window.location.href = targetPage;
+            console.log("User location obtained:", userPosition);
+          } catch (err) {
+            console.warn("User location not obtained:", err);
+            userPosition = null;
+          }
         }
+      }
 
-        function openAttraction(id) {
-            window.location.href = `attractions.html?id=${id}`;
-        }
+      // ==================== LANGUAGE ====================
 
-        // ==================== SMOOTH SCROLL ====================
+      function toggleLanguage() {
+        currentLang = currentLang === "en" ? "uz" : "en";
+        document.getElementById("lang-text").textContent =
+          currentLang === "en" ? "O'zbekcha" : "English";
 
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const href = this.getAttribute('href');
-                if (href !== '#') {
-                    e.preventDefault();
-                    const target = document.querySelector(href);
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth' });
-                        closeMenu(); // Close mobile menu after navigation
-                    }
-                }
-            });
+        document.querySelectorAll("[data-en]").forEach((elem) => {
+          const text = elem.getAttribute(`data-${currentLang}`);
+          if (text) {
+            if (elem.tagName === "INPUT") {
+              elem.placeholder = text;
+            } else {
+              elem.textContent = text;
+            }
+          }
+        });
+      }
+
+      // ==================== NAVIGATION ====================
+
+      function navigateTo(section) {
+        const pageMap = {
+          historical: "attractions-list.html?category=historical",
+          attractions: "attractions-list.html",
+          restaurants: "restaurants-list.html",
+          hotels: "hotels-list.html",
+          "travel-agencies": "travel-agencies.html",
+          transport: "transportation.html",
+          locations: "location.html",
+          guide: "guide.html",
+          emergency: "emergency.html",
+          location: "location.html",
+          routes: "location.html#routes",
+          history: "about.html",
+          tips: "tips.html",
+        };
+
+        const targetPage = pageMap[section] || `${section}.html`;
+        window.location.href = targetPage;
+      }
+
+      function openAttraction(id) {
+        window.location.href = `attractions.html?id=${id}`;
+      }
+
+      // ==================== SMOOTH SCROLL ====================
+
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          const href = this.getAttribute("href");
+          if (href !== "#") {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth" });
+              closeMenu(); // Close mobile menu after navigation
+            }
+          }
+        });
+      });
+
+      // ==================== FILTERS ====================
+
+      function filterPlaces() {
+        const cityFilter = document.getElementById("cityFilter").value;
+        const typeFilter = document.getElementById("typeFilter").value;
+        const placeCards = document.querySelectorAll(".place-card");
+        let visibleCount = 0;
+
+        placeCards.forEach((card) => {
+          const cardCity = card.getAttribute("data-city");
+          const cardType = card.getAttribute("data-type");
+
+          const cityMatch =
+            cityFilter === "all" || cardCity.includes(cityFilter);
+          const typeMatch = typeFilter === "all" || cardType === typeFilter;
+
+          if (cityMatch && typeMatch) {
+            card.style.display = "block";
+            visibleCount++;
+          } else {
+            card.style.display = "none";
+          }
         });
 
-        // ==================== FILTERS ====================
+        const resultsCount = document.getElementById("resultsCount");
+        if (resultsCount) {
+          resultsCount.textContent = `Showing ${visibleCount} destination${visibleCount !== 1 ? "s" : ""}`;
+        }
+      }
 
-        function filterPlaces() {
-            const cityFilter = document.getElementById('cityFilter').value;
-            const typeFilter = document.getElementById('typeFilter').value;
-            const placeCards = document.querySelectorAll('.place-card');
-            let visibleCount = 0;
+      function resetFilters() {
+        document.getElementById("cityFilter").value = "all";
+        document.getElementById("typeFilter").value = "all";
+        filterPlaces();
+      }
 
-            placeCards.forEach(card => {
-                const cardCity = card.getAttribute('data-city');
-                const cardType = card.getAttribute('data-type');
+      // ==================== CAROUSEL SCROLL ====================
 
-                const cityMatch = cityFilter === 'all' || cardCity.includes(cityFilter);
-                const typeMatch = typeFilter === 'all' || cardType === typeFilter;
+      function scrollPlaces(direction) {
+        const carousel = document.getElementById("placesCarousel");
+        if (!carousel) return;
 
-                if (cityMatch && typeMatch) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+        const cardWidth = 375;
+        if (direction === "left") {
+          carousel.scrollBy({ left: -cardWidth, behavior: "smooth" });
+        } else {
+          carousel.scrollBy({ left: cardWidth, behavior: "smooth" });
+        }
+      }
 
-            const resultsCount = document.getElementById('resultsCount');
-            if (resultsCount) {
-                resultsCount.textContent = `Showing ${visibleCount} destination${visibleCount !== 1 ? 's' : ''}`;
+      // ==================== SIMPLE LIKE SYSTEM ====================
+
+      // Track which places this user has already liked
+      function getLikedPlaces() {
+        return JSON.parse(localStorage.getItem("liked_places") || "{}");
+      }
+
+      function saveLikedPlaces(obj) {
+        localStorage.setItem("liked_places", JSON.stringify(obj));
+      }
+
+      async function loadAllLikes() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/likes/all`);
+          if (!response.ok) return;
+          const likesData = await response.json();
+          const liked = getLikedPlaces();
+
+          likesData.forEach((item) => {
+            const button = document.querySelector(
+              `[data-place-id="${item.page_id}"]`,
+            );
+            if (!button) return;
+
+            const countSpan = button.querySelector(".like-count");
+            const heartIcon = button.querySelector(".heart-icon");
+
+            if (countSpan) countSpan.textContent = item.like_count;
+
+            // Restore liked state from localStorage
+            if (liked[item.page_id]) {
+              button.classList.add("liked");
+              heartIcon.textContent = "♥";
             }
+          });
+        } catch (error) {
+          console.error("Error loading likes:", error);
+        }
+      }
+
+      async function toggleLike(event, placeId) {
+        event.stopPropagation();
+
+        const button = event.currentTarget;
+        const heartIcon = button.querySelector(".heart-icon");
+        const countSpan = button.querySelector(".like-count");
+        const liked = getLikedPlaces();
+
+        // Block if already liked
+        if (liked[placeId]) {
+          // Show a small message instead of allowing unlike
+          heartIcon.style.animation = "heartBeat 0.4s ease";
+          setTimeout(() => (heartIcon.style.animation = ""), 400);
+          return; // ← user already liked this, do nothing
         }
 
-        function resetFilters() {
-            document.getElementById('cityFilter').value = 'all';
-            document.getElementById('typeFilter').value = 'all';
-            filterPlaces();
-        }
+        // Optimistic UI
+        button.classList.add("liked");
+        heartIcon.textContent = "♥";
+        let currentCount = parseInt(countSpan.textContent) || 0;
+        currentCount++;
+        countSpan.textContent = currentCount;
+        heartIcon.style.animation = "heartBeat 0.6s ease";
+        setTimeout(() => (heartIcon.style.animation = ""), 600);
 
-        // ==================== CAROUSEL SCROLL ====================
+        // Save to localStorage immediately
+        liked[placeId] = true;
+        saveLikedPlaces(liked);
 
-        function scrollPlaces(direction) {
-            const carousel = document.getElementById('placesCarousel');
-            if (!carousel) return;
+        // Send to backend
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/api/likes/${placeId}/add`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ page_id: placeId, user_id: getUserId() }),
+            },
+          );
 
-            const cardWidth = 375;
-            if (direction === 'left') {
-                carousel.scrollBy({ left: -cardWidth, behavior: 'smooth' });
-            } else {
-                carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
-            }
-        }
-
-        // ==================== SIMPLE LIKE SYSTEM ====================
-
-        function initializeLikes() {
-            // Load likes from backend when page loads
-            loadAllLikes();
-        }
-
-        // Track which places this user has already liked
-        function getLikedPlaces() {
-            return JSON.parse(localStorage.getItem('liked_places') || '{}');
-        }
-
-        function saveLikedPlaces(obj) {
-            localStorage.setItem('liked_places', JSON.stringify(obj));
-        }
-
-        async function loadAllLikes() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/likes/all`);
-                if (!response.ok) return;
-                const likesData = await response.json();
-                const liked = getLikedPlaces();
-
-                likesData.forEach(item => {
-                    const button = document.querySelector(`[data-place-id="${item.page_id}"]`);
-                    if (!button) return;
-
-                    const countSpan = button.querySelector('.like-count');
-                    const heartIcon = button.querySelector('.heart-icon');
-
-                    if (countSpan) countSpan.textContent = item.like_count;
-
-                    // Restore liked state from localStorage
-                    if (liked[item.page_id]) {
-                        button.classList.add('liked');
-                        heartIcon.textContent = '♥';
-                    }
-                });
-            } catch (error) {
-                console.error('Error loading likes:', error);
-            }
-        }
-
-        async function toggleLike(event, placeId) {
-            event.stopPropagation();
-
-            const button = event.currentTarget;
-            const heartIcon = button.querySelector('.heart-icon');
-            const countSpan = button.querySelector('.like-count');
-            const liked = getLikedPlaces();
-
-            // Block if already liked
-            if (liked[placeId]) {
-                // Show a small message instead of allowing unlike
-                heartIcon.style.animation = 'heartBeat 0.4s ease';
-                setTimeout(() => heartIcon.style.animation = '', 400);
-                return; // ← user already liked this, do nothing
-            }
-
-            // Optimistic UI
-            button.classList.add('liked');
-            heartIcon.textContent = '♥';
-            let currentCount = parseInt(countSpan.textContent) || 0;
-            currentCount++;
-            countSpan.textContent = currentCount;
-            heartIcon.style.animation = 'heartBeat 0.6s ease';
-            setTimeout(() => heartIcon.style.animation = '', 600);
-
-            // Save to localStorage immediately
-            liked[placeId] = true;
+          if (response.ok) {
+            const data = await response.json();
+            countSpan.textContent = data.like_count;
+          } else {
+            // Revert if server rejected
+            button.classList.remove("liked");
+            heartIcon.textContent = "♡";
+            countSpan.textContent = currentCount - 1;
+            delete liked[placeId];
             saveLikedPlaces(liked);
-
-            // Send to backend
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/likes/${placeId}/add`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ page_id: placeId, user_id: getUserId() })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    countSpan.textContent = data.like_count;
-                } else {
-                    // Revert if server rejected
-                    button.classList.remove('liked');
-                    heartIcon.textContent = '♡';
-                    countSpan.textContent = currentCount - 1;
-                    delete liked[placeId];
-                    saveLikedPlaces(liked);
-                }
-            } catch (error) {
-                console.error('Error toggling like:', error);
-            }
+          }
+        } catch (error) {
+          console.error("Error toggling like:", error);
         }
+      }
 
-
-        function getUserId() {
-            let userId = localStorage.getItem('uzbekistan_user_id');
-            if (!userId) {
-                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('uzbekistan_user_id', userId);
-            }
-            return userId;
+      function getUserId() {
+        let userId = localStorage.getItem("uzbekistan_user_id");
+        if (!userId) {
+          userId =
+            "user_" +
+            Date.now() +
+            "_" +
+            Math.random().toString(36).substr(2, 9);
+          localStorage.setItem("uzbekistan_user_id", userId);
         }
+        return userId;
+      }
 
-        // ==================== CAROUSEL SCROLL (Optional) ====================
+      // ==================== XSS ESCAPE HELPER ====================
 
-        function scrollPlaces(direction) {
-            const carousel = document.getElementById('placesCarousel');
-            if (!carousel) return;
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
 
-            const cardWidth = 375;
-            if (direction === 'left') {
-                carousel.scrollBy({ left: -cardWidth, behavior: 'smooth' });
-            } else {
-                carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
-            }
-        }
+      async function loadAttractions() {
+        const carousel = document.getElementById("Carousel");
 
-        async function loadAttractions() {
-            const carousel = document.getElementById('Carousel');
+        try {
+          const response = await fetch(`${API_BASE_URL}/attractions`);
+          if (!response.ok) throw new Error("Failed to load");
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/attractions`);
-                if (!response.ok) throw new Error('Failed to load');
+          const attractions = await response.json();
 
-                const attractions = await response.json();
+          if (!attractions.length) {
+            carousel.innerHTML = `<div style="color:rgba(255,255,255,0.5);padding:2rem">No attractions found.</div>`;
+            return;
+          }
 
-                if (!attractions.length) {
-                    carousel.innerHTML = `<div style="color:rgba(255,255,255,0.5);padding:2rem">No attractions found.</div>`;
-                    return;
-                }
-
-                carousel.innerHTML = attractions.map(a => `
+          carousel.innerHTML = attractions
+            .map(
+              (a) => `
             <div class="place-card" 
-                 onclick="openAttraction(${a.id})" 
-                 data-city="${(a.address || '').toLowerCase()}" 
-                 data-type="${(a.category || 'historical').toLowerCase()}">
+                 onclick="openAttraction(${parseInt(a.id)})" 
+                 data-city="${escapeHtml((a.address || "").toLowerCase())}" 
+                 data-type="${escapeHtml((a.category || "historical").toLowerCase())}">
                 
-                <div class="place-image" style="position:relative;overflow:hidden">
-                    <img src="${a.image_url || 'images/reg5.jpg'}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0" onerror="this.src='images/reg5.jpg'"/>
+                <div class="place-image" style="position:relative;overflow:hidden;height:100%">
+                    <img src="${escapeHtml(a.image_url || "images/reg5.jpg")}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0" onerror="this.src='images/reg5.jpg'"/>
                 </div>
 
-                <button class="like-btn" onclick="toggleLike(event, 'attraction_${a.id}')" data-place-id="attraction_${a.id}">
+                <button class="like-btn" onclick="toggleLike(event, 'attraction_${parseInt(a.id)}')" data-place-id="attraction_${parseInt(a.id)}">
                     <span class="heart-icon">♡</span>
                     <span class="like-count">0</span>
                 </button>
 
                 <div class="place-info">
-                    <div class="place-rank">${a.category || 'Top Rated'}</div>
-                    <div class="place-name">${a.name}</div>
-                    <div class="place-city">${a.address || ''}</div>
+                    <div class="place-rank">${escapeHtml(a.category || "Top Rated")}</div>
+                    <div class="place-name">${escapeHtml(a.name)}</div>
+                    <div class="place-city">${escapeHtml(a.address || "")}</div>
                 </div>
             </div>
-        `).join('');
+        `,
+            )
+            .join("");
 
-                // Load likes after cards are rendered
-                loadAllLikes();
-
-            } catch (e) {
-                console.error('Error loading attractions:', e);
-                carousel.innerHTML = `<div style="color:rgba(255,255,255,0.5);padding:2rem">Could not load attractions.</div>`;
-            }
+          // Load likes after cards are rendered
+          loadAllLikes();
+        } catch (e) {
+          console.error("Error loading attractions:", e);
+          if (carousel) {
+            carousel.innerHTML = `<div style="color:rgba(255,255,255,0.5);padding:2rem;text-align:center">
+                        <p>Could not load destinations. Please try again later.</p>
+                    </div>`;
+          }
         }
+      }
     </script>
-</body>
-
+  </body>
 </html>

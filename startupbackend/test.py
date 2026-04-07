@@ -1,14 +1,17 @@
-import smtplib, ssl, os
+
+import sys
+sys.path.insert(0, '/Users/mac/Desktop/startup/startupbackend')
 from dotenv import load_dotenv
 load_dotenv()
+from database import get_db
+from models.restaurant import Restaurant
+import hashlib
 
-user = os.environ.get('SMTP_USER')
-pwd  = os.environ.get('SMTP_PASS')
+db = next(get_db())
+r = db.query(Restaurant).filter(Restaurant.partner_email == 'otamurodsuvonqulov22@gmail.com').first()
+print('Stored hash:', r.partner_password)
 
-try:
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as s:
-        s.login(user, pwd)
-        print('✅ Port 465 works!')
-except Exception as e:
-    print(f'❌ Failed: {e}')
+test_pw = input('Paste the password from the email: ')
+test_hash = hashlib.sha256(test_pw.encode()).hexdigest()
+print('Computed hash:', test_hash)
+print('Match:', r.partner_password == test_hash)

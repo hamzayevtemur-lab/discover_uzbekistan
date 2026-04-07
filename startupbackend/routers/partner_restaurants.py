@@ -44,8 +44,9 @@ class MenuItemUpdate(BaseModel):
 # ==================== HELPER ====================
 
 def check_restaurant_owner(restaurant_id: int, token: dict):
-    """Raises 403 if the token does not belong to this restaurant."""
-    if token.get("type") != "restaurant" or token.get("id") != restaurant_id:
+    biz_type = token.get("business_type") or token.get("type")
+    biz_id = token.get("record_id") or token.get("id")
+    if biz_type != "restaurant" or biz_id != restaurant_id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
 # ==================== ENDPOINTS ====================
