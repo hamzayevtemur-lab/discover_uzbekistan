@@ -209,3 +209,5 @@ def delete_gallery_photo(
     db.commit()
 
     return {"success": True, "deleted_id": photo_id}
+
+#something
