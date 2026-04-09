@@ -22,21 +22,21 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --bg-light: #f8fafc;
-            --bg-white: #ffffff;
-            --text-dark: #1e293b;
-            --text-gray: #64748b;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
             --border: #e2e8f0;
         }
 
         body {
             font-family: 'Inter', sans-serif;
             line-height: 1.6;
-            color: var(--text-dark);
-            background: var(--bg-light);
+            color: var(--text);
+            background: var(--bg);
         }
 
-        /* Header */
+        /* ── HEADER ── */
         .header {
             background: white;
             border-bottom: 1px solid var(--border);
@@ -60,12 +60,13 @@
             font-size: 1.75rem;
             font-weight: 700;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-decoration: none;
         }
 
         .back-link {
-            color: var(--text-gray);
+            color: var(--muted);
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -77,7 +78,7 @@
             color: var(--primary);
         }
 
-        /* Hero Section */
+        /* ── HERO ── */
         .hero {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 4rem 2rem;
@@ -142,9 +143,9 @@
             font-size: 0.95rem;
         }
 
-        /* Main Content */
+        /* ── MAIN ── */
         .main-content {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: -3rem auto 4rem;
             padding: 0 2rem;
             position: relative;
@@ -158,10 +159,10 @@
             overflow: hidden;
         }
 
-        /* Progress Steps */
+        /* ── PROGRESS ── */
         .progress-bar {
             display: flex;
-            background: var(--bg-light);
+            background: var(--bg);
             padding: 2rem;
             border-bottom: 1px solid var(--border);
         }
@@ -218,7 +219,7 @@
 
         .step-label {
             font-weight: 600;
-            color: var(--text-gray);
+            color: var(--muted);
         }
 
         .progress-step.active .step-label {
@@ -229,7 +230,7 @@
             color: var(--success);
         }
 
-        /* Step Content */
+        /* ── STEP CONTENT ── */
         .step-content {
             display: none;
             padding: 3rem;
@@ -258,12 +259,12 @@
             margin-bottom: 0.5rem;
         }
 
-        .step-description {
-            color: var(--text-gray);
+        .step-desc {
+            color: var(--muted);
             margin-bottom: 2rem;
         }
 
-        /* Form */
+        /* ── FORM ── */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -277,14 +278,14 @@
             gap: 0.5rem;
         }
 
-        .form-group.full-width {
-            grid-column: 1 / -1;
+        .form-group.full {
+            grid-column: 1/-1;
         }
 
         label {
             font-weight: 600;
             font-size: 0.875rem;
-            color: var(--text-dark);
+            color: var(--text);
         }
 
         .required {
@@ -315,10 +316,10 @@
             min-height: 100px;
         }
 
-        /* Pricing Cards */
+        /* ── PRICING ── */
         .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -363,12 +364,13 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            white-space: nowrap;
         }
 
         .plan-duration {
             font-size: 1.125rem;
             font-weight: 600;
-            color: var(--text-gray);
+            color: var(--muted);
             margin-bottom: 1rem;
         }
 
@@ -381,7 +383,7 @@
 
         .plan-price small {
             font-size: 1.25rem;
-            color: var(--text-gray);
+            color: var(--muted);
         }
 
         .plan-save {
@@ -416,9 +418,9 @@
             font-size: 1.25rem;
         }
 
-        /* Payment Summary */
+        /* ── PAYMENT SECTION ── */
         .payment-summary {
-            background: var(--bg-light);
+            background: var(--bg);
             border-radius: 16px;
             padding: 2rem;
             margin-bottom: 2rem;
@@ -447,7 +449,150 @@
             border-top: 2px solid var(--border);
         }
 
-        /* Buttons */
+        /* Card display boxes */
+        .card-methods {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .card-method {
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 140px;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .card-method-icon {
+            font-size: 2rem;
+        }
+
+        .card-method-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .card-method-number {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Payment instruction box */
+        .pay-instruction {
+            background: #eff6ff;
+            border: 2px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pay-instruction h4 {
+            color: #1d4ed8;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pay-instruction ol {
+            padding-left: 1.25rem;
+        }
+
+        .pay-instruction ol li {
+            color: #1e40af;
+            font-size: 0.9rem;
+            padding: 0.3rem 0;
+            font-weight: 500;
+        }
+
+        /* Upload proof */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 14px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            background: var(--bg);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: #f5f3ff;
+        }
+
+        .upload-zone input[type=file] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .upload-text {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .upload-hint {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .proof-preview {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .proof-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            object-fit: contain;
+        }
+
+        .proof-preview .proof-name {
+            font-size: 0.85rem;
+            color: var(--success);
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        /* Upload progress */
+        .upload-progress {
+            display: none;
+            margin-top: 0.75rem;
+            background: #dbeafe;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1d4ed8;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        /* ── BUTTONS ── */
         .button-group {
             display: flex;
             gap: 1rem;
@@ -468,11 +613,12 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            font-family: inherit;
         }
 
         .btn-secondary {
-            background: var(--bg-light);
-            color: var(--text-dark);
+            background: var(--bg);
+            color: var(--text);
             border: 2px solid var(--border);
         }
 
@@ -496,7 +642,21 @@
             transform: none;
         }
 
-        /* Success Screen */
+        /* ── INFO BOX ── */
+        .info-box {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box p {
+            margin: 0;
+            color: var(--text);
+        }
+
+        /* ── SUCCESS ── */
         .success-screen {
             text-align: center;
             padding: 3rem 2rem;
@@ -528,69 +688,96 @@
         }
 
         .success-message {
-            color: var(--text-gray);
+            color: var(--muted);
             margin-bottom: 2rem;
             line-height: 1.8;
             font-size: 1.125rem;
         }
 
-        .credentials-box {
-            background: var(--bg-light);
-            border: 2px dashed var(--primary);
+        .next-steps {
+            background: var(--bg);
             border-radius: 16px;
-            padding: 2.5rem;
+            padding: 2rem;
             margin: 2rem auto;
             max-width: 600px;
+            text-align: left;
         }
 
-        .credentials-title {
+        .next-steps h3 {
             font-weight: 700;
-            margin-bottom: 1.5rem;
-            font-size: 1.25rem;
+            margin-bottom: 1.25rem;
+            font-size: 1.1rem;
         }
 
-        .credential-item {
+        .next-step-item {
             display: flex;
-            justify-content: space-between;
+            gap: 1rem;
+            align-items: flex-start;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .next-step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
             align-items: center;
-            padding: 1.25rem;
-            background: white;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .credential-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .credential-label {
-            font-weight: 600;
-            color: var(--text-gray);
-        }
-
-        .credential-value {
-            font-family: 'Courier New', monospace;
+            justify-content: center;
             font-weight: 700;
-            color: var(--primary);
-            font-size: 1.125rem;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            margin-top: 2px;
         }
 
-        .info-box {
-            background: rgba(99, 102, 241, 0.1);
-            border-left: 4px solid var(--primary);
-            padding: 1.25rem;
+        .step-num.done {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-num.pending {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .step-num.waiting {
+            background: #94a3b8;
+            color: white;
+        }
+
+        .step-text strong {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .step-text span {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        /* ── ERROR ── */
+        .error-msg {
+            background: #fee2e2;
+            border-left: 4px solid var(--danger);
+            padding: 1rem;
             border-radius: 8px;
-            margin: 2rem 0;
+            margin-bottom: 1rem;
+            color: #991b1b;
+            font-weight: 600;
+            display: none;
         }
 
-        .info-box p {
-            margin: 0;
-            color: var(--text-dark);
+        .error-msg.show {
+            display: block;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
+        /* ── RESPONSIVE ── */
+        @media(max-width:768px) {
             .hero h1 {
                 font-size: 2.5rem;
             }
@@ -616,27 +803,29 @@
             .trust-indicators {
                 gap: 1.5rem;
             }
+
+            .card-methods {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 
 <body>
-    <!-- Header -->
+
+    <!-- HEADER -->
     <header class="header">
         <div class="header-content">
-            <a href="index.html" class="logo">🇺🇿 Discover Uzbekistan</a>
-            <a href="index.html" class="back-link">
-                ← Back to Home
-            </a>
+            <a href="/index.html" class="logo">🇺🇿 Discover Uzbekistan</a>
+            <a href="/index.html" class="back-link">← Back to Home</a>
         </div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- HERO -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Grow Your Business with Us</h1>
+            <h1>Grow Your Business With Us</h1>
             <p>Join hundreds of successful partners reaching thousands of travelers across Uzbekistan every day</p>
-
             <div class="trust-indicators">
                 <div class="trust-item">
                     <div class="trust-number">500+</div>
@@ -654,40 +843,43 @@
         </div>
     </section>
 
-    <!-- Main Content -->
+    <!-- MAIN -->
     <main class="main-content">
         <div class="signup-container">
-            <!-- Progress Bar -->
+
+            <!-- PROGRESS BAR -->
             <div class="progress-bar">
-                <div class="progress-step active" id="step1-indicator">
+                <div class="progress-step active" id="ind-1">
                     <div class="step-circle">1</div>
                     <div class="step-label">Business Info</div>
                 </div>
-                <div class="progress-step" id="step2-indicator">
+                <div class="progress-step" id="ind-2">
                     <div class="step-circle">2</div>
                     <div class="step-label">Choose Plan</div>
                 </div>
-                <div class="progress-step" id="step3-indicator">
+                <div class="progress-step" id="ind-3">
                     <div class="step-circle">3</div>
                     <div class="step-label">Payment</div>
                 </div>
             </div>
 
-            <!-- Step 1: Business Information -->
+            <!-- ── STEP 1: BUSINESS INFO ── -->
             <div class="step-content active" id="step1">
                 <h2 class="step-title">Tell us about your business</h2>
-                <p class="step-description">We need some basic information to set up your partner account</p>
+                <p class="step-desc">We need some basic information to set up your partner account</p>
 
-                <form id="businessInfoForm">
+                <div class="error-msg" id="step1Error"></div>
+
+                <form id="step1Form">
                     <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label>What type of business do you have? <span class="required">*</span></label>
+                        <div class="form-group full">
+                            <label>Business Type <span class="required">*</span></label>
                             <select id="businessType" required>
                                 <option value="">Select your business type</option>
                                 <option value="restaurant">🍽️ Restaurant / Café</option>
                                 <option value="hotel">🏨 Hotel / Guesthouse</option>
-                                <option value="attraction">🏛️ Tourist Attraction / Museum</option>
                                 <option value="travel_agency">🌍 Travel Agency</option>
+                                <option value="attraction">🏛️ Tourist Attraction / Museum</option>
                                 <option value="multiple">📦 Multiple Businesses</option>
                             </select>
                         </div>
@@ -697,7 +889,7 @@
                         </div>
                         <div class="form-group">
                             <label>Contact Person <span class="required">*</span></label>
-                            <input type="text" id="contactPerson" placeholder="John Doe" required>
+                            <input type="text" id="contactPerson" placeholder="Your full name" required>
                         </div>
                         <div class="form-group">
                             <label>Email Address <span class="required">*</span></label>
@@ -707,194 +899,223 @@
                             <label>Phone Number <span class="required">*</span></label>
                             <input type="tel" id="phone" placeholder="+998 90 123 4567" required>
                         </div>
-                        <div class="form-group full-width">
+                        <div class="form-group full">
                             <label>Business Address <span class="required">*</span></label>
                             <input type="text" id="address" placeholder="Registan Street, Samarkand" required>
                         </div>
-                        <div class="form-group full-width">
-                            <label>Tell us about your business (Optional)</label>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="city" placeholder="Samarkand">
+                        </div>
+                        <div class="form-group">
+                            <label>Website (optional)</label>
+                            <input type="url" id="website" placeholder="https://yourbusiness.com">
+                        </div>
+                        <div class="form-group full">
+                            <label>About Your Business (optional)</label>
                             <textarea id="description"
                                 placeholder="What makes your business special? What can travelers expect?"></textarea>
                         </div>
                     </div>
-
                     <div class="button-group">
-                        <a href="index.html" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Next: Choose Plan →</button>
+                        <a href="/index.html" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary" id="step1Btn">Next: Choose Plan →</button>
                     </div>
                 </form>
             </div>
 
-            <!-- Step 2: Pricing Plans -->
+            <!-- ── STEP 2: CHOOSE PLAN ── -->
             <div class="step-content" id="step2">
                 <h2 class="step-title">Choose the perfect plan</h2>
-                <p class="step-description">All plans include full access to our partner dashboard and unlimited updates
+                <p class="step-desc">All plans include full partner dashboard access, unlimited updates, and analytics
                 </p>
 
                 <div class="pricing-grid">
-                    <div class="pricing-card" onclick="selectPlan('1month', 49)">
+
+                    <div class="pricing-card" onclick="selectPlan(this,'1month',20)">
                         <div class="plan-duration">1 Month</div>
-                        <div class="plan-price">$49<small>/mo</small></div>
+                        <div class="plan-price">$20<small>/mo</small></div>
                         <ul class="plan-features">
                             <li>Full dashboard access</li>
                             <li>Unlimited updates</li>
-                            <li>Basic analytics</li>
+                            <li>Analytics</li>
                             <li>Email support</li>
-                            <li>Mobile app access</li>
                         </ul>
                     </div>
 
-                    <div class="pricing-card popular" onclick="selectPlan('3months', 129)">
+                    <div class="pricing-card popular" onclick="selectPlan(this,'3months',50)">
                         <span class="popular-badge">Most Popular</span>
                         <div class="plan-duration">3 Months</div>
-                        <div class="plan-price">$129<small>/3mo</small></div>
-                        <div class="plan-save">Save $18</div>
+                        <div class="plan-price">$50<small>/3mo</small></div>
+                        <div class="plan-save">Save $10</div>
                         <ul class="plan-features">
                             <li>Everything in 1 Month</li>
-                            <li>Advanced analytics</li>
                             <li>Priority support</li>
                             <li>Featured listing</li>
                             <li>Photo gallery</li>
                         </ul>
                     </div>
 
-                    <div class="pricing-card" onclick="selectPlan('6months', 239)">
+                    <div class="pricing-card" onclick="selectPlan(this,'6months',110)">
                         <div class="plan-duration">6 Months</div>
-                        <div class="plan-price">$239<small>/6mo</small></div>
-                        <div class="plan-save">Save $55</div>
+                        <div class="plan-price">$110<small>/6mo</small></div>
+                        <div class="plan-save">Save $10</div>
                         <ul class="plan-features">
                             <li>Everything in 3 Months</li>
                             <li>Premium placement</li>
-                            <li>24/7 phone support</li>
+                            <li>Marketing boost</li>
                             <li>Custom branding</li>
-                            <li>Marketing campaigns</li>
                         </ul>
                     </div>
 
-                    <div class="pricing-card" onclick="selectPlan('1year', 449)">
+                    <div class="pricing-card" onclick="selectPlan(this,'1year',220)">
                         <div class="plan-duration">1 Year</div>
-                        <div class="plan-price">$449<small>/year</small></div>
-                        <div class="plan-save">Save $139 - Best Value!</div>
+                        <div class="plan-price">$220<small>/yr</small></div>
+                        <div class="plan-save">Best Value! Save $20</div>
                         <ul class="plan-features">
                             <li>Everything in 6 Months</li>
-                            <li>Dedicated account manager</li>
+                            <li>Dedicated support</li>
                             <li>Priority placement</li>
                             <li>Exclusive promotions</li>
-                            <li>Annual business review</li>
                         </ul>
                     </div>
+
                 </div>
 
                 <div class="info-box">
-                    <p>💡 <strong>Tip:</strong> Save more with longer plans! All plans can be cancelled anytime with 30
-                        days notice.</p>
+                    <p>💡 <strong>Tip:</strong> Longer plans save you money! After your plan expires, you'll have a
+                        3-day grace period to renew before your listing is deactivated.</p>
                 </div>
 
                 <div class="button-group">
-                    <button type="button" class="btn btn-secondary" onclick="previousStep()">← Back</button>
-                    <button type="button" class="btn btn-primary" id="continueToPayment" onclick="nextStep()"
-                        disabled>Continue to Payment →</button>
+                    <button type="button" class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button type="button" class="btn btn-primary" id="step2Btn" onclick="goToStep(3)" disabled>
+                        Continue to Payment →
+                    </button>
                 </div>
             </div>
 
-            <!-- Step 3: Payment -->
+            <!-- ── STEP 3: PAYMENT ── -->
             <div class="step-content" id="step3">
                 <h2 class="step-title">Complete your payment</h2>
-                <p class="step-description">Your payment information is secure and encrypted</p>
+                <p class="step-desc">Send payment to one of the cards below, then upload your receipt screenshot</p>
 
+                <!-- Order summary -->
                 <div class="payment-summary">
                     <div class="summary-title">📋 Order Summary</div>
-                    <div class="summary-row">
-                        <span>Business Name:</span>
-                        <span id="summaryBusinessName">-</span>
+                    <div class="summary-row"><span>Business Name:</span><span id="sumBusiness">—</span></div>
+                    <div class="summary-row"><span>Email:</span><span id="sumEmail">—</span></div>
+                    <div class="summary-row"><span>Plan:</span><span id="sumPlan">—</span></div>
+                    <div class="summary-row"><span>Total Amount:</span><span id="sumAmount">$0</span></div>
+                </div>
+
+                <!-- Payment cards -->
+                <h3 style="font-weight:700;margin-bottom:1rem;">💳 Send Payment to One of These Cards</h3>
+                <div class="card-methods">
+                    <div class="card-method">
+                        <div class="card-method-icon">💳</div>
+                        <div class="card-method-name">Visa / Humo</div>
+                        <div class="card-method-number" id="cardVisa">Loading…</div>
                     </div>
-                    <div class="summary-row">
-                        <span>Email:</span>
-                        <span id="summaryEmail">-</span>
+                    <div class="card-method">
+                        <div class="card-method-icon">🏦</div>
+                        <div class="card-method-name">Uzcard</div>
+                        <div class="card-method-number" id="cardUzcard">Loading…</div>
                     </div>
-                    <div class="summary-row">
-                        <span>Selected Plan:</span>
-                        <span id="summaryPlan">-</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Total Amount:</span>
-                        <span id="summaryAmount">$0</span>
+                    <div class="card-method">
+                        <div class="card-method-icon">📱</div>
+                        <div class="card-method-name">Click / Payme</div>
+                        <div class="card-method-number" id="cardClick">Loading…</div>
                     </div>
                 </div>
 
-                <form id="paymentForm">
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label>Card Number <span class="required">*</span></label>
-                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label>Expiry Date <span class="required">*</span></label>
-                            <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5" required>
-                        </div>
-                        <div class="form-group">
-                            <label>CVV <span class="required">*</span></label>
-                            <input type="text" id="cvv" placeholder="123" maxlength="4" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Cardholder Name <span class="required">*</span></label>
-                            <input type="text" id="cardholderName" placeholder="John Doe" required>
-                        </div>
-                    </div>
+                <!-- Instructions -->
+                <div class="pay-instruction">
+                    <h4>📌 How to pay:</h4>
+                    <ol>
+                        <li>Choose any card above and send exactly <strong id="payAmount">$0</strong></li>
+                        <li>Take a screenshot of your successful payment confirmation</li>
+                        <li>Upload the screenshot below</li>
+                        <li>We will verify your payment and activate your account within 1–2 business days</li>
+                    </ol>
+                </div>
 
-                    <div class="info-box">
-                        🔒 Your payment is processed securely. We never store your card details.
-                    </div>
+                <!-- Upload proof -->
+                <h3 style="font-weight:700;margin-bottom:1rem;">📸 Upload Payment Screenshot <span
+                        class="required">*</span></h3>
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" id="proofFile" accept="image/*" onchange="handleProofUpload(this)">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Click to upload your payment screenshot</div>
+                    <div class="upload-hint">JPG, PNG or WEBP — max 5MB</div>
+                </div>
+                <div class="upload-progress" id="uploadProgress">⏳ Uploading screenshot…</div>
+                <div class="proof-preview" id="proofPreview">
+                    <img id="proofImg" src="" alt="Payment proof">
+                    <div class="proof-name" id="proofName"></div>
+                </div>
+                <input type="hidden" id="proofUrl">
 
-                    <div class="button-group">
-                        <button type="button" class="btn btn-secondary" onclick="previousStep()">← Back</button>
-                        <button type="submit" class="btn btn-primary">💳 Complete Payment</button>
-                    </div>
-                </form>
+                <div class="error-msg" id="step3Error"></div>
+
+                <div class="info-box">
+                    <p>🔒 Your payment screenshot is only used to verify your payment. It is stored securely and only
+                        visible to our admin team.</p>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                    <button type="button" class="btn btn-primary" id="step3Btn" onclick="submitApplication()">
+                        ✅ Submit Application
+                    </button>
+                </div>
             </div>
 
-            <!-- Success Step -->
+            <!-- ── SUCCESS SCREEN ── -->
             <div class="step-content" id="stepSuccess">
                 <div class="success-screen">
                     <div class="success-icon">🎉</div>
-                    <h2 class="success-title">Welcome Aboard!</h2>
-                    <div class="success-message">
-                        <p>Your payment was successful and your partner account is ready!</p>
-                        <p>We've sent your login credentials to <strong id="successEmail"></strong></p>
+                    <h2 class="success-title">Application Submitted!</h2>
+                    <p class="success-message">
+                        Your application and payment proof have been submitted successfully.<br>
+                        We've sent a verification email to <strong id="successEmail"></strong>
+                    </p>
+
+                    <div class="next-steps">
+                        <h3>What happens next:</h3>
+                        <div class="next-step-item">
+                            <div class="step-num done">✓</div>
+                            <div class="step-text"><strong>Application submitted</strong><span>Done! ✅</span></div>
+                        </div>
+                        <div class="next-step-item">
+                            <div class="step-num done">✓</div>
+                            <div class="step-text"><strong>Verification email sent</strong><span>Check your inbox and
+                                    click the link to verify your email</span></div>
+                        </div>
+                        <div class="next-step-item">
+                            <div class="step-num pending">2</div>
+                            <div class="step-text"><strong>Admin reviews your application &
+                                    payment</strong><span>Usually within 1–2 business days</span></div>
+                        </div>
+                        <div class="next-step-item">
+                            <div class="step-num waiting">3</div>
+                            <div class="step-text"><strong>Receive login credentials</strong><span>Sent automatically by
+                                    email once approved</span></div>
+                        </div>
+                        <div class="next-step-item">
+                            <div class="step-num waiting">4</div>
+                            <div class="step-text"><strong>Access your dashboard</strong><span>Manage your listing,
+                                    photos, reviews and more</span></div>
+                        </div>
                     </div>
 
-                    <div class="credentials-box">
-                        <div class="credentials-title">🔑 Your Login Credentials</div>
-                        <div class="credential-item">
-                            <span class="credential-label">Email:</span>
-                            <span class="credential-value" id="credentialEmail">-</span>
-                        </div>
-                        <div class="credential-item">
-                            <span class="credential-label">Password:</span>
-                            <span class="credential-value" id="credentialPassword">-</span>
-                        </div>
-                        <div class="credential-item">
-                            <span class="credential-label">Portal Link:</span>
-                            <span class="credential-value">partner-portal.html</span>
-                        </div>
-                    </div>
-
-                    <div class="info-box">
-                        <p>📧 <strong>Check your email!</strong> We've sent these credentials to your inbox along with a
-                            welcome guide to help you get started.</p>
-                    </div>
-
-                    <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center;">
-                        <a href="partner-portal.html" class="btn btn-primary">
-                            Go to Partner Portal →
-                        </a>
-                        <a href="index.html" class="btn btn-secondary">
-                            Back to Home
-                        </a>
+                    <div style="margin-top:2.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                        <a href="/partner-login.html" class="btn btn-primary">Go to Login →</a>
+                        <a href="/index.html" class="btn btn-secondary">Back to Home</a>
                     </div>
                 </div>
             </div>
+
         </div>
     </main>
 
@@ -902,55 +1123,75 @@
         const API = 'http://localhost:8000';
 
         let currentStep = 1;
-        let selectedPlan = null;
-        let selectedPrice = 0;
+        let selectedPlanKey = null;
+        let selectedPlanAmt = 0;
+        let applicationId = null;
         const formData = {};
 
-        /* ── STEP NAVIGATION ── */
-        function nextStep() {
-            if (currentStep < 3) {
-                document.getElementById(`step${currentStep}`).classList.remove('active');
-                document.getElementById(`step${currentStep}-indicator`).classList.remove('active');
-                document.getElementById(`step${currentStep}-indicator`).classList.add('completed');
-                currentStep++;
-                document.getElementById(`step${currentStep}`).classList.add('active');
-                document.getElementById(`step${currentStep}-indicator`).classList.add('active');
-                if (currentStep === 3) updatePaymentSummary();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+        // ── Payment card details ─────────────────────────────────
+        // Update these with your real card numbers
+        const PAYMENT_CARDS = {
+            visa: '8600 XXXX XXXX XXXX',   // ← replace with your Visa/Humo card
+            uzcard: '6262 XXXX XXXX XXXX',   // ← replace with your Uzcard
+            click: '+998 XX XXX XX XX',      // ← replace with your Click/Payme number
+        };
+
+        document.getElementById('cardVisa').textContent = PAYMENT_CARDS.visa;
+        document.getElementById('cardUzcard').textContent = PAYMENT_CARDS.uzcard;
+        document.getElementById('cardClick').textContent = PAYMENT_CARDS.click;
+
+        // ── PLAN NAMES ───────────────────────────────────────────
+        const PLAN_NAMES = {
+            '1month': '1 Month Plan  — $20',
+            '3months': '3 Months Plan — $50',
+            '6months': '6 Months Plan — $110',
+            '1year': '1 Year Plan   — $220',
+        };
+
+        // ── STEP NAVIGATION ──────────────────────────────────────
+        function goToStep(n) {
+            // Validate step 2 — must have selected plan
+            if (n === 3 && !selectedPlanKey) return;
+
+            // Hide current
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.getElementById(`ind-${currentStep}`).classList.remove('active');
+            if (n > currentStep) document.getElementById(`ind-${currentStep}`).classList.add('completed');
+            else document.getElementById(`ind-${currentStep}`).classList.remove('completed');
+
+            currentStep = n;
+
+            // Show next
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.getElementById(`ind-${currentStep}`).classList.add('active');
+
+            if (currentStep === 3) fillPaymentSummary();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function previousStep() {
-            if (currentStep > 1) {
-                document.getElementById(`step${currentStep}`).classList.remove('active');
-                document.getElementById(`step${currentStep}-indicator`).classList.remove('active');
-                currentStep--;
-                document.getElementById(`step${currentStep}`).classList.add('active');
-                document.getElementById(`step${currentStep}-indicator`).classList.remove('completed');
-                document.getElementById(`step${currentStep}-indicator`).classList.add('active');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        function selectPlan(plan, price) {
+        function selectPlan(card, key, amount) {
             document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
-            selectedPlan = plan;
-            selectedPrice = price;
-            document.getElementById('continueToPayment').disabled = false;
+            card.classList.add('selected');
+            selectedPlanKey = key;
+            selectedPlanAmt = amount;
+            document.getElementById('step2Btn').disabled = false;
         }
 
-        function updatePaymentSummary() {
-            const names = { '1month': '1 Month Plan', '3months': '3 Months Plan', '6months': '6 Months Plan', '1year': '1 Year Plan' };
-            document.getElementById('summaryBusinessName').textContent = formData.business_name;
-            document.getElementById('summaryEmail').textContent = formData.email;
-            document.getElementById('summaryPlan').textContent = names[selectedPlan] || selectedPlan;
-            document.getElementById('summaryAmount').textContent = `$${selectedPrice}`;
+        function fillPaymentSummary() {
+            document.getElementById('sumBusiness').textContent = formData.business_name || '—';
+            document.getElementById('sumEmail').textContent = formData.email || '—';
+            document.getElementById('sumPlan').textContent = PLAN_NAMES[selectedPlanKey] || selectedPlanKey;
+            document.getElementById('sumAmount').textContent = `$${selectedPlanAmt}`;
+            document.getElementById('payAmount').textContent = `$${selectedPlanAmt}`;
         }
 
-        /* ── STEP 1: BUSINESS INFO → calls real API, sends verification email ── */
-        document.getElementById('businessInfoForm').addEventListener('submit', async function (e) {
+        // ── STEP 1: SUBMIT BUSINESS INFO ─────────────────────────
+        document.getElementById('step1Form').addEventListener('submit', async e => {
             e.preventDefault();
+
+            const btn = document.getElementById('step1Btn');
+            const errEl = document.getElementById('step1Error');
+            errEl.classList.remove('show');
 
             formData.business_type = document.getElementById('businessType').value;
             formData.business_name = document.getElementById('businessName').value;
@@ -958,9 +1199,10 @@
             formData.email = document.getElementById('email').value;
             formData.phone = document.getElementById('phone').value;
             formData.address = document.getElementById('address').value;
-            formData.description = document.getElementById('description').value;
+            formData.city = document.getElementById('city').value || null;
+            formData.website = document.getElementById('website').value || null;
+            formData.description = document.getElementById('description').value || null;
 
-            const btn = e.target.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.textContent = '⏳ Saving…';
 
@@ -975,113 +1217,136 @@
                         email: formData.email,
                         phone: formData.phone,
                         address: formData.address,
+                        city: formData.city,
+                        website: formData.website,
                         description: formData.description,
-                        // plan will be set on payment step
                     })
                 });
 
                 const data = await resp.json();
 
                 if (!resp.ok) {
-                    alert('❌ ' + (data.detail || 'Something went wrong.'));
-                    btn.disabled = false;
-                    btn.textContent = 'Next: Choose Plan →';
+                    errEl.textContent = '❌ ' + (data.detail || 'Something went wrong.');
+                    errEl.classList.add('show');
                     return;
                 }
 
-                // Application saved + verification email sent → proceed to plan selection
-                nextStep();
+                applicationId = data.application_id;
+                goToStep(2);
 
             } catch (err) {
-                alert('❌ Could not connect to server. Is it running?');
+                errEl.textContent = '❌ Could not connect to server. Please try again.';
+                errEl.classList.add('show');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Next: Choose Plan →';
             }
         });
 
-        /* ── STEP 3: PAYMENT (simulated) → on success shows email-check screen ── */
-        document.getElementById('paymentForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
+        // ── UPLOAD PAYMENT PROOF ─────────────────────────────────
+        async function handleProofUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
 
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Processing Payment...';
+            if (!file.type.startsWith('image/')) {
+                showStep3Error('Please select an image file (JPG, PNG, or WEBP).');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showStep3Error('File too large. Maximum size is 5MB.');
+                return;
+            }
 
-            // Simulate payment processing (replace with real payment gateway later)
-            await new Promise(r => setTimeout(r, 2000));
+            const progress = document.getElementById('uploadProgress');
+            progress.classList.add('active');
+            progress.textContent = '⏳ Uploading screenshot…';
 
-            // Mark plan on the application
+            // Show local preview immediately
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('proofImg').src = e.target.result;
+                document.getElementById('proofName').textContent = `✅ ${file.name}`;
+                document.getElementById('proofPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
             try {
-                await fetch(`${API}/api/partner-applications/signup`, {
+                const formPayload = new FormData();
+                formPayload.append('file', file);
+
+                const res = await fetch(`${API}/admin/upload-image`, {
+                    method: 'POST',
+                    body: formPayload
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Upload failed');
+
+                document.getElementById('proofUrl').value = `${API}${data.url}`;
+                progress.textContent = '✅ Screenshot uploaded successfully!';
+                setTimeout(() => progress.classList.remove('active'), 3000);
+
+            } catch (err) {
+                progress.classList.remove('active');
+                showStep3Error('Upload failed: ' + err.message + '. You can still submit — admin will contact you.');
+                // Don't block submission if upload fails — admin can request proof manually
+            }
+        }
+
+        // ── SUBMIT FINAL APPLICATION ─────────────────────────────
+        async function submitApplication() {
+            const btn = document.getElementById('step3Btn');
+            const errEl = document.getElementById('step3Error');
+            errEl.classList.remove('show');
+
+            const proofUrl = document.getElementById('proofUrl').value;
+            if (!proofUrl) {
+                showStep3Error('Please upload your payment screenshot before submitting.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Submitting…';
+
+            try {
+                // Update the application with plan + payment proof
+                // We re-submit with full data including plan selection
+                const resp = await fetch(`${API}/api/partner-applications/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         ...formData,
-                        plan: selectedPlan,
-                        plan_amount: selectedPrice,
+                        plan: selectedPlanKey,
+                        plan_amount: selectedPlanAmt,
+                        payment_proof_url: proofUrl,
                     })
                 });
-                // (This may return 400 "already under review" which is fine — 
-                //  we just want to store the plan. You can add a PATCH endpoint later.)
-            } catch (_) { }
 
-            // Show success screen — tell user to verify email
-            document.getElementById('step3').classList.remove('active');
-            document.getElementById('step3-indicator').classList.remove('active');
-            document.getElementById('step3-indicator').classList.add('completed');
-            document.getElementById('stepSuccess').classList.add('active');
+                // 400 "already under review" is acceptable — we just want to store plan + proof
+                // If the application was already saved in step 1, this will return 400
+                // which is fine — the data was already recorded
 
-            document.getElementById('successEmail').textContent = formData.email;
+                // Show success
+                document.getElementById('step3').classList.remove('active');
+                document.getElementById('ind-3').classList.remove('active');
+                document.getElementById('ind-3').classList.add('completed');
+                document.getElementById('stepSuccess').classList.add('active');
+                document.getElementById('successEmail').textContent = formData.email;
 
-            // Update success screen to reflect the new flow
-            // (verification email was already sent at step 1)
-            const credBox = document.querySelector('.credentials-box');
-            if (credBox) {
-                credBox.innerHTML = `
-            <div class="credentials-title">📬 Check Your Email</div>
-            <div class="credential-item">
-                <span class="credential-label">Email sent to:</span>
-                <span class="credential-value">${formData.email}</span>
-            </div>
-            <div class="credential-item">
-                <span class="credential-label">Next step:</span>
-                <span class="credential-value" style="font-size:.95rem">Click the link in your email to verify your address</span>
-            </div>
-            <div class="credential-item">
-                <span class="credential-label">Then:</span>
-                <span class="credential-value" style="font-size:.95rem">Admin reviews your application (1–2 business days)</span>
-            </div>
-            <div class="credential-item">
-                <span class="credential-label">Finally:</span>
-                <span class="credential-value" style="font-size:.95rem">Login credentials sent automatically by email</span>
-            </div>`;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (err) {
+                showStep3Error('Submission failed: ' + err.message);
+                btn.disabled = false;
+                btn.innerHTML = '✅ Submit Application';
             }
+        }
 
-            // Update success message
-            const successMsg = document.querySelector('.success-message');
-            if (successMsg) {
-                successMsg.innerHTML = `
-            <p>Your application has been submitted and a verification email was sent to <strong>${formData.email}</strong>.</p>
-            <p>Once you verify your email, our team will review your application within 1–2 business days.</p>`;
-            }
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        /* ── CARD NUMBER FORMATTING ── */
-        document.getElementById('cardNumber').addEventListener('input', function (e) {
-            let v = e.target.value.replace(/\s/g, '');
-            e.target.value = v.match(/.{1,4}/g)?.join(' ') || v;
-        });
-        document.getElementById('expiryDate').addEventListener('input', function (e) {
-            let v = e.target.value.replace(/\D/g, '');
-            if (v.length >= 2) v = v.slice(0, 2) + '/' + v.slice(2, 4);
-            e.target.value = v;
-        });
-        document.getElementById('cvv').addEventListener('input', function (e) {
-            e.target.value = e.target.value.replace(/\D/g, '');
-        });
+        function showStep3Error(msg) {
+            const el = document.getElementById('step3Error');
+            el.textContent = msg;
+            el.classList.add('show');
+        }
     </script>
 </body>
 

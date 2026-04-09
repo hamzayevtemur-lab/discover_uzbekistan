@@ -4,26 +4,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Hotels - Discover Uzbekistan</title>
+    <title>Hotels - Discover Uzbekistan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
+        :root {
+            --accent: #ff6b35;
+            --accent-dim: rgba(255, 107, 53, 0.13);
+            --accent-glow: rgba(255, 107, 53, 0.35);
+            --bg: #080808;
+            --bg2: #101010;
+            --bg3: #161616;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.52);
+            --green: #00e676;
+            --gold: #ffd740;
+            --blue: #42a5f5;
+            --radius: 16px;
+            --card-radius: 20px;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0a0a;
-            color: white;
+        html {
+            scroll-behavior: smooth;
         }
 
-        /* Header */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── HEADER ── */
         header {
-            background: #000;
-            padding: 15px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(8, 8, 8, 0.97);
+            backdrop-filter: blur(20px);
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -37,138 +62,586 @@
             align-items: center;
         }
 
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .logo-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
         .back-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 18px;
+            border-radius: 30px;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s;
+            font-size: 13px;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .back-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.13);
+            color: var(--text);
         }
 
-        /* Container */
+        /* ── HERO ── */
+        .hero-strip {
+            background: linear-gradient(135deg, #001020 0%, #0d0d0d 65%);
+            border-bottom: 1px solid var(--border);
+            padding: 38px 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-strip::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 360px;
+            height: 360px;
+            background: radial-gradient(circle, rgba(66, 165, 245, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .hero-inner h1 {
+            font-size: clamp(26px, 5vw, 44px);
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .hero-inner h1 span {
+            color: var(--blue);
+        }
+
+        .hero-inner p {
+            color: var(--text-dim);
+            font-size: 15px;
+        }
+
+        /* ── CONTAINER ── */
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 30px 24px;
         }
 
-        .page-header {
-            margin-bottom: 40px;
-        }
-
-        .page-title {
-            font-size: 42px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .page-subtitle {
-            font-size: 18px;
-            opacity: 0.7;
-        }
-
-        /* Filters */
-        .filters {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 25px;
-            border-radius: 20px;
-            margin-bottom: 40px;
+        /* ── LOCATION STATUS ── */
+        .location-status {
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
             align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 22px;
+        }
+
+        .loc-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #444;
+            flex-shrink: 0;
+            transition: background 0.4s, box-shadow 0.4s;
+        }
+
+        .loc-dot.active {
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: pulseDot 2s ease infinite;
+        }
+
+        @keyframes pulseDot {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
+
+        /* ── TOOLBAR ── */
+        .toolbar {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .search-wrap {
+            flex: 2;
+            min-width: 220px;
+            position: relative;
+        }
+
+        .search-wrap i {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 11px 13px 11px 36px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.25s, background 0.25s;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .search-input:focus {
+            border-color: var(--blue);
+            background: rgba(255, 255, 255, 0.09);
         }
 
         .filter-group {
             flex: 1;
-            min-width: 200px;
+            min-width: 155px;
         }
 
         .filter-label {
-            font-size: 13px;
-            opacity: 0.7;
-            margin-bottom: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
             display: block;
         }
 
         .filter-select {
             width: 100%;
-            padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 11px 32px 11px 13px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
             border-radius: 10px;
-            color: white;
+            color: var(--text);
             font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.25s;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .filter-select:focus {
+            border-color: var(--blue);
         }
 
         .filter-select option {
             background: #1a1a1a;
+            color: white;
+        }
+
+        .quick-btns {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            padding: 11px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-dim);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.25s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-btn:hover,
+        .quick-btn.active {
+            background: rgba(66, 165, 245, 0.12);
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        /* ── RESULTS BAR ── */
+        .results-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .results-count {
-            font-size: 16px;
-            opacity: 0.8;
-            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--text-dim);
         }
 
-        /* Hotels Grid */
-        .hotels-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
+        .results-count strong {
+            color: var(--text);
         }
 
-        .hotel-card {
+        .view-toggle {
+            display: flex;
+            gap: 6px;
+        }
+
+        .view-btn-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            overflow: hidden;
+            color: var(--text-dim);
             cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .hotel-card:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .hotel-image {
-            height: 220px;
-            background-size: cover;
-            background-position: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .view-btn-toggle.active,
+        .view-btn-toggle:hover {
+            background: rgba(66, 165, 245, 0.12);
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+
+        /* ── MAP TOGGLE BAR ── */
+        .map-toggle-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            padding: 13px 18px;
+            border-radius: var(--radius);
+            margin-bottom: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .map-toggle-bar:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .map-toggle-bar .bar-label {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .map-toggle-bar .chevron {
+            font-size: 12px;
+            color: var(--text-dim);
+            transition: transform 0.3s;
+        }
+
+        .map-toggle-bar.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        /* ── MAP PANEL ── */
+        .map-panel {
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            max-height: 420px;
+            transition: max-height 0.45s ease, opacity 0.35s ease, margin 0.35s;
+            opacity: 1;
+        }
+
+        .map-panel.collapsed {
+            max-height: 0;
+            opacity: 0;
+            border: none;
+            margin-bottom: 0;
+            pointer-events: none;
+        }
+
+        #hotelMap {
+            width: 100%;
+            height: 400px;
+            background: var(--bg2);
+            display: block;
+        }
+
+        /* Leaflet dark theme */
+        .leaflet-container {
+            background: #111 !important;
+            font-family: 'Segoe UI', sans-serif !important;
+        }
+
+        .leaflet-control-zoom a {
+            background: #1c1c1c !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: #282828 !important;
+            border-color: var(--blue) !important;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: rgba(16, 16, 16, 0.97) !important;
+            color: white !important;
+            border-radius: 14px !important;
+            border: 1px solid rgba(66, 165, 245, 0.3) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .leaflet-popup-tip {
+            background: rgba(16, 16, 16, 0.97) !important;
+        }
+
+        /* ── GRID ── */
+        .hotels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 22px;
+        }
+
+        .hotels-grid.list-view {
+            grid-template-columns: 1fr;
+        }
+
+        /* ── CARD ── */
+        .hotel-card {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+            position: relative;
+            animation: cardIn 0.4s ease both;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+            border-color: rgba(66, 165, 245, 0.28);
+        }
+
+        .hotel-card.highlighted {
+            border-color: var(--blue) !important;
+            box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.35), 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+        }
+
+        /* List view */
+        .list-view .hotel-card {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .list-view .hotel-image {
+            width: 190px;
+            min-width: 190px;
+            height: auto;
+            min-height: 150px;
+            border-radius: 0;
+        }
+
+        .list-view .hotel-info {
+            flex: 1;
+        }
+
+        .hotel-image {
+            height: 210px;
+            background: linear-gradient(135deg, #001525 0%, #002035 100%);
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .hotel-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 45%, rgba(0, 0, 0, 0.55) 100%);
+        }
+
+        .hotel-image>span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Chips */
+        .chip-distance {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(8px);
+            color: var(--green);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 230, 118, 0.2);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chip-type {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(66, 165, 245, 0.85);
+            backdrop-filter: blur(8px);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .chip-partner {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(156, 39, 176, 0.85);
+            backdrop-filter: blur(8px);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .chip-offer {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(255, 107, 53, 0.9);
+            backdrop-filter: blur(8px);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            z-index: 2;
         }
 
         .hotel-info {
-            padding: 20px;
+            padding: 18px 20px 20px;
         }
 
         .hotel-name {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            line-height: 1.3;
         }
 
-        .hotel-type {
+        .hotel-type-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(66, 165, 245, 0.1);
+            color: var(--blue);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            letter-spacing: 0.3px;
+        }
+
+        /* Star rating display */
+        .star-display {
+            display: inline-flex;
+            gap: 2px;
+            margin-bottom: 12px;
+        }
+
+        .star-display i {
+            color: #444;
             font-size: 13px;
-            opacity: 0.7;
-            margin-bottom: 10px;
+        }
+
+        .star-display i.lit {
+            color: var(--gold);
         }
 
         .hotel-meta {
             display: flex;
-            gap: 15px;
+            gap: 14px;
             font-size: 13px;
             margin-bottom: 10px;
             flex-wrap: wrap;
@@ -178,135 +651,212 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            opacity: 0.8;
+            color: var(--text-dim);
         }
 
-        .rating {
-            color: #ffd700;
+        .meta-item.rating {
+            color: var(--gold);
         }
 
-        .distance {
-            color: #4CAF50;
+        .meta-item.dist {
+            color: var(--green);
         }
 
-        .partner-badge {
-            background: #9c27b0;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .offer-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #ff6b35;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
+        .phone-row {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .view-btn {
             width: 100%;
-            padding: 12px;
-            background: #ff6b35;
+            padding: 11px;
+            background: var(--accent);
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             color: white;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
         }
 
         .view-btn:hover {
             background: #ff5722;
+            transform: translateY(-1px);
         }
 
-        /* Loading */
-        .loading {
+        /* ── STATES ── */
+        .empty-state,
+        .loading-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            font-size: 54px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: var(--text-dim);
+            font-size: 14px;
         }
 
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #ff6b35;
+            border: 3px solid rgba(255, 255, 255, 0.07);
+            border-top: 3px solid var(--accent);
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            width: 44px;
+            height: 44px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
+            from {
+                transform: rotate(0deg)
             }
 
-            100% {
-                transform: rotate(360deg);
+            to {
+                transform: rotate(360deg)
             }
         }
 
-        /* Responsive */
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 26px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(16, 16, 16, 0.97);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            border: 1px solid rgba(66, 165, 245, 0.3);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            transition: transform 0.35s cubic-bezier(.175, .885, .32, 1.275), opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ── RESPONSIVE ── */
         @media (max-width: 768px) {
-            .page-title {
-                font-size: 32px;
+            .hero-inner h1 {
+                font-size: 24px;
             }
 
-            .filters {
+            .toolbar {
                 flex-direction: column;
             }
 
-            .filter-group {
+            .filter-group,
+            .search-wrap {
                 width: 100%;
+                flex: none;
+            }
+
+            .quick-btns {
+                width: 100%;
+            }
+
+            .quick-btn {
+                flex: 1;
+                justify-content: center;
             }
 
             .hotels-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .list-view .hotel-card {
+                flex-direction: column;
+            }
+
+            .list-view .hotel-image {
+                width: 100%;
+                height: 180px;
+            }
+
+            #hotelMap {
+                height: 280px;
             }
         }
     </style>
 </head>
 
 <body>
+
     <!-- Header -->
     <header>
         <div class="header-content">
+            <a href="index.html" class="logo-link">
+                <div class="logo-dot"></div>
+                DISCOVER UZBEKISTAN
+            </a>
             <a href="index.html" class="back-btn">
                 <i class="fas fa-arrow-left"></i> Back to Home
             </a>
         </div>
     </header>
 
-    <!-- Main Container -->
+    <!-- Hero -->
+    <div class="hero-strip">
+        <div class="hero-inner">
+            <h1>🏨 Hotels &amp; Stays <span>in Uzbekistan</span></h1>
+            <p>Find the perfect accommodation across Uzbekistan's most beautiful cities</p>
+        </div>
+    </div>
+
+    <!-- Container -->
     <div class="container">
-        <div class="page-header">
-            <h1 class="page-title">🏨 Hotels in Uzbekistan</h1>
-            <p class="page-subtitle">Find the perfect accommodation for your stay</p>
+
+        <div class="location-status">
+            <div class="loc-dot" id="locDot"></div>
+            <span id="locStatus">Detecting your location…</span>
         </div>
 
-        <!-- Filters -->
-        <div class="filters">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search hotels…"
+                    oninput="applyFilters()">
+            </div>
             <div class="filter-group">
                 <label class="filter-label">City</label>
-                <select class="filter-select" id="cityFilter" onchange="filterHotels()">
+                <select class="filter-select" id="cityFilter" onchange="applyFilters()">
                     <option value="all">All Cities</option>
+                    <option value="tashkent">Tashkent</option>
                     <option value="samarkand">Samarkand</option>
                     <option value="bukhara">Bukhara</option>
                     <option value="khiva">Khiva</option>
-                    <option value="tashkent">Tashkent</option>
                 </select>
             </div>
-
             <div class="filter-group">
-                <label class="filter-label">Hotel Type</label>
-                <select class="filter-select" id="typeFilter" onchange="filterHotels()">
+                <label class="filter-label">Type</label>
+                <select class="filter-select" id="typeFilter" onchange="applyFilters()">
                     <option value="all">All Types</option>
                     <option value="5 Star Hotel">5 Star Hotel</option>
                     <option value="4 Star Hotel">4 Star Hotel</option>
@@ -316,160 +866,391 @@
                     <option value="Hostel">Hostel</option>
                 </select>
             </div>
-
             <div class="filter-group">
                 <label class="filter-label">Sort By</label>
-                <select class="filter-select" id="sortFilter" onchange="filterHotels()">
+                <select class="filter-select" id="sortFilter" onchange="applyFilters()">
+                    <option value="default">Default</option>
                     <option value="distance">Distance</option>
-                    <option value="rating">Rating</option>
-                    <option value="name">Name</option>
+                    <option value="rating">Top Rated</option>
+                    <option value="name">Name (A–Z)</option>
                 </select>
+            </div>
+            <div class="quick-btns">
+                <button class="quick-btn" id="nearMeBtn" onclick="toggleNearMe()" title="Show only hotels within 50 km">
+                    <i class="fas fa-location-arrow"></i> Near Me
+                </button>
+                <button class="quick-btn" id="partnerBtn" onclick="togglePartner()" title="Show only partner hotels">
+                    <i class="fas fa-crown"></i> Partners
+                </button>
             </div>
         </div>
 
-        <div class="results-count" id="resultsCount">Loading hotels...</div>
+        <!-- Results bar -->
+        <div class="results-bar">
+            <div class="results-count" id="resultsCount">Loading…</div>
+            <div class="view-toggle">
+                <button class="view-btn-toggle active" id="gridViewBtn" onclick="setView('grid')" title="Grid view">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="view-btn-toggle" id="listViewBtn" onclick="setView('list')" title="List view">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
 
-        <!-- Hotels Grid -->
+        <!-- Map toggle -->
+        <div class="map-toggle-bar" id="mapToggleBar" onclick="toggleMap()">
+            <span class="bar-label">
+                <i class="fas fa-map-marked-alt" style="color:var(--blue)"></i>
+                Show Hotels on Map
+            </span>
+            <i class="fas fa-chevron-down chevron"></i>
+        </div>
+
+        <div class="map-panel collapsed" id="mapPanel">
+            <div id="hotelMap"></div>
+        </div>
+
+        <!-- Grid -->
         <div class="hotels-grid" id="hotelsGrid">
-            <div class="loading">
+            <div class="loading-state">
                 <div class="spinner"></div>
-                <p>Loading hotels...</p>
+                <p style="color:var(--text-dim)">Loading hotels…</p>
             </div>
         </div>
     </div>
 
-    <script>
-        const API_BASE_URL = 'http://127.0.0.1:8000';
+    <div class="toast" id="toastEl"></div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // ── CONFIG ──────────────────────────────────────────────────────────
+        const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://127.0.0.1:8000' : '';
+
+        // ── STATE ────────────────────────────────────────────────────────────
         let allHotels = [];
         let userPosition = null;
+        let nearMeActive = false;
+        let partnerActive = false;
+        let currentView = 'grid';
+        let mapVisible = false;
+        let mapInitialized = false;
+        let leafletMap = null;
+        let userMapMarker = null;
+        let hotelMarkers = {};
 
-        document.addEventListener('DOMContentLoaded', () => {
-            getUserLocation();
-            loadHotels();
-        });
+        // ── TYPE EMOJI ───────────────────────────────────────────────────────
+        const TYPE_EMOJI = {
+            '5 star': '⭐⭐⭐⭐⭐', '4 star': '⭐⭐⭐⭐',
+            '3 star': '⭐⭐⭐', 'boutique': '🏡',
+            'guesthouse': '🛖', 'hostel': '🛏️', 'default': '🏨'
+        };
 
-        async function getUserLocation() {
-            if (navigator.geolocation) {
-                try {
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject);
-                    });
-                    userPosition = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-                } catch (err) {
-                    console.warn('Location not available');
-                }
+        function getTypeEmoji(type) {
+            if (!type) return TYPE_EMOJI.default;
+            const lower = type.toLowerCase();
+            for (const [k, v] of Object.entries(TYPE_EMOJI)) {
+                if (k !== 'default' && lower.includes(k)) return v;
             }
+            return TYPE_EMOJI.default;
         }
 
+        // ── STAR DISPLAY (from numeric rating) ──────────────────────────────
+        function starDisplay(rating) {
+            if (!rating) return '';
+            const filled = Math.round(parseFloat(rating));
+            let html = '<div class="star-display">';
+            for (let i = 1; i <= 5; i++) {
+                html += `<i class="fas fa-star${i <= filled ? ' lit' : ''}"></i>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        // ── STARS FROM HOTEL TYPE (e.g. "5 Star Hotel") ──────────────────────
+        function starsFromType(type) {
+            if (!type) return 0;
+            const match = type.match(/(\d)/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        // ── XSS ESCAPE ──────────────────────────────────────────────────────
+        function esc(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // ── TOAST ────────────────────────────────────────────────────────────
+        function showToast(msg, ms = 3200) {
+            const el = document.getElementById('toastEl');
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(el._t);
+            el._t = setTimeout(() => el.classList.remove('show'), ms);
+        }
+
+        // ── HAVERSINE ────────────────────────────────────────────────────────
+        function calcDist(lat1, lon1, lat2, lon2) {
+            if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+            const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        // ── LOCATION ─────────────────────────────────────────────────────────
+        function initLocation() {
+            if (!navigator.geolocation) { setLocStatus(false, 'Location not supported'); return; }
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    userPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    setLocStatus(true, 'Your location detected — distances shown below');
+                    attachDistances();
+                    applyFilters();
+                    if (mapVisible && leafletMap) { addUserMapMarker(); fitMapBounds(); }
+                },
+                () => setLocStatus(false, 'Location access denied — showing all hotels')
+            );
+        }
+
+        function setLocStatus(active, text) {
+            document.getElementById('locDot').classList.toggle('active', active);
+            document.getElementById('locStatus').textContent = text;
+        }
+
+        function attachDistances() {
+            if (!userPosition) return;
+            allHotels.forEach(h => {
+                h._distance = calcDist(userPosition.lat, userPosition.lng, h.latitude, h.longitude);
+            });
+        }
+
+        // ── LOAD DATA ────────────────────────────────────────────────────────
         async function loadHotels() {
             try {
-                const response = await fetch(`${API_BASE_URL}/hotels`);
-                if (!response.ok) throw new Error('Failed to load hotels');
-
-                allHotels = await response.json();
-
-                // Calculate distances if user location available
-                if (userPosition) {
-                    allHotels.forEach(h => {
-                        h.distance = calculateDistance(
-                            userPosition.lat,
-                            userPosition.lng,
-                            h.latitude,
-                            h.longitude
-                        );
-                    });
-                }
-
-                displayHotels(allHotels);
-            } catch (error) {
-                console.error('Error loading hotels:', error);
-                document.getElementById('hotelsGrid').innerHTML =
-                    '<p style="text-align:center; color:#ff4444;">Failed to load hotels. Please try again.</p>';
+                const res = await fetch(`${API_BASE_URL}/hotels`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                allHotels = await res.json();
+                attachDistances();
+                applyFilters();
+                if (mapVisible) renderMap();
+            } catch (err) {
+                console.error('Failed to load hotels:', err);
+                document.getElementById('hotelsGrid').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <h3>Could not load hotels</h3>
+                    <p>Please check your connection or try again later.</p>
+                </div>`;
+                document.getElementById('resultsCount').textContent = '';
             }
         }
 
-        function displayHotels(hotels) {
+        // ── QUICK TOGGLES ────────────────────────────────────────────────────
+        function toggleNearMe() {
+            if (!userPosition) { showToast('📍 Allow location access to use Near Me'); return; }
+            nearMeActive = !nearMeActive;
+            document.getElementById('nearMeBtn').classList.toggle('active', nearMeActive);
+            if (nearMeActive) document.getElementById('sortFilter').value = 'distance';
+            applyFilters();
+        }
+
+        function togglePartner() {
+            partnerActive = !partnerActive;
+            document.getElementById('partnerBtn').classList.toggle('active', partnerActive);
+            applyFilters();
+        }
+
+        // ── FILTERS ──────────────────────────────────────────────────────────
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.trim().toLowerCase();
+            const city = document.getElementById('cityFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+
+            let list = allHotels.filter(h => {
+                if (search && !(h.name || '').toLowerCase().includes(search)) return false;
+                if (city !== 'all' && !(h.address || '').toLowerCase().includes(city)) return false;
+                if (type !== 'all' && (h.hotel_type || h.type || '') !== type) return false;
+                if (partnerActive && !h.is_partner) return false;
+                if (nearMeActive && (h._distance == null || h._distance > 50)) return false;
+                return true;
+            });
+
+            if (sort === 'distance') list.sort((a, b) => (a._distance ?? 9999) - (b._distance ?? 9999));
+            else if (sort === 'rating') list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            else if (sort === 'name') list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+            renderCards(list);
+        }
+
+        // ── RENDER CARDS ─────────────────────────────────────────────────────
+        function renderCards(list) {
             const grid = document.getElementById('hotelsGrid');
-            const resultsCount = document.getElementById('resultsCount');
+            const count = document.getElementById('resultsCount');
 
-            resultsCount.textContent = `Showing ${hotels.length} hotel${hotels.length !== 1 ? 's' : ''}`;
+            count.innerHTML = `<strong>${list.length}</strong> hotel${list.length !== 1 ? 's' : ''} found`;
 
-            if (hotels.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; opacity:0.6;">No hotels found</p>';
+            if (!list.length) {
+                grid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🏨</div>
+                    <h3>No hotels found</h3>
+                    <p>Try adjusting your filters or search term.</p>
+                </div>`;
                 return;
             }
 
-            const gradients = [
-                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-                'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
-            ];
+            grid.innerHTML = list.map((h, i) => {
+                const hotelType = h.hotel_type || h.type || '';
+                const emoji = getTypeEmoji(hotelType);
+                const hasImg = !!h.image_url;
+                const imgStyle = hasImg ? `background: url('${esc(h.image_url)}') center/cover no-repeat !important;` : '';
+                const distChip = h._distance != null
+                    ? `<div class="chip-distance"><i class="fas fa-location-arrow"></i> ${h._distance.toFixed(1)} km</div>` : '';
+                const typeChip = hotelType ? `<div class="chip-type">${esc(hotelType)}</div>` : '';
+                const partChip = h.is_partner ? `<div class="chip-partner"><i class="fas fa-crown"></i> Partner</div>` : '';
+                const offerChip = h.offer ? `<div class="chip-offer"><i class="fas fa-tag"></i> ${esc(h.offer)}</div>` : '';
+                const stars = h.rating ? starDisplay(h.rating) : '';
+                const delay = Math.min(i * 45, 500);
 
-            grid.innerHTML = hotels.map((h, index) => `
-                <div class="hotel-card" onclick="window.location.href='/hotels.html?id=${h.id}'">
-                    ${h.offer ? `<div class="offer-badge"><i class="fas fa-tag"></i> ${h.offer}</div>` : ''}
-                    <div class="hotel-image" style="background: ${h.image_url ? `url(${API_BASE_URL}${h.image_url})` : gradients[index % gradients.length]}; background-size: cover;">
-                        ${!h.image_url ? (h.type || 'Hotel') : ''}
-                    </div>
-                    <div class="hotel-info">
-                        <div class="hotel-name">${h.name}</div>
-                        <div class="hotel-type"><i class="fas fa-hotel"></i> ${h.type || 'Hotel'}</div>
-                        <div class="hotel-meta">
-                            ${h.rating ? `<div class="meta-item rating"><i class="fas fa-star"></i> ${h.rating.toFixed(1)}</div>` : ''}
-                            ${h.distance ? `<div class="meta-item distance"><i class="fas fa-map-marker-alt"></i> ${h.distance.toFixed(1)} km</div>` : ''}
-                            ${h.is_partner ? '<div class="partner-badge"><i class="fas fa-crown"></i> Partner</div>' : ''}
-                        </div>
-                        <div class="meta-item" style="font-size: 13px; opacity: 0.7;">
-                            <i class="fas fa-phone"></i> ${h.phone || 'Not available'}
-                        </div>
-                        <button class="view-btn" onclick="event.stopPropagation(); window.location.href='/hotels.html?id=${h.id}'">
-                            <i class="fas fa-info-circle"></i> View Details & Rooms
-                        </button>
-                    </div>
+                return `
+            <div class="hotel-card" id="hcard-${parseInt(h.id)}"
+                 style="animation-delay:${delay}ms"
+                 onclick="openHotel(${parseInt(h.id)})">
+                <div class="hotel-image" style="${imgStyle}">
+                    ${!hasImg ? `<span>${emoji}</span>` : ''}
+                    ${distChip}
+                    ${typeChip}
+                    ${partChip}
+                    ${offerChip}
                 </div>
-            `).join('');
+                <div class="hotel-info">
+                    <div class="hotel-name">${esc(h.name)}</div>
+                    ${hotelType ? `<div class="hotel-type-tag"><i class="fas fa-hotel"></i> ${esc(hotelType)}</div>` : ''}
+                    ${stars}
+                    <div class="hotel-meta">
+                        ${h.rating != null ? `<div class="meta-item rating"><i class="fas fa-star"></i> ${parseFloat(h.rating).toFixed(1)}</div>` : ''}
+                        ${h._distance != null ? `<div class="meta-item dist"><i class="fas fa-map-marker-alt"></i> ${h._distance.toFixed(1)} km away</div>` : ''}
+                        ${h.review_count ? `<div class="meta-item"><i class="fas fa-comment"></i> ${esc(String(h.review_count))} reviews</div>` : ''}
+                    </div>
+                    ${h.phone ? `<div class="phone-row"><i class="fas fa-phone"></i> ${esc(h.phone)}</div>` : ''}
+                    <button class="view-btn" onclick="event.stopPropagation(); openHotel(${parseInt(h.id)})">
+                        <i class="fas fa-info-circle"></i> View Details &amp; Rooms
+                    </button>
+                </div>
+            </div>`;
+            }).join('');
         }
 
-        function filterHotels() {
-            const cityFilter = document.getElementById('cityFilter').value;
-            const typeFilter = document.getElementById('typeFilter').value;
-            const sortFilter = document.getElementById('sortFilter').value;
+        function openHotel(id) {
+            window.location.href = `hotels.html?id=${id}`;
+        }
 
-            let filtered = allHotels.filter(h => {
-                const cityMatch = cityFilter === 'all' || (h.address && h.address.toLowerCase().includes(cityFilter));
-                const typeMatch = typeFilter === 'all' || (h.type && h.type === typeFilter);
-                return cityMatch && typeMatch;
-            });
+        // ── VIEW TOGGLE ──────────────────────────────────────────────────────
+        function setView(v) {
+            currentView = v;
+            document.getElementById('hotelsGrid').classList.toggle('list-view', v === 'list');
+            document.getElementById('gridViewBtn').classList.toggle('active', v === 'grid');
+            document.getElementById('listViewBtn').classList.toggle('active', v === 'list');
+        }
 
-            // Sort
-            if (sortFilter === 'distance' && userPosition) {
-                filtered.sort((a, b) => (a.distance || 999) - (b.distance || 999));
-            } else if (sortFilter === 'rating') {
-                filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-            } else if (sortFilter === 'name') {
-                filtered.sort((a, b) => a.name.localeCompare(b.name));
+        // ── CARD HIGHLIGHT ───────────────────────────────────────────────────
+        function highlightCard(id) {
+            document.querySelectorAll('.hotel-card').forEach(c => c.classList.remove('highlighted'));
+            const card = document.getElementById(`hcard-${id}`);
+            if (card) { card.classList.add('highlighted'); card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        }
+
+        // ── MAP ──────────────────────────────────────────────────────────────
+        function toggleMap() {
+            mapVisible = !mapVisible;
+            const panel = document.getElementById('mapPanel');
+            const bar = document.getElementById('mapToggleBar');
+            panel.classList.toggle('collapsed', !mapVisible);
+            bar.classList.toggle('open', mapVisible);
+            bar.querySelector('.bar-label').innerHTML = mapVisible
+                ? `<i class="fas fa-map-marked-alt" style="color:var(--blue)"></i> Hide Map`
+                : `<i class="fas fa-map-marked-alt" style="color:var(--blue)"></i> Show Hotels on Map`;
+
+            if (mapVisible) {
+                if (!mapInitialized) setTimeout(renderMap, 60);
+                else { leafletMap.invalidateSize(); fitMapBounds(); }
             }
-
-            displayHotels(filtered);
         }
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
+        function renderMap() {
+            mapInitialized = true;
+            leafletMap = L.map('hotelMap').setView([41.3, 64.6], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors', maxZoom: 19
+            }).addTo(leafletMap);
+            if (userPosition) addUserMapMarker();
+            addAllHotelMarkers();
+            fitMapBounds();
         }
+
+        function addUserMapMarker() {
+            if (!leafletMap || !userPosition) return;
+            if (userMapMarker) userMapMarker.remove();
+            const icon = L.divIcon({
+                className: '',
+                html: `<div style="width:16px;height:16px;background:#00e676;border-radius:50%;border:3px solid white;box-shadow:0 0 14px #00e676;"></div>`,
+                iconSize: [16, 16], iconAnchor: [8, 8]
+            });
+            userMapMarker = L.marker([userPosition.lat, userPosition.lng], { icon, zIndexOffset: 1000 })
+                .addTo(leafletMap).bindPopup('<b style="font-size:13px">📍 You are here</b>');
+        }
+
+        function addAllHotelMarkers() {
+            if (!leafletMap) return;
+            allHotels.forEach(h => {
+                if (!h.latitude || !h.longitude) return;
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div style="width:30px;height:30px;background:#42a5f5;border-radius:50% 50% 50% 0;
+                           transform:rotate(-45deg);border:2px solid white;
+                           box-shadow:0 3px 12px rgba(66,165,245,0.55);cursor:pointer;"></div>`,
+                    iconSize: [30, 30], iconAnchor: [15, 28]
+                });
+                const distLine = h._distance != null ? `<span style="color:#00e676;font-size:12px">📍 ${h._distance.toFixed(1)} km away</span><br>` : '';
+                const ratingLine = h.rating != null ? `<span style="color:#ffd740;font-size:12px">⭐ ${parseFloat(h.rating).toFixed(1)}/5.0</span><br>` : '';
+                const typeLine = (h.hotel_type || h.type) ? `<span style="font-size:11px;color:#aaa">${esc(h.hotel_type || h.type)}</span><br>` : '';
+
+                const marker = L.marker([h.latitude, h.longitude], { icon, title: h.name })
+                    .addTo(leafletMap)
+                    .bindPopup(`
+                    <div style="padding:4px;min-width:190px">
+                        <b style="font-size:14px;display:block;margin-bottom:4px">${esc(h.name)}</b>
+                        ${typeLine}${ratingLine}${distLine}
+                        ${h.phone ? `<span style="font-size:11px;color:#aaa">📞 ${esc(h.phone)}</span><br>` : ''}
+                        <button onclick="openHotel(${parseInt(h.id)})"
+                            style="margin-top:10px;width:100%;background:#42a5f5;color:white;border:none;
+                                   padding:8px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">
+                            View Details &amp; Rooms
+                        </button>
+                    </div>`);
+                marker.on('click', () => highlightCard(h.id));
+                hotelMarkers[h.id] = marker;
+            });
+        }
+
+        function fitMapBounds() {
+            if (!leafletMap) return;
+            const coords = allHotels.filter(h => h.latitude && h.longitude).map(h => [h.latitude, h.longitude]);
+            if (userPosition) coords.push([userPosition.lat, userPosition.lng]);
+            if (coords.length) leafletMap.fitBounds(coords, { padding: [40, 40], maxZoom: 12 });
+            leafletMap.invalidateSize();
+        }
+
+        // ── INIT ─────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            initLocation();
+            loadHotels();
+        });
     </script>
 </body>
 

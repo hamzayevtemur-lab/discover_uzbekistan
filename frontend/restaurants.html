@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -168,12 +169,10 @@
 
         /* Hero Section */
         .restaurant-hero {
-            height: 300px;
             height: 400px;
             background-size: cover;
             background-position: center;
             position: relative;
-            object-fit: cover;
             display: flex;
             align-items: flex-end;
             padding: 30px;
@@ -185,6 +184,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.75) 100%);
         }
 
         .hero-content {
@@ -582,12 +582,34 @@
         /* Map Section */
         #restaurantMap {
             width: 100%;
-            height: 300px;
+            height: 380px;
             border-radius: 15px;
             overflow: hidden;
             border: 2px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 15px;
         }
+
+        /* Toast notification */
+        .toast-msg {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(16,16,16,0.97);
+            color: white;
+            padding: 12px 26px;
+            border-radius: 30px;
+            font-size: 14px;
+            border: 1px solid rgba(255,107,53,0.35);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            z-index: 9999;
+            transition: transform 0.35s cubic-bezier(.175,.885,.32,1.275), opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            font-family: 'Poppins', sans-serif;
+        }
+        .toast-msg.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         .map-note {
             text-align: center;
@@ -714,7 +736,6 @@
         }
 
         .footer-section a {
-            display: block;
             color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
             margin-bottom: 10px;
@@ -1115,7 +1136,7 @@
             </div>
 
             <button class="btn-load-more" id="loadMoreReviews">
-                Load More Reviews <i class="fas fa-arrow-down"></i>
+                <i class="fas fa-comment-alt"></i> Show Reviews <i class="fas fa-chevron-down"></i>
             </button>
 
             <div id="reviewsSection" style="display: none;">
@@ -1173,11 +1194,34 @@
         </div>
     </div>
 
+    <!-- Toast notification -->
+    <div class="toast-msg" id="toastMsg"></div>
+
     <!-- JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://127.0.0.1:8000' : '';
+
+        // ── XSS ESCAPE ──────────────────────────────────────────────────
+        function escHtml(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+                .replace(/'/g,'&#039;');
+        }
+
+        // ── TOAST ────────────────────────────────────────────────────────
+        function showToast(msg, ms = 3500) {
+            const el = document.getElementById('toastMsg');
+            if (!el) return;
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(el._t);
+            el._t = setTimeout(() => el.classList.remove('show'), ms);
+        }
 
         let currentRestaurant = null;
         let currentMenuCategory = 'solo';
@@ -1187,41 +1231,44 @@
         let userPosition = null;
         let restaurantId = null;
 
-        // DOM Elements
-        const elements = {
-            restaurantName: document.getElementById('restaurantName'),
-            restaurantHero: document.getElementById('restaurantHero'),
-            restaurantRating: document.getElementById('restaurantRating'),
-            reviewCount: document.getElementById('reviewCount'),
-            partnerBadge: document.getElementById('partnerBadge'),
-            restaurantAddress: document.getElementById('restaurantAddress'),
-            restaurantPhone: document.getElementById('restaurantPhone'),
-            restaurantHours: document.getElementById('restaurantHours'),
-            categoryTitle: document.getElementById('categoryTitle'),
-            menuItemsGrid: document.getElementById('menuItemsGrid'),
-            offersGrid: document.getElementById('offersGrid'),
-            reviewsContainer: document.getElementById('reviewsContainer'),
-            similarGrid: document.getElementById('similarGrid'),
-            favoriteBtn: document.getElementById('favoriteBtn'),
-            callBtn: document.getElementById('callBtn'),
-            directionsBtn: document.getElementById('directionsBtn'),
-            websiteBtn: document.getElementById('websiteBtn'),
-            shareBtn: document.getElementById('shareBtn'),
-            addReviewBtn: document.getElementById('addReviewBtn'),
-            reviewModal: document.getElementById('reviewModal'),
-            closeModal: document.getElementById('closeModal'),
-            submitReview: document.getElementById('submitReview'),
-            reviewText: document.getElementById('reviewText'),
-            reviewerName: document.getElementById('reviewerName')
-        };
+        // DOM Elements — populated after DOM is ready (see DOMContentLoaded below)
+        let elements = {};
 
         // ==================== INITIALIZATION ====================
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initializePage();
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Build element refs NOW that DOM exists
+            elements = {
+                restaurantName:    document.getElementById('restaurantName'),
+                restaurantHero:    document.getElementById('restaurantHero'),
+                restaurantRating:  document.getElementById('restaurantRating'),
+                reviewCount:       document.getElementById('reviewCount'),
+                partnerBadge:      document.getElementById('partnerBadge'),
+                restaurantAddress: document.getElementById('restaurantAddress'),
+                restaurantPhone:   document.getElementById('restaurantPhone'),
+                restaurantHours:   document.getElementById('restaurantHours'),
+                categoryTitle:     document.getElementById('categoryTitle'),
+                menuItemsGrid:     document.getElementById('menuItemsGrid'),
+                offersGrid:        document.getElementById('offersGrid'),
+                reviewsContainer:  document.getElementById('reviewsContainer'),
+                similarGrid:       document.getElementById('similarGrid'),
+                favoriteBtn:       document.getElementById('favoriteBtn'),
+                callBtn:           document.getElementById('callBtn'),
+                directionsBtn:     document.getElementById('directionsBtn'),
+                websiteBtn:        document.getElementById('websiteBtn'),
+                shareBtn:          document.getElementById('shareBtn'),
+                addReviewBtn:      document.getElementById('addReviewBtn'),
+                reviewModal:       document.getElementById('reviewModal'),
+                closeModal:        document.getElementById('closeModal'),
+                submitReview:      document.getElementById('submitReview'),
+                reviewText:        document.getElementById('reviewText'),
+                reviewerName:      document.getElementById('reviewerName')
+            };
+
             setupEventListeners();
-            getUserLocation();
-            initializeLikes();
+            getUserLocation(); // non-blocking, runs in background
+            await initializePage(); // wait for page data before initializing likes
+            initializeLikes(); // now restaurantId is set
         });
 
         async function getUserLocation() {
@@ -1240,7 +1287,6 @@
                         lng: position.coords.longitude
                     };
 
-                    console.log('User location obtained:', userPosition);
                 } catch (err) {
                     console.warn('User location not obtained:', err);
                     userPosition = null;
@@ -1448,15 +1494,20 @@
                 elements.menuItemsGrid.innerHTML = items.map(item => `
             <div class="menu-item-card">
                 <div class="menu-item-image">
-                    <img src="${item.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}" 
-                         alt="${item.item_name}"
-                         onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                    <img src="${escHtml(item.image_url || '')}"
+                         alt="${escHtml(item.item_name)}"
+                         onerror="this.parentElement.style.background='linear-gradient(135deg,#1a0800,#2d1000)'; this.style.display='none'">
                 </div>
                 <div class="menu-item-content">
                     <div class="menu-item-header">
-                        <div class="menu-item-title">${item.item_name}</div>
+                        <div class="menu-item-title">${escHtml(item.item_name)}</div>
                         <div class="menu-item-price">$${Number(item.price).toFixed(2)}</div>
                     </div>
+                    ${item.description ? `<div class="menu-item-desc">${escHtml(item.description)}</div>` : ''}
+                    ${item.tags ? `<div class="menu-item-tags">${item.tags.split(',').map(t => `<span class="tag">${escHtml(t.trim())}</span>`).join('')}</div>` : ''}
+                    <button class="add-to-cart-btn">
+                        <i class="fas fa-plus"></i> Add to Order
+                    </button>
                 </div>
             </div>
         `).join('');
@@ -1532,7 +1583,7 @@
 
             if (!reviewsVisible) {
                 reviewsSection.style.display = "block";
-                reviewsBtn.textContent = "Hide Reviews";
+                reviewsBtn.innerHTML = '<i class="fas fa-comment-alt"></i> Hide Reviews <i class="fas fa-chevron-up"></i>';
                 reviewsVisible = true;
 
                 if (!reviewsLoaded) {
@@ -1541,7 +1592,7 @@
                 }
             } else {
                 reviewsSection.style.display = "none";
-                reviewsBtn.textContent = "Load Reviews";
+                reviewsBtn.innerHTML = '<i class="fas fa-comment-alt"></i> Show Reviews <i class="fas fa-chevron-down"></i>';
                 reviewsVisible = false;
             }
         }
@@ -1593,15 +1644,15 @@
 
         async function submitReview() {
             if (selectedRating === 0) {
-                alert('Please select a rating');
+                showToast('⭐ Please select a star rating first');
                 return;
             }
             if (!elements.reviewText.value.trim()) {
-                alert('Please write a review');
+                showToast('✏️ Please write your review');
                 return;
             }
             if (!elements.reviewerName.value.trim()) {
-                alert('Please enter your name');
+                showToast('👤 Please enter your name');
                 return;
             }
 
@@ -1615,9 +1666,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/reviews`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(reviewData)
                 });
 
@@ -1626,7 +1675,7 @@
                     throw new Error(err.detail || 'Failed to submit review');
                 }
 
-                alert('Thank you! Your review has been submitted.');
+                showToast('✅ Thank you! Your review has been submitted.');
                 hideReviewModal();
                 resetReviewForm();
 
@@ -1639,7 +1688,7 @@
 
             } catch (err) {
                 console.error('Review submit error:', err);
-                alert('Could not submit review: ' + err.message);
+                showToast('⚠️ Could not submit review: ' + err.message);
             }
         }
 
@@ -1660,15 +1709,15 @@
                 }
 
                 elements.reviewsContainer.innerHTML = reviews.map(r => `
-            <div class="review-card" style="background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px; margin-bottom: 15px;">
-                <div class="review-header" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <strong style="font-size: 16px;">${r.reviewer_name}</strong>
-                    <span style="font-size: 13px; opacity: 0.7;">${formatDate(r.created_at)}</span>
+            <div class="review-card">
+                <div class="review-header">
+                    <span class="reviewer-name">${escHtml(r.reviewer_name || 'Anonymous')}</span>
+                    <span class="review-date">${formatDate(r.created_at)}</span>
                 </div>
-                <div class="stars" style="color: #ffd700; margin-bottom: 10px;">
-                    ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+                <div class="review-rating">
+                    ${'★'.repeat(Math.max(0, Math.min(5, parseInt(r.rating) || 0)))}${'☆'.repeat(5 - Math.max(0, Math.min(5, parseInt(r.rating) || 0)))}
                 </div>
-                <p style="line-height: 1.6; opacity: 0.9;">${r.comment}</p>
+                <p class="review-text">${escHtml(r.comment)}</p>
             </div>
         `).join('');
 
@@ -1728,8 +1777,8 @@
             restaurantMarker = L.marker([currentRestaurant.latitude, currentRestaurant.longitude])
                 .addTo(map)
                 .bindPopup(`
-            <b>${currentRestaurant.name}</b><br>
-            ${currentRestaurant.address || 'No address'}<br>
+            <b>${escHtml(currentRestaurant.name)}</b><br>
+            ${escHtml(currentRestaurant.address || 'No address')}<br>
             <span id="popup-distance" style="color:#e67e22; font-weight:500;">
                 calculating distance...
             </span>
@@ -1803,15 +1852,13 @@
 
         function getDirections() {
             if (!map) {
-                alert('Map is still loading...');
+                showToast('⏳ Map is still loading, please wait');
                 return;
             }
-
             if (!userPosition) {
-                alert('Please enable location access to get directions');
+                showToast('📍 Please enable location access to get directions');
                 return;
             }
-
             showRouteOnMap(userPosition.lat, userPosition.lng, currentRestaurant.latitude, currentRestaurant.longitude);
         }
 
@@ -1846,13 +1893,13 @@
                     const distKm = (route.distance / 1000).toFixed(1);
                     const timeMin = Math.round(route.duration / 60);
 
-                    alert(`Route calculated!\nDistance: ${distKm} km\nEstimated time: ${timeMin} minutes`);
+                    showToast(`🗺️ ${distKm} km · ~${timeMin} min by car`);
 
                     routingControl = { remove: () => map.removeLayer(routeLine) };
                 })
                 .catch(err => {
                     console.error('Routing failed:', err);
-                    alert('Could not calculate route. Try again or use Google Maps.');
+                    showToast('⚠️ Could not calculate route. Try opening in Google Maps.');
                 });
         }
 
@@ -1868,25 +1915,23 @@
             if (currentRestaurant?.website) {
                 window.open(currentRestaurant.website, '_blank');
             } else {
-                alert('No website available');
+                showToast('ℹ️ No website available for this restaurant');
             }
         }
 
         function shareRestaurant() {
             if (!currentRestaurant) return;
-
             const shareData = {
                 title: currentRestaurant.name,
                 text: `Check out ${currentRestaurant.name} on Discover Uzbekistan!`,
                 url: window.location.href
             };
-
             if (navigator.share) {
                 navigator.share(shareData).catch(console.error);
             } else {
                 navigator.clipboard.writeText(window.location.href)
-                    .then(() => alert('Link copied to clipboard!'))
-                    .catch(() => alert('Could not copy link'));
+                    .then(() => showToast('🔗 Link copied to clipboard!'))
+                    .catch(() => showToast('⚠️ Could not copy link'));
             }
         }
 
@@ -1929,13 +1974,13 @@
                         );
 
                         r.distance = dist;
-                        return dist <= 5;
+                        return dist <= 20; // expanded from 5 km → 20 km
                     })
                     .sort((a, b) => a.distance - b.distance)
                     .slice(0, 6);
 
                 if (nearby.length === 0) {
-                    elements.similarGrid.innerHTML = '<p style="text-align:center;opacity:0.6;">No restaurants found within 5 km</p>';
+                    elements.similarGrid.innerHTML = '<p style="text-align:center;opacity:0.6;">No nearby restaurants found within 20 km</p>';
                     return;
                 }
 
@@ -1949,65 +1994,22 @@
                 ];
 
                 elements.similarGrid.innerHTML = nearby.map((r, index) => {
-                    const gradient = r.image_url
-                        ? `url(${r.image_url})`
+                    const bgStyle = r.image_url
+                        ? `url('${escHtml(r.image_url)}')`
                         : gradients[index % gradients.length];
 
                     return `
-                <div class="place-card" style="cursor: pointer; transition: all 0.3s;" 
-                     onclick="window.location.href='restaurants.html?id=${r.id}'">
-                    <div class="place-image" style="
-                        height: 200px; 
-                        background: ${gradient}; 
-                        background-size: cover; 
-                        background-position: center; 
-                        border-radius: 15px 15px 0 0;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-size: 14px;
-                        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-                    ">
-                        ${!r.image_url ? r.cuisine_type || 'Restaurant' : ''}
+                <div class="similar-card" onclick="window.location.href='restaurants.html?id=${parseInt(r.id)}'">
+                    <div class="similar-image" style="background: ${bgStyle}; background-size: cover; background-position: center;"></div>
+                    <div class="similar-content">
+                        <div class="similar-name">${escHtml(r.name)}</div>
+                        <div class="similar-cuisine">${escHtml(r.cuisine_type || 'Restaurant')}</div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                            ${r.rating ? `<div class="similar-rating"><i class="fas fa-star"></i> ${parseFloat(r.rating).toFixed(1)}</div>` : ''}
+                            <div style="font-size:12px; color:#00e676;"><i class="fas fa-map-marker-alt"></i> ${r.distance.toFixed(1)} km</div>
+                        </div>
                     </div>
-                    <div class="place-info" style="
-                        padding: 20px;
-                        background: rgba(255,255,255,0.08);
-                        border-radius: 0 0 15px 15px;
-                    ">
-                        <div class="place-name" style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">
-                            ${r.name}
-                        </div>
-                        <div class="place-distance" style="font-size: 13px; color: #00ff88; margin-bottom: 8px;">
-                            <i class="fas fa-map-marker-alt"></i> ${r.distance.toFixed(1)} km from you
-                            ${r.is_partner ? '<span style="color: #9c27b0; margin-left: 8px;"><i class="fas fa-crown"></i> Partner</span>' : ''}
-                        </div>
-                        <div class="place-contact" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">
-                            <i class="fas fa-phone"></i> ${r.phone || 'Not available'}
-                        </div>
-                        ${r.rating ? `
-                            <div style="font-size: 12px; color: #ffd700; margin-bottom: 10px;">
-                                <i class="fas fa-star"></i> ${r.rating.toFixed(1)}/5.0
-                            </div>
-                        ` : ''}
-                        <button class="view-details-btn" style="
-                            width: 100%;
-                            padding: 10px;
-                            background: rgba(255,255,255,0.1);
-                            border: 1px solid rgba(255,255,255,0.2);
-                            border-radius: 8px;
-                            color: white;
-                            font-size: 13px;
-                            cursor: pointer;
-                            transition: all 0.3s;
-                        " onmouseover="this.style.background='#ff6b35'; this.style.borderColor='#ff6b35';"
-                           onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.2)';">
-                            <i class="fas fa-info-circle"></i> View Details & Menu
-                        </button>
-                    </div>
-                </div>
-            `;
+                </div>`;
                 }).join('');
 
             } catch (err) {
@@ -2028,13 +2030,11 @@
             return R * c;
         }
 
-        console.log('Restaurants page loaded - clean version with like system');
-
         // analytics-tracker.js
         // Add this script to all public pages (restaurants, hotels, attractions)
 
         (function () {
-            const API_BASE = 'http://localhost:8000';
+            const API_BASE = API_BASE_URL;
 
             // Generate or get session ID
             function getSessionId() {

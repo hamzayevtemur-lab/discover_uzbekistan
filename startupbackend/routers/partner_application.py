@@ -387,14 +387,27 @@ async def approve(app_id: int, body: ApproveRequest, bg: BackgroundTasks, db: Se
     plain_pw  = generate_password()
     hashed_pw = hash_password(plain_pw)
 
-    # Create the actual business record and set partner_password
     record_id = _create_business_record(app, hashed_pw, db)
 
+    # ── Calculate plan dates ──
+    plan_days = {
+        "1month":   30,
+        "3months":  90,
+        "6months":  180,
+        "1year":    365,
+    }
+    days = plan_days.get(app.plan, 30)  # default 30 days
+    now  = datetime.utcnow()
+
     app.status             = "approved"
-    app.reviewed_at        = datetime.utcnow()
+    app.reviewed_at        = now
     app.generated_password = hashed_pw
     app.linked_record_id   = record_id
     app.credentials_sent   = True
+    app.plan_start_date    = now
+    app.plan_end_date      = now + timedelta(days=days)
+    app.grace_period_end   = now + timedelta(days=days + 3)
+    app.plan_status        = "active"
     db.commit()
 
     send_approval_email(app, plain_pw, record_id, bg)

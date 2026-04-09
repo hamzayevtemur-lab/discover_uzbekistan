@@ -1650,9 +1650,8 @@
 
     <nav>
         <button class="nav-back" onclick="history.back()">← Agencies</button>
-        <div class="nav-logo">Travel<span>.</span></div>
-        <button class="nav-share"
-            onclick="navigator.share?navigator.share({title:document.title,url:location.href}):navigator.clipboard?.writeText(location.href)">Share</button>
+        <div class="nav-logo">DISCOVER<span> UZ</span></div>
+        <button class="nav-share" onclick="shareAgency()">Share</button>
     </nav>
 
     <div class="hero">
@@ -1684,12 +1683,53 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const BASE = 'http://localhost:8000';
-        const AGENCY_ID = new URLSearchParams(location.search).get('id') || 1;
+        const BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+            ? 'http://127.0.0.1:8000' : '';
+
+        const _rawId = new URLSearchParams(location.search).get('id');
+        const AGENCY_ID = _rawId && /^\d+$/.test(_rawId.trim()) ? parseInt(_rawId, 10) : null;
+
+        if (!AGENCY_ID) {
+            document.getElementById('pageLoader').classList.add('hide');
+            document.getElementById('mainWrap').style.display = 'block';
+            document.getElementById('pageContent').innerHTML = `
+    <div class="err-box"><h2>⚠ Invalid ID</h2><p>No valid agency ID found in the URL.<br>Example: <code>travel-agency.html?id=1</code></p><button class="btn-err" onclick="history.back()">Go Back</button></div>`;
+        }
+
         const COVERS = ['https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600', 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1600', 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=1600', 'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?w=1600'];
         const TOUR_FB = ['https://images.unsplash.com/photo-1597409114356-16e346ce2699?w=600', 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=600', 'https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=600', 'https://images.unsplash.com/photo-1566765657997-0b2d3e0dc9c2?w=600', 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600'];
 
-        const starsOf = n => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+        // ── XSS ESCAPE ──────────────────────────────────────────────────
+        function esc(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // ── TOAST ───────────────────────────────────────────────────────
+        function showToast(msg, ms = 3500) {
+            let el = document.getElementById('toastNotif');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'toastNotif';
+                el.style.cssText = 'position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(16,16,16,.97);color:#e2ddd8;padding:11px 24px;border-radius:30px;font-size:.84rem;font-family:"DM Sans",sans-serif;border:1px solid rgba(232,160,69,.3);box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:9999;transition:transform .35s cubic-bezier(.175,.885,.32,1.275),opacity .3s;opacity:0;pointer-events:none;white-space:nowrap;';
+                document.body.appendChild(el);
+            }
+            el.textContent = msg;
+            el.style.transform = 'translateX(-50%) translateY(80px)'; el.style.opacity = '0';
+            requestAnimationFrame(() => {
+                el.style.transform = 'translateX(-50%) translateY(0)'; el.style.opacity = '1';
+            });
+            clearTimeout(el._t);
+            el._t = setTimeout(() => { el.style.transform = 'translateX(-50%) translateY(80px)'; el.style.opacity = '0'; }, ms);
+        }
+
+        const starsOf = n => {
+            const clamped = Math.max(0, Math.min(5, Math.round(n)));
+            return '★'.repeat(clamped) + '☆'.repeat(5 - clamped);
+        };
         const fmtDate = d => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
 
         function jumpTo(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
@@ -1697,6 +1737,16 @@
         function openModal(src, cap) { document.getElementById('modalImg').src = src; document.getElementById('modalCap').textContent = cap || ''; document.getElementById('imgModal').classList.add('open') }
         function closeModal() { document.getElementById('imgModal').classList.remove('open') }
         document.getElementById('imgModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal() });
+
+        function shareAgency() {
+            if (navigator.share) {
+                navigator.share({ title: document.title, url: location.href }).catch(() => { });
+            } else {
+                navigator.clipboard?.writeText(location.href)
+                    .then(() => showToast('🔗 Link copied to clipboard!'))
+                    .catch(() => showToast('⚠️ Could not copy link'));
+            }
+        }
 
         async function apiFetch(path) { const r = await fetch(BASE + path); if (!r.ok) throw new Error(r.status); return r.json() }
 
@@ -1711,16 +1761,16 @@
                 agency.is_verified ? `<span class="hbadge hb-verified">✓ Verified</span>` : '',
                 agency.is_partner ? `<span class="hbadge hb-partner">★ Partner</span>` : '',
                 agency.is_featured ? `<span class="hbadge hb-featured">◆ Featured</span>` : '',
-                agency.agency_type ? `<span class="hbadge hb-type">${agency.agency_type}</span>` : '',
+                agency.agency_type ? `<span class="hbadge hb-type">${esc(agency.agency_type)}</span>` : '',
             ].filter(Boolean).join('');
             const meta = [
-                agency.city ? `<div class="hero-meta-item">📍 <strong>${agency.city}</strong></div>` : '',
-                agency.tours_count != null ? `<div class="hero-meta-item">🗺 <strong>${agency.tours_count}</strong> tours</div>` : '',
+                agency.city ? `<div class="hero-meta-item">📍 <strong>${esc(agency.city)}</strong></div>` : '',
+                agency.tours_count != null ? `<div class="hero-meta-item">🗺 <strong>${esc(String(agency.tours_count))}</strong> tours</div>` : '',
             ].filter(Boolean).join('');
             document.getElementById('heroContent').innerHTML = `
     <div class="hero-left">
       <div class="hero-badges">${badges}</div>
-      <h1 class="hero-name">${agency.name}</h1>
+      <h1 class="hero-name">${esc(agency.name)}</h1>
       <div class="hero-meta">${meta}</div>
     </div>
     <div class="hero-rating">
@@ -1734,18 +1784,18 @@
         function buildAbout(agency) {
             const specs = agency.specializations || [];
             const contacts = [
-                agency.city ? `<div class="ci-item"><div class="ci-ico">📍</div><div><div class="ci-lbl">City</div><div class="ci-val">${agency.city}</div></div></div>` : '',
-                agency.address ? `<div class="ci-item"><div class="ci-ico">🏢</div><div><div class="ci-lbl">Address</div><div class="ci-val">${agency.address}</div></div></div>` : '',
-                agency.phone ? `<a href="tel:${agency.phone}" class="ci-item"><div class="ci-ico">📞</div><div><div class="ci-lbl">Phone</div><div class="ci-val">${agency.phone}</div></div></a>` : '',
-                agency.email ? `<a href="mailto:${agency.email}" class="ci-item"><div class="ci-ico">✉️</div><div><div class="ci-lbl">Email</div><div class="ci-val">${agency.email}</div></div></a>` : '',
-                agency.website ? `<a href="${agency.website}" target="_blank" class="ci-item"><div class="ci-ico">🌐</div><div><div class="ci-lbl">Website</div><div class="ci-val">${agency.website.replace(/^https?:\/\//, '')}</div></div></a>` : '',
-                agency.languages ? `<div class="ci-item"><div class="ci-ico">🗣️</div><div><div class="ci-lbl">Languages</div><div class="ci-val">${agency.languages}</div></div></div>` : '',
+                agency.city ? `<div class="ci-item"><div class="ci-ico">📍</div><div><div class="ci-lbl">City</div><div class="ci-val">${esc(agency.city)}</div></div></div>` : '',
+                agency.address ? `<div class="ci-item"><div class="ci-ico">🏢</div><div><div class="ci-lbl">Address</div><div class="ci-val">${esc(agency.address)}</div></div></div>` : '',
+                agency.phone ? `<a href="tel:${esc(agency.phone)}" class="ci-item"><div class="ci-ico">📞</div><div><div class="ci-lbl">Phone</div><div class="ci-val">${esc(agency.phone)}</div></div></a>` : '',
+                agency.email ? `<a href="mailto:${esc(agency.email)}" class="ci-item"><div class="ci-ico">✉️</div><div><div class="ci-lbl">Email</div><div class="ci-val">${esc(agency.email)}</div></div></a>` : '',
+                agency.website ? `<a href="${esc(agency.website)}" target="_blank" rel="noopener noreferrer" class="ci-item"><div class="ci-ico">🌐</div><div><div class="ci-lbl">Website</div><div class="ci-val">${esc(agency.website.replace(/^https?:\/\//, ''))}</div></div></a>` : '',
+                agency.languages ? `<div class="ci-item"><div class="ci-ico">🗣️</div><div><div class="ci-lbl">Languages</div><div class="ci-val">${esc(agency.languages)}</div></div></div>` : '',
             ].filter(Boolean).join('');
             return `
   <div class="section" id="sec-about">
     <div class="sec-header"><h2 class="sec-title">About</h2><div class="sec-rule"></div></div>
-    <p class="about-text">${agency.description || 'No description available.'}</p>
-    ${specs.length ? `<div class="spec-wrap">${specs.map(s => `<span class="spec-chip">${s}</span>`).join('')}</div>` : ''}
+    <p class="about-text">${esc(agency.description || 'No description available.')}</p>
+    ${specs.length ? `<div class="spec-wrap">${specs.map(s => `<span class="spec-chip">${esc(s)}</span>`).join('')}</div>` : ''}
     ${contacts ? `<div class="contact-grid">${contacts}</div>` : ''}
   </div>`;
         }
@@ -1762,25 +1812,25 @@
   </div>`;
             const cards = tours.map((t, i) => {
                 const img = t.image_url || TOUR_FB[i % TOUR_FB.length];
-                const price = t.price ? `${t.currency || 'USD'} ${Number(t.price).toLocaleString()}` : 'Ask';
+                const price = t.price ? `${esc(t.currency || 'USD')} ${Number(t.price).toLocaleString()}` : 'Ask';
                 return `
-    <div class="tour-card" id="tc-${t.id}" onclick="toggleTour(${t.id})">
+    <div class="tour-card" id="tc-${parseInt(t.id)}" onclick="toggleTour(${parseInt(t.id)})">
       <div class="tour-thumb">
-        <img src="${img}" alt="${t.tour_name}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=tour-thumb-ph>🗺</div>'"/>
-        ${t.tour_type ? `<span class="t-type">${t.tour_type}</span>` : ''}
+        <img src="${esc(img)}" alt="${esc(t.tour_name)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=tour-thumb-ph>🗺</div>'"/>
+        ${t.tour_type ? `<span class="t-type">${esc(t.tour_type)}</span>` : ''}
         <span class="t-price">${price}</span>
       </div>
       <div class="tour-body">
-        <div class="tour-name">${t.tour_name}</div>
-        ${t.description ? `<div class="tour-desc-s">${t.description}</div>` : ''}
+        <div class="tour-name">${esc(t.tour_name)}</div>
+        ${t.description ? `<div class="tour-desc-s">${esc(t.description)}</div>` : ''}
         <div class="tour-chips">
-          ${t.duration_days ? `<span class="t-chip">📅 ${t.duration_days}d</span>` : ''}
-          ${t.max_group_size ? `<span class="t-chip">👥 max ${t.max_group_size}</span>` : ''}
-          ${t.difficulty_level ? `<span class="t-chip">🎯 ${t.difficulty_level}</span>` : ''}
+          ${t.duration_days ? `<span class="t-chip">📅 ${esc(String(t.duration_days))}d</span>` : ''}
+          ${t.max_group_size ? `<span class="t-chip">👥 max ${esc(String(t.max_group_size))}</span>` : ''}
+          ${t.difficulty_level ? `<span class="t-chip">🎯 ${esc(t.difficulty_level)}</span>` : ''}
         </div>
         <button class="btn-expand">View details <span class="earrow">▼</span></button>
       </div>
-      <div class="tour-drawer" id="td-${t.id}"></div>
+      <div class="tour-drawer" id="td-${parseInt(t.id)}"></div>
     </div>`;
             }).join('');
             return `
@@ -1824,12 +1874,12 @@
                 const nl = d.nights_stay ? `🌙 ${d.nights_stay} night${d.nights_stay !== 1 ? 's' : ''}` : dr ? `📅 ${dr}` : '';
                 const arrow = i < dests.length - 1 ? `<div class="dest-arrow">→</div>` : '';
                 return `<div class="dest-node">
-      <div class="dest-card" onclick="event.stopPropagation();focusDestOnMap('map-${t.id}',${d.latitude || 0},${d.longitude || 0})">
+      <div class="dest-card" onclick="event.stopPropagation();focusDestOnMap('map-${parseInt(t.id)}',${parseFloat(d.latitude) || 0},${parseFloat(d.longitude) || 0})">
         <div class="dest-thumb">
-          ${thumb ? `<img src="${thumb}" alt="${d.destination_name}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=dest-thumb-ph>🗺</div>'"/>` : `<div class="dest-thumb-ph">🗺</div>`}
+          ${thumb ? `<img src="${esc(thumb)}" alt="${esc(d.destination_name)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=dest-thumb-ph>🗺</div>'"/>` : `<div class="dest-thumb-ph">🗺</div>`}
           <div class="dest-order">${i + 1}</div>
         </div>
-        <div class="dest-body"><div class="dest-name">${d.destination_name}</div>${nl ? `<div class="dest-nights">${nl}</div>` : ''}</div>
+        <div class="dest-body"><div class="dest-name">${esc(d.destination_name)}</div>${nl ? `<div class="dest-nights">${esc(nl)}</div>` : ''}</div>
       </div>${arrow}</div>`;
             }).join('') : '';
 
@@ -1838,9 +1888,9 @@
 
             const itinHtml = days.map(day => {
                 const dayImgs = (day.images && day.images.length) ? day.images : (day.image_url ? [day.image_url] : []);
-                const gallery = dayImgs.length ? `<div class="day-gallery">${dayImgs.map(src => `<div class="dg-item" onclick="event.stopPropagation();openModal('${src}','${day.day_title}')"><img src="${src}" loading="lazy" onerror="this.closest('.dg-item').style.display='none'"/></div>`).join('')}</div>` : '';
-                const pills = [day.meals ? `<span class="ipill">🍽 ${day.meals}</span>` : '', day.accommodation ? `<span class="ipill">🏨 ${day.accommodation}</span>` : '', ...(day.destinations || []).map(d => `<span class="ipill">📍 ${d}</span>`)].filter(Boolean).join('');
-                return `<div class="iday"><div class="idot"></div><div class="inum">Day ${day.day_number}</div><div class="ittl">${day.day_title}</div><div class="itxt">${day.activities}</div>${pills ? `<div class="ipills">${pills}</div>` : ''} ${gallery}</div>`;
+                const gallery = dayImgs.length ? `<div class="day-gallery">${dayImgs.map(src => `<div class="dg-item" onclick="event.stopPropagation();openModal('${esc(src)}','${esc(day.day_title)}')"><img src="${esc(src)}" loading="lazy" onerror="this.closest('.dg-item').style.display='none'"/></div>`).join('')}</div>` : '';
+                const pills = [day.meals ? `<span class="ipill">🍽 ${esc(day.meals)}</span>` : '', day.accommodation ? `<span class="ipill">🏨 ${esc(day.accommodation)}</span>` : '', ...(day.destinations || []).map(d => `<span class="ipill">📍 ${esc(d)}</span>`)].filter(Boolean).join('');
+                return `<div class="iday"><div class="idot"></div><div class="inum">Day ${parseInt(day.day_number)}</div><div class="ittl">${esc(day.day_title)}</div><div class="itxt">${esc(day.activities)}</div>${pills ? `<div class="ipills">${pills}</div>` : ''} ${gallery}</div>`;
             }).join('');
 
             const inc = t.included_services || [];
@@ -1859,29 +1909,29 @@
 
             return `<div class="drawer-inner">
     <div class="drawer-hero">
-      <img src="${img}" alt="${t.tour_name}" onerror="this.style.display='none'"/>
+      <img src="${esc(img)}" alt="${esc(t.tour_name)}" onerror="this.style.display='none'"/>
       <div class="drawer-hero-ov"></div>
       <div class="drawer-hero-foot">
-        <div class="d-tour-name">${t.tour_name}</div>
+        <div class="d-tour-name">${esc(t.tour_name)}</div>
         <div class="d-meta">
-          ${t.duration_days ? `<span class="d-meta-chip">📅 ${t.duration_days} Days</span>` : ''}
+          ${t.duration_days ? `<span class="d-meta-chip">📅 ${esc(String(t.duration_days))} Days</span>` : ''}
           ${dests.length ? `<span class="d-meta-chip">📍 ${dests.length} stops</span>` : ''}
-          ${t.tour_type ? `<span class="d-meta-chip">${t.tour_type}</span>` : ''}
+          ${t.tour_type ? `<span class="d-meta-chip">${esc(t.tour_type)}</span>` : ''}
         </div>
       </div>
-      ${price ? `<div class="d-price">${price}</div>` : ''}
+      ${price ? `<div class="d-price">${esc(price)}</div>` : ''}
     </div>
-    ${t.description ? `<div class="d-label">Overview</div><p class="d-text">${t.description}</p>` : ''}
-    ${hl.length ? `<div class="d-label">Highlights</div><div class="hl-list">${hl.map(h => `<div class="hl-item"><span class="hl-dot">✦</span>${h}</div>`).join('')}</div>` : ''}
+    ${t.description ? `<div class="d-label">Overview</div><p class="d-text">${esc(t.description)}</p>` : ''}
+    ${hl.length ? `<div class="d-label">Highlights</div><div class="hl-list">${hl.map(h => `<div class="hl-item"><span class="hl-dot">✦</span>${esc(h)}</div>`).join('')}</div>` : ''}
     ${destStripHtml ? `<div class="d-label">Destinations & Route</div><div class="dest-strip">${destStripHtml}</div>` : ''}
     ${days.length ? `<div class="d-label">Day-by-Day Itinerary</div><div class="itinerary">${itinHtml}</div>` : ''}
-    ${(inc.length || exc.length) ? `<div class="d-label">Included & Excluded</div><div class="ie-grid"><div class="ie-box ie-inc"><div class="ie-lbl">✓ Included</div><ul class="ie-ul">${inc.length ? inc.map(s => `<li>${s}</li>`).join('') : '<li>Contact for details</li>'}</ul></div><div class="ie-box ie-exc"><div class="ie-lbl">✕ Not Included</div><ul class="ie-ul">${exc.length ? exc.map(s => `<li>${s}</li>`).join('') : '<li>—</li>'}</ul></div></div>` : ''}
-    ${hasMap ? `<div class="d-label">Route Map</div><div class="route-map-wrap"><div class="route-map" id="${mapId}"></div></div>` : ''}
+    ${(inc.length || exc.length) ? `<div class="d-label">Included & Excluded</div><div class="ie-grid"><div class="ie-box ie-inc"><div class="ie-lbl">✓ Included</div><ul class="ie-ul">${inc.length ? inc.map(s => `<li>${esc(s)}</li>`).join('') : '<li>Contact for details</li>'}</ul></div><div class="ie-box ie-exc"><div class="ie-lbl">✕ Not Included</div><ul class="ie-ul">${exc.length ? exc.map(s => `<li>${esc(s)}</li>`).join('') : '<li>—</li>'}</ul></div></div>` : ''}
+    ${hasMap ? `<div class="d-label">Route Map</div><div class="route-map-wrap"><div class="route-map" id="${esc(mapId)}"></div></div>` : ''}
     <div class="tour-details-card">
       <div class="d-label" style="margin-top:0">Tour Details</div>
-      ${infoRows.map(r => `<div class="td-row"><div class="td-ico">${r.ico}</div><div><div class="td-lbl">${r.lbl}</div><div class="td-val">${r.val}</div></div></div>`).join('')}
+      ${infoRows.map(r => `<div class="td-row"><div class="td-ico">${r.ico}</div><div><div class="td-lbl">${esc(r.lbl)}</div><div class="td-val">${esc(r.val)}</div></div></div>`).join('')}
     </div>
-    <button class="btn-close-drw" onclick="event.stopPropagation();toggleTour(${t.id})">▲ Close details</button>
+    <button class="btn-close-drw" onclick="event.stopPropagation();toggleTour(${parseInt(t.id)})">▲ Close details</button>
   </div>`;
         }
 
@@ -1918,11 +1968,11 @@
             const cards = reviews.map(r => `
   <div class="rv-card">
     <div class="rv-top">
-      <div><div class="rv-nm">${r.tourist_name || 'Anonymous'}</div><div class="rv-st">${starsOf(r.rating)}</div></div>
+      <div><div class="rv-nm">${esc(r.tourist_name || 'Anonymous')}</div><div class="rv-st">${starsOf(r.rating)}</div></div>
       <div class="rv-dt">${fmtDate(r.created_at)}</div>
     </div>
-    <div class="rv-tx">${r.comment || ''}</div>
-    ${r.tour_taken ? `<span class="rv-tr">Tour: ${r.tour_taken}</span>` : ''}
+    <div class="rv-tx">${esc(r.comment || '')}</div>
+    ${r.tour_taken ? `<span class="rv-tr">Tour: ${esc(r.tour_taken)}</span>` : ''}
   </div>`).join('');
             const blurb = avg >= 4.5 ? '🏆 Exceptional — highly recommended.' : avg >= 4 ? '👍 Well rated by travelers.' : avg > 0 ? 'Rated by travelers.' : 'No reviews yet — be the first!';
             return `
@@ -1992,7 +2042,7 @@
             const rating = parseInt(document.getElementById('rv-rating').value);
             const comment = document.getElementById('rv-comment').value.trim();
             const tourTaken = document.getElementById('rv-tour').value.trim();
-            if (!name || !rating || !comment) { alert('Please fill in your name, rating, and review.'); return }
+            if (!name || !rating || !comment) { showToast('⚠️ Please fill in your name, rating, and review.'); return }
             try {
                 await fetch(`${BASE}/travel-agencies/reviews`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ agency_id: agencyId, tourist_name: name, rating, comment, tour_taken: tourTaken || null }) });
             } catch (_) { }
@@ -2017,7 +2067,7 @@
             const map = L.map('agency-map').setView([lat, lng], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
             const icon = L.divIcon({ className: '', html: `<div style="width:14px;height:14px;border-radius:50%;background:#e8a045;border:3px solid #fff;box-shadow:0 2px 10px rgba(232,160,69,.5)"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] });
-            L.marker([lat, lng], { icon }).addTo(map).bindPopup(`<b>${agency.name}</b>${agency.address ? `<br><small>${agency.address}</small>` : ''}`).openPopup();
+            L.marker([lat, lng], { icon }).addTo(map).bindPopup(`<b>${esc(agency.name)}</b>${agency.address ? `<br><small>${esc(agency.address)}</small>` : ''}`).openPopup();
         }
 
         /* ── INIT ── */
@@ -2045,7 +2095,7 @@
     <div class="err-box"><h2>⚠ Error</h2><p>Could not connect to <code>${BASE}</code>.<br>Make sure your server is running.<br><br>Agency ID: <strong>${AGENCY_ID}</strong></p><button class="btn-err" onclick="location.reload()">Retry</button></div>`;
             }
         }
-        init();
+        if (AGENCY_ID) init();
     </script>
 </body>
 

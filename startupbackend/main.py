@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles  
 from routers import(restaurants, hotels, attractions, likes, admin,
             partner_restaurants, partner_auth, admin_approval, partner_hotels, 
-            travel_agency,partner_agency, partner_application, admin)  # Import all routers
+            travel_agency,partner_agency, partner_application, admin,subscription)  # Import all routers
 
 app = FastAPI()
 
@@ -32,6 +32,7 @@ app.include_router(partner_hotels.router)
 app.include_router(travel_agency.router)
 app.include_router(partner_agency.router)
 app.include_router(partner_application.router)
+app.include_router(subscription.router)
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static_assets")

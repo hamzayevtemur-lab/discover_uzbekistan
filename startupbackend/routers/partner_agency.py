@@ -53,9 +53,9 @@ def _encode_token(email: str, agency_id: int) -> str:
 def _decode_token(token: str) -> dict:
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except jwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError: #type: ignore
         raise HTTPException(status_code=401, detail="Token expired. Please log in again.")
-    except jwt.JWTError:
+    except jwt.JWTError: #type: ignore
         raise HTTPException(status_code=401, detail="Invalid token.")
 
 
