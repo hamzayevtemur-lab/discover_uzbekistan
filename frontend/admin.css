@@ -397,11 +397,284 @@ body {
     color: #1f2937;
 }
 
-.stat-title {
+.stat-title,
+.stat-label {
     font-size: 0.875rem;
     color: #6b7280;
     margin-bottom: 0.5rem;
 }
+
+/* ── Reviews stats row ─────────────────────────────── */
+.reviews-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Filter bar ─────────────────────────────────────── */
+.filter-bar-card {
+    background: white;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    margin-bottom: 1.25rem;
+    border: 1px solid #e2e8f0;
+}
+
+.filter-bar-inner {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-input {
+    padding: 0.55rem 0.9rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    background: #fafafa;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    background: white;
+}
+
+.filter-input-wide {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-select {
+    padding: 0.55rem 0.9rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    background: #fafafa;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+.filter-clear-btn {
+    padding: 0.55rem 0.9rem;
+    border: 2px solid #fecaca;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    background: #fff5f5;
+    color: #ef4444;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.filter-clear-btn:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+}
+
+.filter-refresh-btn {
+    padding: 0.55rem 0.9rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    background: white;
+    color: #6366f1;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.filter-refresh-btn:hover {
+    border-color: #6366f1;
+    background: #f5f3ff;
+}
+
+.filter-summary {
+    display: none;
+    margin-top: 0.6rem;
+    font-size: 0.78rem;
+    color: #6366f1;
+    font-weight: 600;
+    padding: 0.3rem 0.5rem;
+    background: #f5f3ff;
+    border-radius: 6px;
+    width: fit-content;
+}
+
+/* ── Review cards ─────────────────────────────────── */
+.review-card {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s;
+    align-items: flex-start;
+}
+
+.review-card:last-child { border-bottom: none; }
+.review-card:hover { background: #fafbff; }
+
+.review-card-left {
+    flex-shrink: 0;
+    width: 160px;
+}
+
+.review-type-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    margin-bottom: 0.4rem;
+}
+
+.review-place {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1e293b;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.review-reviewer {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-bottom: 0.15rem;
+}
+
+.review-date {
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+
+.review-card-center {
+    flex: 1;
+}
+
+.review-stars {
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+}
+
+.review-comment {
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.6;
+    font-style: italic;
+}
+
+.review-card-right {
+    flex-shrink: 0;
+}
+
+/* ── Tour chips ───────────────────────────────────── */
+.tour-chip {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.22rem 0.65rem;
+    border-radius: 20px;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    font-weight: 500;
+}
+
+.tour-chip-blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.tour-chip-green { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.tour-chip-orange { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.tour-chip-purple { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+
+/* ── Loading & empty states ───────────────────────── */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: #94a3b8;
+    gap: 0.75rem;
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+/* ── Pagination bar ───────────────────────────────── */
+.pagination-bar { }
+
+/* ── Fix: sidebar sticky ──────────────────────────── */
+.sidebar {
+    position: sticky;
+    top: 0;
+}
+
+/* ── Fix: main-content proper height ─────────────── */
+.main-content {
+    height: 100vh;
+}
+
+/* ── Fix: table inside partners had no proper styles ─ */
+#partners .table-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#partners .table-container table th {
+    background: #f9fafb;
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+    font-size: 0.875rem;
+}
+
+#partners .table-container table td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.875rem;
+}
+
+#partners .table-container table tr:hover td {
+    background: #f9fafb;
+}
+
+/* ── Fix duplicate .btn-secondary (remove first, keep second) */
+
+
 
 .file-upload-wrapper {
     position: relative;
@@ -774,21 +1047,9 @@ body {
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-.btn-secondary {
-    background: #e5e7eb;
-    color: #374151;
-    padding: 0.75rem 2rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 1rem;
-}
+/* btn-secondary defined below */
 
-.btn-secondary:hover {
-    background: #d1d5db;
-}
+
 
 /* Map Container */
 #hotel-map,

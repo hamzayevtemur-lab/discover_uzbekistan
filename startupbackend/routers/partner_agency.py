@@ -28,6 +28,12 @@ router   = APIRouter(prefix="/agency-partner", tags=["Agency Partner"])
 security = HTTPBearer(auto_error=False)
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY environment variable is not set. "
+        "Set it before starting the server."
+    )
+
 ALGORITHM  = "HS256"
 TOKEN_DAYS = 30
 
@@ -53,9 +59,9 @@ def _encode_token(email: str, agency_id: int) -> str:
 def _decode_token(token: str) -> dict:
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except jwt.ExpiredSignatureError: #type: ignore
+    except jwt.ExpiredSignatureError:  # type: ignore
         raise HTTPException(status_code=401, detail="Token expired. Please log in again.")
-    except jwt.JWTError: #type: ignore
+    except jwt.JWTError:  # type: ignore
         raise HTTPException(status_code=401, detail="Invalid token.")
 
 
@@ -67,17 +73,12 @@ def get_current_agency(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),
 ) -> TravelAgency:
-    """
-    Decode JWT → verify business_type is travel_agency
-    → load agency from DB → return the ORM object.
-    Any endpoint that uses this dependency is fully authenticated.
-    """
     if not credentials:
         raise HTTPException(status_code=401, detail="Not authenticated.")
 
-    payload    = _decode_token(credentials.credentials)
-    biz_type   = payload.get("business_type")
-    agency_id  = payload.get("record_id")
+    payload   = _decode_token(credentials.credentials)
+    biz_type  = payload.get("business_type")
+    agency_id = payload.get("record_id")
 
     if biz_type != "travel_agency" or not agency_id:
         raise HTTPException(status_code=403, detail="Not a travel agency account.")
@@ -97,6 +98,7 @@ class LoginRequest(BaseModel):
     email:    str
     password: str
 
+
 class AgencyUpdate(BaseModel):
     name:            Optional[str]   = None
     agency_type:     Optional[str]   = None
@@ -112,6 +114,29 @@ class AgencyUpdate(BaseModel):
     longitude:       Optional[float] = None
     specializations: Optional[list]  = None
 
+
+class DestinationIn(BaseModel):
+    """Nested destination inside TourCreate / TourUpdate."""
+    destination_name: str
+    latitude:         Optional[float] = None
+    longitude:        Optional[float] = None
+    visit_order:      Optional[int]   = 0
+    nights_stay:      Optional[int]   = 0
+    description:      Optional[str]   = None
+    image_url:        Optional[str]   = None
+
+
+class ItineraryDayIn(BaseModel):
+    """Nested itinerary day inside TourCreate / TourUpdate."""
+    day_number:    int
+    day_title:     str
+    activities:    str
+    meals:         Optional[str]       = None
+    accommodation: Optional[str]       = None
+    destinations:  Optional[List[str]] = []   # list of place-name strings
+    coordinates:   Optional[list]      = []
+
+
 class TourCreate(BaseModel):
     tour_name:         str
     tour_type:         Optional[str]   = None
@@ -126,18 +151,37 @@ class TourCreate(BaseModel):
     excluded_services: Optional[list]  = []
     difficulty_level:  Optional[str]   = None
     best_season:       Optional[str]   = None
+    # Nested — handled separately from scalar setattr loop
+    destinations:   Optional[List[DestinationIn]]  = []
+    itinerary_days: Optional[List[ItineraryDayIn]] = []
+
 
 class TourUpdate(TourCreate):
     pass
 
+
+# Scalar-only fields — safe to set via setattr on the Tour ORM model.
+# Relationship fields (destinations, itinerary_days) are excluded here
+# because assigning plain dicts to a SQLAlchemy relationship raises:
+#   AttributeError: 'dict' object has no attribute '_sa_instance_state'
+_TOUR_SCALAR_FIELDS = frozenset({
+    "tour_name", "tour_type", "description", "duration_days",
+    "price", "currency", "max_group_size", "image_url",
+    "highlights", "included_services", "excluded_services",
+    "difficulty_level", "best_season",
+})
+
+
+# Kept for the standalone itinerary/destination sub-endpoints
 class ItineraryDayCreate(BaseModel):
     day_number:    int
     day_title:     str
     activities:    str
-    meals:         Optional[str]  = None
-    accommodation: Optional[str]  = None
-    destinations:  Optional[list] = []
-    coordinates:   Optional[list] = []
+    meals:         Optional[str]       = None
+    accommodation: Optional[str]       = None
+    destinations:  Optional[List[str]] = []
+    coordinates:   Optional[list]      = []
+
 
 class DestinationCreate(BaseModel):
     destination_name: str
@@ -146,6 +190,7 @@ class DestinationCreate(BaseModel):
     visit_order:      Optional[int]   = 0
     nights_stay:      Optional[int]   = 0
     description:      Optional[str]   = None
+    image_url:        Optional[str]   = None
 
 
 # ─────────────────────────────────────────────
@@ -154,10 +199,6 @@ class DestinationCreate(BaseModel):
 
 @router.post("/login", summary="Agency partner login")
 async def login(data: LoginRequest, db: Session = Depends(get_db)):
-    """
-    Authenticate a travel agency partner.
-    Checks partner_email + partner_password on the travel_agencies table.
-    """
     agency = db.query(TravelAgency).filter(
         TravelAgency.email == data.email
     ).first()
@@ -176,7 +217,8 @@ async def login(data: LoginRequest, db: Session = Depends(get_db)):
         "business_type": "travel_agency",
         "business_name": agency.name,
         "record_id":     agency.id,
-        "dashboard_url": f"http://localhost:8000/travel-agency-admin-dashboard.html?id={agency.id}",
+        # Relative URL — works in both dev and production
+        "dashboard_url": f"/travel-agency-admin-dashboard.html?id={agency.id}",
     }
 
 
@@ -185,12 +227,18 @@ async def login(data: LoginRequest, db: Session = Depends(get_db)):
 # ─────────────────────────────────────────────
 
 @router.get("/me", summary="Get current agency info")
-async def get_me(agency: TravelAgency = Depends(get_current_agency), db: Session = Depends(get_db)):
+async def get_me(
+    agency: TravelAgency = Depends(get_current_agency),
+    db: Session = Depends(get_db),
+):
     return _agency_dict(agency, db)
 
 
 @router.get("/agency", summary="Get partner's agency profile")
-async def get_agency(agency: TravelAgency = Depends(get_current_agency), db: Session = Depends(get_db)):
+async def get_agency(
+    agency: TravelAgency = Depends(get_current_agency),
+    db: Session = Depends(get_db),
+):
     return _agency_dict(agency, db)
 
 
@@ -200,16 +248,21 @@ async def update_agency(
     agency: TravelAgency = Depends(get_current_agency),
     db:     Session      = Depends(get_db),
 ):
+    # exclude_unset=True so only submitted fields are updated.
+    # None is allowed — it intentionally clears a field (e.g. removing a website).
     for field, value in data.dict(exclude_unset=True).items():
-        if value is not None and hasattr(agency, field):
+        if hasattr(agency, field):
             setattr(agency, field, value)
 
-    # Re-submit for approval after any profile change
     agency.status = "pending"
     db.commit()
     db.refresh(agency)
 
-    return {"success": True, "message": "Agency updated. Waiting for admin approval.", "id": agency.id}
+    return {
+        "success": True,
+        "message": "Agency updated. Waiting for admin approval.",
+        "id":      agency.id,
+    }
 
 
 # ─────────────────────────────────────────────
@@ -218,7 +271,7 @@ async def update_agency(
 
 @router.post("/upload-image", summary="Upload an image")
 async def upload_image(
-    file:   UploadFile = File(...),
+    file:   UploadFile   = File(...),
     agency: TravelAgency = Depends(get_current_agency),
 ):
     try:
@@ -261,13 +314,13 @@ async def get_stats(
     reviews  = db.query(AgencyReview).filter(AgencyReview.agency_id == agency.id).count()
 
     return {
-        "agency_name":   agency.name,
-        "agency_status": getattr(agency, "status", "approved"),
-        "total_tours":   total,
-        "pending_tours": pending,
-        "approved_tours":approved,
-        "total_reviews": reviews,
-        "avg_rating":    float(agency.rating) if agency.rating else 0.0,
+        "agency_name":    agency.name,
+        "agency_status":  getattr(agency, "status", "approved"),
+        "total_tours":    total,
+        "pending_tours":  pending,
+        "approved_tours": approved,
+        "total_reviews":  reviews,
+        "avg_rating":     float(agency.rating) if agency.rating else 0.0,
     }
 
 
@@ -317,11 +370,43 @@ async def create_tour(
         status            = "pending",
     )
     db.add(tour)
-    agency.tours_count = db.query(Tour).filter(Tour.agency_id == agency.id).count() + 1
+    db.flush()  # assigns tour.id without committing
+
+    # Save destinations as proper ORM objects
+    for d in (data.destinations or []):
+        db.add(TourDestination(
+            tour_id          = tour.id,
+            destination_name = d.destination_name,
+            latitude         = d.latitude,
+            longitude        = d.longitude,
+            visit_order      = d.visit_order  or 0,
+            nights_stay      = d.nights_stay  or 0,
+            description      = d.description,
+            image_url        = d.image_url,
+        ))
+
+    # Save itinerary days as proper ORM objects
+    for day in (data.itinerary_days or []):
+        db.add(TourItinerary(
+            tour_id       = tour.id,
+            day_number    = day.day_number,
+            day_title     = day.day_title,
+            activities    = day.activities,
+            meals         = day.meals,
+            accommodation = day.accommodation,
+            destinations  = day.destinations or [],
+            coordinates   = day.coordinates  or [],
+        ))
+
     db.commit()
     db.refresh(tour)
 
-    return {"success": True, "message": "Tour submitted for admin approval.", "id": tour.id, "status": "pending"}
+    return {
+        "success": True,
+        "message": "Tour submitted for admin approval.",
+        "id":      tour.id,
+        "status":  "pending",
+    }
 
 
 @router.put("/tours/{tour_id}", summary="Update a tour")
@@ -332,18 +417,62 @@ async def update_tour(
     db:      Session      = Depends(get_db),
 ):
     tour = _get_tour(tour_id, agency.id, db)
+    submitted = data.dict(exclude_unset=True)
 
-    for field, value in data.dict(exclude_unset=True).items():
-        if hasattr(tour, field):
+    # Only set scalar fields via setattr — never relationship fields.
+    # Assigning plain dicts to a SQLAlchemy relationship raises:
+    #   AttributeError: 'dict' object has no attribute '_sa_instance_state'
+    for field, value in submitted.items():
+        if field in _TOUR_SCALAR_FIELDS and hasattr(tour, field):
             setattr(tour, field, value)
 
-    # Re-submit for approval after edit
     tour.status           = "pending"
     tour.rejection_reason = None
+
+    # Replace destinations if the frontend sent them
+    if "destinations" in submitted:
+        db.query(TourDestination).filter(
+            TourDestination.tour_id == tour_id
+        ).delete(synchronize_session="fetch")
+
+        for d in (data.destinations or []):
+            db.add(TourDestination(
+                tour_id          = tour_id,
+                destination_name = d.destination_name,
+                latitude         = d.latitude,
+                longitude        = d.longitude,
+                visit_order      = d.visit_order  or 0,
+                nights_stay      = d.nights_stay  or 0,
+                description      = d.description,
+                image_url        = d.image_url,
+            ))
+
+    # Replace itinerary days if the frontend sent them
+    if "itinerary_days" in submitted:
+        db.query(TourItinerary).filter(
+            TourItinerary.tour_id == tour_id
+        ).delete(synchronize_session="fetch")
+
+        for day in (data.itinerary_days or []):
+            db.add(TourItinerary(
+                tour_id       = tour_id,
+                day_number    = day.day_number,
+                day_title     = day.day_title,
+                activities    = day.activities,
+                meals         = day.meals,
+                accommodation = day.accommodation,
+                destinations  = day.destinations or [],
+                coordinates   = day.coordinates  or [],
+            ))
+
     db.commit()
     db.refresh(tour)
 
-    return {"success": True, "message": "Tour updated. Waiting for admin approval.", "id": tour.id}
+    return {
+        "success": True,
+        "message": "Tour updated. Waiting for admin approval.",
+        "id":      tour.id,
+    }
 
 
 @router.delete("/tours/{tour_id}", summary="Delete a tour")
@@ -354,18 +483,22 @@ async def delete_tour(
 ):
     tour = _get_tour(tour_id, agency.id, db)
 
-    db.query(TourItinerary).filter(TourItinerary.tour_id == tour_id).delete()
-    db.query(TourDestination).filter(TourDestination.tour_id == tour_id).delete()
-    db.delete(tour)
+    # synchronize_session="fetch" keeps the SQLAlchemy session cache consistent
+    db.query(TourItinerary).filter(
+        TourItinerary.tour_id == tour_id
+    ).delete(synchronize_session="fetch")
+    db.query(TourDestination).filter(
+        TourDestination.tour_id == tour_id
+    ).delete(synchronize_session="fetch")
 
-    agency.tours_count = max(0, (agency.tours_count or 1) - 1)
+    db.delete(tour)
     db.commit()
 
     return {"success": True, "message": "Tour deleted."}
 
 
 # ─────────────────────────────────────────────
-# ITINERARY
+# ITINERARY  (standalone sub-endpoints)
 # ─────────────────────────────────────────────
 
 @router.get("/tours/{tour_id}/itinerary", summary="Get itinerary days")
@@ -374,7 +507,7 @@ async def get_itinerary(
     agency:  TravelAgency = Depends(get_current_agency),
     db:      Session      = Depends(get_db),
 ):
-    _get_tour(tour_id, agency.id, db)  # ownership check
+    _get_tour(tour_id, agency.id, db)
     days = (
         db.query(TourItinerary)
         .filter(TourItinerary.tour_id == tour_id)
@@ -392,7 +525,6 @@ async def add_itinerary_day(
     db:      Session      = Depends(get_db),
 ):
     _get_tour(tour_id, agency.id, db)
-
     day = TourItinerary(
         tour_id       = tour_id,
         day_number    = data.day_number,
@@ -419,10 +551,8 @@ async def update_itinerary_day(
 ):
     _get_tour(tour_id, agency.id, db)
     day = _get_day(day_id, tour_id, db)
-
     for field, value in data.dict(exclude_unset=True).items():
         setattr(day, field, value)
-
     db.commit()
     db.refresh(day)
     return _day_dict(day)
@@ -443,7 +573,7 @@ async def delete_itinerary_day(
 
 
 # ─────────────────────────────────────────────
-# DESTINATIONS
+# DESTINATIONS  (standalone sub-endpoints)
 # ─────────────────────────────────────────────
 
 @router.get("/tours/{tour_id}/destinations", summary="Get tour destinations")
@@ -470,7 +600,6 @@ async def add_destination(
     db:      Session      = Depends(get_db),
 ):
     _get_tour(tour_id, agency.id, db)
-
     dest = TourDestination(
         tour_id          = tour_id,
         destination_name = data.destination_name,
@@ -479,6 +608,7 @@ async def add_destination(
         visit_order      = data.visit_order  or 0,
         nights_stay      = data.nights_stay  or 0,
         description      = data.description,
+        image_url        = data.image_url,
     )
     db.add(dest)
     db.commit()
@@ -495,7 +625,7 @@ async def delete_destination(
 ):
     _get_tour(tour_id, agency.id, db)
     dest = db.query(TourDestination).filter(
-        TourDestination.id == dest_id,
+        TourDestination.id      == dest_id,
         TourDestination.tour_id == tour_id,
     ).first()
     if not dest:
@@ -506,20 +636,31 @@ async def delete_destination(
 
 
 # ─────────────────────────────────────────────
-# INTERNAL HELPERS  (not exposed as endpoints)
+# INTERNAL HELPERS
 # ─────────────────────────────────────────────
 
 def _get_tour(tour_id: int, agency_id: int, db: Session) -> Tour:
-    """Fetch a tour and verify it belongs to this agency."""
-    tour = db.query(Tour).filter(Tour.id == tour_id, Tour.agency_id == agency_id).first()
+    """Fetch a tour (with relationships) and verify ownership."""
+    tour = (
+        db.query(Tour)
+        .options(
+            joinedload(Tour.destinations),
+            joinedload(Tour.itinerary_days),
+        )
+        .filter(Tour.id == tour_id, Tour.agency_id == agency_id)
+        .first()
+    )
     if not tour:
-        raise HTTPException(status_code=404, detail="Tour not found or does not belong to your agency.")
+        raise HTTPException(
+            status_code=404,
+            detail="Tour not found or does not belong to your agency.",
+        )
     return tour
 
 
 def _get_day(day_id: int, tour_id: int, db: Session) -> TourItinerary:
     day = db.query(TourItinerary).filter(
-        TourItinerary.id == day_id,
+        TourItinerary.id      == day_id,
         TourItinerary.tour_id == tour_id,
     ).first()
     if not day:
@@ -572,8 +713,8 @@ def _tour_dict(tour: Tour) -> dict:
         "is_active":         tour.is_active,
         "status":            getattr(tour, "status", "approved"),
         "rejection_reason":  getattr(tour, "rejection_reason", None),
-        "destinations":      [_dest_dict(d) for d in (tour.destinations    or [])],
-        "itinerary_days":    [_day_dict(d)  for d in (tour.itinerary_days  or [])],
+        "destinations":      [_dest_dict(d) for d in (tour.destinations   or [])],
+        "itinerary_days":    [_day_dict(d)  for d in (tour.itinerary_days or [])],
     }
 
 
@@ -601,4 +742,5 @@ def _dest_dict(dest: TourDestination) -> dict:
         "visit_order":      dest.visit_order,
         "nights_stay":      dest.nights_stay,
         "description":      dest.description,
+        "image_url":        getattr(dest, "image_url", None),
     }

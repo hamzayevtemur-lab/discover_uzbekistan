@@ -585,29 +585,148 @@
 
                 <!-- Reviews -->
                 <div id="reviews" class="section">
-                    <h1 class="page-title">Reviews</h1>
+                    <h1 class="page-title">💬 Reviews & Comments</h1>
+
+                    <!-- Stats row -->
+                    <div class="reviews-stats-row" id="reviews-stats-row">
+                        <div class="stat-card" style="border-left-color:#6366f1">
+                            <div class="stat-title">Total Reviews</div>
+                            <div class="stat-value" id="rv-total">—</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color:#f59e0b">
+                            <div class="stat-title">Restaurants</div>
+                            <div class="stat-value" id="rv-restaurant">—</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color:#10b981">
+                            <div class="stat-title">Hotels</div>
+                            <div class="stat-value" id="rv-hotel">—</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color:#3b82f6">
+                            <div class="stat-title">Attractions</div>
+                            <div class="stat-value" id="rv-attraction">—</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color:#8b5cf6">
+                            <div class="stat-title">Agencies</div>
+                            <div class="stat-value" id="rv-agency">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Filter bar -->
+                    <div class="filter-bar-card">
+                        <div class="filter-bar-inner">
+                            <input type="text" id="reviews-search"
+                                placeholder="🔍 Search by place, reviewer, or comment…" oninput="filterReviews()"
+                                class="filter-input filter-input-wide">
+                            <select id="reviews-type-filter" onchange="filterReviews()" class="filter-select">
+                                <option value="">All Types</option>
+                                <option value="restaurant">🍽️ Restaurants</option>
+                                <option value="hotel">🏨 Hotels</option>
+                                <option value="attraction">🏛️ Attractions</option>
+                                <option value="agency">🗺️ Agencies</option>
+                            </select>
+                            <select id="reviews-rating-filter" onchange="filterReviews()" class="filter-select">
+                                <option value="">All Ratings</option>
+                                <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+                                <option value="4">⭐⭐⭐⭐ 4 Stars</option>
+                                <option value="3">⭐⭐⭐ 3 Stars</option>
+                                <option value="2">⭐⭐ 2 Stars</option>
+                                <option value="1">⭐ 1 Star</option>
+                            </select>
+                            <input type="date" id="reviews-date-from" onchange="filterReviews()" class="filter-select"
+                                title="From date">
+                            <input type="date" id="reviews-date-to" onchange="filterReviews()" class="filter-select"
+                                title="To date">
+                            <button onclick="clearReviewFilters()" class="filter-clear-btn">✕ Clear</button>
+                            <button onclick="loadReviews()" class="filter-refresh-btn">↻ Refresh</button>
+                        </div>
+                        <div id="reviews-filter-summary" class="filter-summary"></div>
+                    </div>
+
                     <div class="table-container">
-                        <h2>All Reviews</h2>
-                        <div id="reviews-container"></div>
+                        <div id="reviews-container">
+                            <div class="loading-state">
+                                <div class="loading-spinner"></div>
+                                <p>Loading reviews…</p>
+                            </div>
+                        </div>
+                        <div id="reviews-pagination" class="pagination-bar"></div>
                     </div>
                 </div>
 
                 <!-- Likes -->
                 <div id="likes" class="section">
-                    <h1 class="page-title">Popular Places</h1>
+                    <h1 class="page-title">❤️ Popular Places</h1>
+
+                    <!-- Stats row -->
+                    <div class="reviews-stats-row" id="likes-stats-row">
+                        <div class="stat-card" style="border-left-color:#ef4444">
+                            <div class="stat-title">Total Likes</div>
+                            <div class="stat-value" id="lk-total">—</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color:#f59e0b">
+                            <div class="stat-title">Restaurants</div>
+                            <div class="stat-value" id="lk-restaurant">—</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color:#10b981">
+                            <div class="stat-title">Hotels</div>
+                            <div class="stat-value" id="lk-hotel">—</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color:#3b82f6">
+                            <div class="stat-title">Attractions</div>
+                            <div class="stat-value" id="lk-attraction">—</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color:#8b5cf6">
+                            <div class="stat-title">Agencies</div>
+                            <div class="stat-value" id="lk-agency">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Filter bar -->
+                    <div class="filter-bar-card">
+                        <div class="filter-bar-inner">
+                            <input type="text" id="likes-search" placeholder="🔍 Search by place name…"
+                                oninput="filterLikes()" class="filter-input filter-input-wide">
+                            <select id="likes-type-filter" onchange="filterLikes()" class="filter-select">
+                                <option value="">All Types</option>
+                                <option value="restaurant">🍽️ Restaurants</option>
+                                <option value="hotel">🏨 Hotels</option>
+                                <option value="attraction">🏛️ Attractions</option>
+                                <option value="agency">🗺️ Agencies</option>
+                            </select>
+                            <select id="likes-sort-filter" onchange="filterLikes()" class="filter-select">
+                                <option value="desc">❤️ Most Liked First</option>
+                                <option value="asc">⬇️ Least Liked First</option>
+                                <option value="recent">🕐 Most Recent</option>
+                            </select>
+                            <input type="date" id="likes-date-from" onchange="filterLikes()" class="filter-select"
+                                title="Updated from">
+                            <input type="date" id="likes-date-to" onchange="filterLikes()" class="filter-select"
+                                title="Updated to">
+                            <button onclick="clearLikesFilters()" class="filter-clear-btn">✕ Clear</button>
+                            <button onclick="loadLikes()" class="filter-refresh-btn">↻ Refresh</button>
+                        </div>
+                        <div id="likes-filter-summary" class="filter-summary"></div>
+                    </div>
+
                     <div class="table-container">
-                        <h2>By Likes</h2>
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Place</th>
                                     <th>Type</th>
                                     <th>Likes</th>
-                                    <th>Updated</th>
+                                    <th>Last Updated</th>
                                 </tr>
                             </thead>
-                            <tbody id="likes-table"></tbody>
+                            <tbody id="likes-table">
+                                <tr>
+                                    <td colspan="4" style="text-align:center;padding:2rem;color:#94a3b8;">Loading…</td>
+                                </tr>
+                            </tbody>
                         </table>
+                        <div id="likes-count-info"
+                            style="padding:1rem 1.5rem;color:#6b7280;font-size:0.875rem;border-top:1px solid #f3f4f6;">
+                        </div>
                     </div>
                 </div>
 

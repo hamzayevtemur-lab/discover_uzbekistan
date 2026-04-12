@@ -1,4 +1,3 @@
-
 const API_BASE = 'http://localhost:8000';
 
 let restaurantMap, restaurantMarker;
@@ -26,8 +25,17 @@ function showSection(sectionId) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-    document.getElementById(sectionId).classList.add('active');
-    event.target.classList.add('active');
+    const section = document.getElementById(sectionId);
+    if (section) section.classList.add('active');
+
+    // Find the nav item that triggered this and mark active
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(n => {
+        const onclick = n.getAttribute('onclick') || '';
+        if (onclick.includes(`'${sectionId}'`) || onclick.includes(`"${sectionId}"`)) {
+            n.classList.add('active');
+        }
+    });
 
     if (sectionId === 'dashboard') loadDashboard();
     else if (sectionId === 'partners') loadPartners();
@@ -40,7 +48,6 @@ function showSection(sectionId) {
     else if (sectionId === 'agencies') loadAgencies();
     else if (sectionId === 'platform-analytics') {
         loadPlatformAnalytics();
-
         setInterval(loadRealtimeStats, 30000);
     }
 }
@@ -211,32 +218,89 @@ async function loadPendingApprovals() {
         if (pendingTours.length > 0) {
             html += '<div class="table-container" style="margin-bottom:1.5rem;"><h3 style="padding: 1rem; border-bottom: 1px solid #e5e7eb; margin: 0;">🗺️ Pending Tours (' + pendingTours.length + ')</h3><div style="padding: 1rem;">';
             pendingTours.forEach(t => {
+                const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+                const inclusions = Array.isArray(t.inclusions) ? t.inclusions.join(', ') : (t.inclusions || null);
+                const exclusions = Array.isArray(t.exclusions) ? t.exclusions.join(', ') : (t.exclusions || null);
+                const highlights = Array.isArray(t.highlights) ? t.highlights : [];
+                const itinerary = Array.isArray(t.itinerary) ? t.itinerary : [];
                 html += `
-                            <div style="background:white;padding:1.5rem;margin-bottom:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);display:flex;gap:1.5rem;">
-                                <div style="flex-shrink:0;">
-                                    <img src="${t.image_url || 'https://via.placeholder.com/150x120?text=Tour'}"
-                                         style="width:150px;height:120px;object-fit:cover;border-radius:10px;">
-                                </div>
-                                <div style="flex:1;">
-                                    <h4 style="font-size:1.1rem;margin-bottom:0.3rem;">${t.tour_name}</h4>
-                                    <p style="color:#6b7280;font-size:0.85rem;margin-bottom:0.4rem;">
-                                        Agency: <strong>${t.agency_name}</strong>
-                                    </p>
-                                    <p style="color:#374151;font-size:0.9rem;margin-bottom:0.5rem;">${t.description || 'No description'}</p>
-                                    <div style="font-size:0.85rem;color:#374151;display:flex;flex-wrap:wrap;gap:0.75rem;">
-                                        <span>📅 ${t.duration_days || '—'} days</span>
-                                        <span>💰 ${t.currency || 'USD'} ${t.price || '—'}</span>
-                                        <span>🏃 ${t.difficulty_level || 'Any level'}</span>
-                                        <span>👥 Max ${t.max_group_size || '—'}</span>
-                                        ${t.best_season ? `<span>🌤 ${t.best_season}</span>` : ''}
+                    <div style="background:white;padding:1.5rem;margin-bottom:1.2rem;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.07);border:1px solid #f1f5f9;">
+                        <!-- Header row -->
+                        <div style="display:flex;gap:1.5rem;margin-bottom:1rem;">
+                            <div style="flex-shrink:0;">
+                                <img src="${t.image_url || 'https://via.placeholder.com/160x120?text=Tour'}"
+                                     style="width:160px;height:120px;object-fit:cover;border-radius:10px;border:1px solid #e5e7eb;"
+                                     onerror="this.src='https://via.placeholder.com/160x120?text=No+Image'">
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                                    <div>
+                                        <h4 style="font-size:1.15rem;font-weight:700;color:#1e293b;margin-bottom:0.25rem;">${t.tour_name || t.name || 'Unnamed Tour'}</h4>
+                                        <p style="color:#6366f1;font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;">
+                                            🏢 ${t.agency_name || 'Unknown Agency'}
+                                            ${t.agency_city ? `<span style="color:#94a3b8;font-weight:400;"> · ${t.agency_city}</span>` : ''}
+                                        </p>
                                     </div>
-                                    ${t.rejection_reason ? `<p style="color:#ef4444;font-size:0.85rem;margin-top:0.5rem;">❌ Prev. rejection: ${t.rejection_reason}</p>` : ''}
+                                    <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;">
+                                        <button onclick="approveItem('tour', ${t.id})" style="background:#10b981;color:white;border:none;padding:0.5rem 1.1rem;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;white-space:nowrap;">✅ Approve</button>
+                                        <button onclick="rejectItem('tour', ${t.id})" style="background:white;color:#ef4444;border:1px solid #fecaca;padding:0.5rem 1.1rem;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;white-space:nowrap;">❌ Reject</button>
+                                    </div>
                                 </div>
-                                <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;">
-                                    <button onclick="approveItem('tour', ${t.id})" class="btn-create" style="background:#10b981;padding:0.5rem 1rem;white-space:nowrap;">✅ Approve</button>
-                                    <button onclick="rejectItem('tour', ${t.id})" class="btn-danger" style="padding:0.5rem 1rem;white-space:nowrap;">❌ Reject</button>
+                                <!-- Key metrics chips -->
+                                <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem;">
+                                    ${t.duration_days ? `<span class="tour-chip tour-chip-blue">📅 ${t.duration_days} day${t.duration_days > 1 ? 's' : ''}</span>` : ''}
+                                    ${(t.price || t.price_per_person) ? `<span class="tour-chip tour-chip-green">💰 ${t.currency || 'USD'} ${t.price || t.price_per_person}/person</span>` : ''}
+                                    ${t.difficulty_level ? `<span class="tour-chip tour-chip-orange">🏃 ${t.difficulty_level}</span>` : ''}
+                                    ${t.max_group_size ? `<span class="tour-chip tour-chip-purple">👥 Max ${t.max_group_size} people</span>` : ''}
+                                    ${t.min_age ? `<span class="tour-chip">👶 Min age ${t.min_age}</span>` : ''}
+                                    ${t.best_season ? `<span class="tour-chip">🌤 ${t.best_season}</span>` : ''}
+                                    ${t.tour_type ? `<span class="tour-chip">🏷️ ${t.tour_type}</span>` : ''}
+                                    ${t.languages ? `<span class="tour-chip">🗣 ${Array.isArray(t.languages) ? t.languages.join(', ') : t.languages}</span>` : ''}
                                 </div>
-                            </div>`;
+                                <!-- Dates if available -->
+                                ${(t.start_date || t.end_date) ? `<p style="font-size:0.82rem;color:#374151;">📆 ${fmtDate(t.start_date)} → ${fmtDate(t.end_date)}</p>` : ''}
+                                ${t.meeting_point ? `<p style="font-size:0.82rem;color:#374151;">📍 Meeting: ${t.meeting_point}</p>` : ''}
+                            </div>
+                        </div>
+                        <!-- Description -->
+                        ${t.description ? `<div style="background:#f8fafc;border-radius:8px;padding:0.75rem 1rem;margin-bottom:0.75rem;font-size:0.875rem;color:#374151;line-height:1.6;border-left:3px solid #6366f1;">
+                            <strong style="color:#1e293b;">Description:</strong><br>${t.description}
+                        </div>` : ''}
+                        <!-- Highlights -->
+                        ${highlights.length > 0 ? `<div style="margin-bottom:0.75rem;">
+                            <p style="font-size:0.8rem;font-weight:700;color:#374151;margin-bottom:0.4rem;">✨ Highlights:</p>
+                            <ul style="margin:0;padding-left:1.2rem;font-size:0.82rem;color:#475569;line-height:1.8;">
+                                ${highlights.slice(0, 5).map(h => `<li>${h}</li>`).join('')}
+                                ${highlights.length > 5 ? `<li style="color:#94a3b8;">+${highlights.length - 5} more…</li>` : ''}
+                            </ul>
+                        </div>` : ''}
+                        <!-- Itinerary preview -->
+                        ${itinerary.length > 0 ? `<div style="margin-bottom:0.75rem;">
+                            <p style="font-size:0.8rem;font-weight:700;color:#374151;margin-bottom:0.4rem;">🗓 Itinerary (${itinerary.length} day${itinerary.length > 1 ? 's' : ''}):</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                                ${itinerary.slice(0, 4).map((day, i) => `<span style="background:#eff6ff;color:#1d4ed8;font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;">Day ${i + 1}: ${typeof day === 'string' ? day.substring(0, 40) : (day.title || day.description || 'Activity').substring(0, 40)}${(typeof day === 'string' ? day : (day.title || day.description || '')).length > 40 ? '…' : ''}</span>`).join('')}
+                                ${itinerary.length > 4 ? `<span style="background:#f1f5f9;color:#64748b;font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;">+${itinerary.length - 4} more days</span>` : ''}
+                            </div>
+                        </div>` : ''}
+                        <!-- Inclusions / Exclusions -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.5rem;">
+                            ${inclusions ? `<div style="background:#f0fdf4;border-radius:8px;padding:0.6rem 0.8rem;font-size:0.8rem;">
+                                <strong style="color:#065f46;">✅ Included:</strong>
+                                <p style="color:#374151;margin-top:0.2rem;line-height:1.5;">${inclusions}</p>
+                            </div>` : ''}
+                            ${exclusions ? `<div style="background:#fef2f2;border-radius:8px;padding:0.6rem 0.8rem;font-size:0.8rem;">
+                                <strong style="color:#991b1b;">❌ Not Included:</strong>
+                                <p style="color:#374151;margin-top:0.2rem;line-height:1.5;">${exclusions}</p>
+                            </div>` : ''}
+                        </div>
+                        <!-- Contact & submission info -->
+                        <div style="display:flex;flex-wrap:wrap;gap:1rem;font-size:0.78rem;color:#94a3b8;border-top:1px solid #f1f5f9;padding-top:0.6rem;margin-top:0.5rem;">
+                            ${t.contact_email || t.agency_email ? `<span>📧 ${t.contact_email || t.agency_email}</span>` : ''}
+                            ${t.contact_phone || t.agency_phone ? `<span>📞 ${t.contact_phone || t.agency_phone}</span>` : ''}
+                            ${t.created_at ? `<span>📤 Submitted ${fmtDate(t.created_at)}</span>` : ''}
+                            ${t.rejection_reason ? `<span style="color:#ef4444;font-weight:600;">⚠️ Prev. rejection: ${t.rejection_reason}</span>` : ''}
+                        </div>
+                    </div>`;
             });
             html += '</div></div>';
         }
@@ -329,38 +393,224 @@ async function loadAttractions() {
     }
 }
 
+let _allReviews = [];
+let _reviewsPage = 1;
+const REVIEWS_PER_PAGE = 15;
+
 async function loadReviews() {
     try {
+        document.getElementById('reviews-container').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Loading reviews…</p></div>';
         const reviews = await fetchAPI('/admin/reviews');
-        const html = reviews.map(r => `
-                    <div style="background: #f9fafb; padding: 1rem; margin-bottom: 1rem; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <div><strong>${r.place_name}</strong> (${r.type})<div style="color: #6b7280;">by ${r.reviewer_name} • ${'⭐'.repeat(r.rating)}</div><p style="margin-top: 0.5rem; font-style: italic;">${r.comment}</p></div>
-                            <button class="btn-danger" onclick="deleteReview('${r.type}', ${r.id})">Delete</button>
-                        </div>
-                    </div>
-                `).join('');
-        document.getElementById('reviews-container').innerHTML = html || '<p style="text-align: center; color: #6b7280;">No reviews</p>';
+        _allReviews = reviews || [];
+        updateReviewsStats(_allReviews);
+        _reviewsPage = 1;
+        filterReviews();
     } catch (error) {
+        document.getElementById('reviews-container').innerHTML = '<p style="color:#ef4444;text-align:center;padding:2rem;">Failed to load reviews</p>';
         console.error('Load error:', error);
     }
 }
 
+function updateReviewsStats(reviews) {
+    document.getElementById('rv-total').textContent = reviews.length;
+    const types = { restaurant: 0, hotel: 0, attraction: 0, agency: 0 };
+    reviews.forEach(r => { const t = (r.type || '').toLowerCase(); if (types[t] !== undefined) types[t]++; });
+    document.getElementById('rv-restaurant').textContent = types.restaurant;
+    document.getElementById('rv-hotel').textContent = types.hotel;
+    document.getElementById('rv-attraction').textContent = types.attraction;
+    document.getElementById('rv-agency').textContent = types.agency;
+}
+
+function filterReviews() {
+    const search = (document.getElementById('reviews-search')?.value || '').toLowerCase();
+    const type = document.getElementById('reviews-type-filter')?.value || '';
+    const rating = document.getElementById('reviews-rating-filter')?.value || '';
+    const dateFrom = document.getElementById('reviews-date-from')?.value;
+    const dateTo = document.getElementById('reviews-date-to')?.value;
+
+    let filtered = _allReviews.filter(r => {
+        if (type && (r.type || '').toLowerCase() !== type) return false;
+        if (rating && String(r.rating) !== rating) return false;
+        if (search) {
+            const haystack = `${r.place_name} ${r.reviewer_name} ${r.comment}`.toLowerCase();
+            if (!haystack.includes(search)) return false;
+        }
+        if (dateFrom && r.created_at) { if (new Date(r.created_at) < new Date(dateFrom)) return false; }
+        if (dateTo && r.created_at) { if (new Date(r.created_at) > new Date(dateTo + 'T23:59:59')) return false; }
+        return true;
+    });
+
+    _reviewsPage = 1;
+    renderReviews(filtered);
+
+    const summary = document.getElementById('reviews-filter-summary');
+    if (filtered.length !== _allReviews.length) {
+        summary.textContent = `Showing ${filtered.length} of ${_allReviews.length} reviews`;
+        summary.style.display = 'block';
+    } else {
+        summary.style.display = 'none';
+    }
+}
+
+function renderReviews(filtered) {
+    const start = (_reviewsPage - 1) * REVIEWS_PER_PAGE;
+    const page = filtered.slice(start, start + REVIEWS_PER_PAGE);
+
+    const typeEmoji = { restaurant: '🍽️', hotel: '🏨', attraction: '🏛️', agency: '🗺️' };
+    const typeColor = { restaurant: '#f59e0b', hotel: '#10b981', attraction: '#3b82f6', agency: '#8b5cf6' };
+
+    if (!filtered.length) {
+        document.getElementById('reviews-container').innerHTML = '<div class="empty-state"><div style="font-size:2.5rem;margin-bottom:0.75rem;">💬</div><p>No reviews match the current filters.</p></div>';
+        document.getElementById('reviews-pagination').innerHTML = '';
+        return;
+    }
+
+    const html = page.map(r => {
+        const t = (r.type || '').toLowerCase();
+        const stars = '⭐'.repeat(Math.min(5, Math.max(1, r.rating || 0)));
+        const emptyStars = '☆'.repeat(5 - Math.min(5, Math.max(1, r.rating || 0)));
+        const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+        return `
+        <div class="review-card">
+            <div class="review-card-left">
+                <div class="review-type-badge" style="background:${(typeColor[t] || '#6366f1')}15;color:${typeColor[t] || '#6366f1'};border:1px solid ${typeColor[t] || '#6366f1'}40;">
+                    ${typeEmoji[t] || '📍'} ${r.type || 'Other'}
+                </div>
+                <div class="review-place">${r.place_name || '—'}</div>
+                <div class="review-reviewer">by <strong>${r.reviewer_name || 'Anonymous'}</strong></div>
+                ${date ? `<div class="review-date">${date}</div>` : ''}
+            </div>
+            <div class="review-card-center">
+                <div class="review-stars">${stars}<span style="color:#d1d5db">${emptyStars}</span> <span style="font-size:0.78rem;color:#6b7280;margin-left:0.25rem;">${r.rating}/5</span></div>
+                <p class="review-comment">${r.comment || '<em style="color:#94a3b8">No comment</em>'}</p>
+            </div>
+            <div class="review-card-right">
+                <button class="btn-danger btn-small" onclick="deleteReview('${r.type}', ${r.id})" title="Delete review">🗑️</button>
+            </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('reviews-container').innerHTML = html;
+
+    // Pagination
+    const totalPages = Math.ceil(filtered.length / REVIEWS_PER_PAGE);
+    if (totalPages > 1) {
+        let pag = `<div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-top:1px solid #f3f4f6;">
+            <span style="color:#6b7280;font-size:0.875rem;">Showing ${start + 1}–${Math.min(start + REVIEWS_PER_PAGE, filtered.length)} of ${filtered.length}</span>
+            <div style="display:flex;gap:0.4rem;">
+                <button class="btn-secondary" onclick="_reviewsPage=${_reviewsPage - 1};filterReviews()" ${_reviewsPage === 1 ? 'disabled' : ''}>← Prev</button>`;
+        for (let i = 1; i <= Math.min(totalPages, 7); i++) {
+            pag += `<button class="btn-secondary" style="${i === _reviewsPage ? 'background:#6366f1;color:white;' : ''}" onclick="_reviewsPage=${i};filterReviews()">${i}</button>`;
+        }
+        pag += `<button class="btn-secondary" onclick="_reviewsPage=${_reviewsPage + 1};filterReviews()" ${_reviewsPage === totalPages ? 'disabled' : ''}>Next →</button>
+            </div></div>`;
+        document.getElementById('reviews-pagination').innerHTML = pag;
+    } else {
+        document.getElementById('reviews-pagination').innerHTML = `<div style="padding:0.75rem 1.5rem;color:#6b7280;font-size:0.875rem;border-top:1px solid #f3f4f6;">${filtered.length} review${filtered.length !== 1 ? 's' : ''}</div>`;
+    }
+}
+
+function clearReviewFilters() {
+    document.getElementById('reviews-search').value = '';
+    document.getElementById('reviews-type-filter').value = '';
+    document.getElementById('reviews-rating-filter').value = '';
+    document.getElementById('reviews-date-from').value = '';
+    document.getElementById('reviews-date-to').value = '';
+    filterReviews();
+}
+
+let _allLikes = [];
+
 async function loadLikes() {
     try {
+        document.getElementById('likes-table').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94a3b8;">Loading…</td></tr>';
         const likes = await fetchAPI('/admin/likes');
-        const html = likes.map(l => `
-                    <tr>
-                        <td><strong>${l.place_name}</strong></td>
-                        <td><span class="badge badge-secondary">${l.place_type}</span></td>
-                        <td style="color: #ef4444; font-weight: 700;">❤️ ${l.like_count}</td>
-                        <td>${new Date(l.updated_at).toLocaleDateString()}</td>
-                    </tr>
-                `).join('');
-        document.getElementById('likes-table').innerHTML = html;
+        _allLikes = likes || [];
+        updateLikesStats(_allLikes);
+        filterLikes();
     } catch (error) {
+        document.getElementById('likes-table').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#ef4444;">Failed to load</td></tr>';
         console.error('Load error:', error);
     }
+}
+
+function updateLikesStats(likes) {
+    const total = likes.reduce((s, l) => s + (l.like_count || 0), 0);
+    document.getElementById('lk-total').textContent = total.toLocaleString();
+    const types = { restaurant: 0, hotel: 0, attraction: 0, agency: 0 };
+    likes.forEach(l => { const t = (l.place_type || '').toLowerCase(); if (types[t] !== undefined) types[t] += (l.like_count || 0); });
+    document.getElementById('lk-restaurant').textContent = types.restaurant.toLocaleString();
+    document.getElementById('lk-hotel').textContent = types.hotel.toLocaleString();
+    document.getElementById('lk-attraction').textContent = types.attraction.toLocaleString();
+    document.getElementById('lk-agency').textContent = types.agency.toLocaleString();
+}
+
+function filterLikes() {
+    const search = (document.getElementById('likes-search')?.value || '').toLowerCase();
+    const type = document.getElementById('likes-type-filter')?.value || '';
+    const sort = document.getElementById('likes-sort-filter')?.value || 'desc';
+    const dateFrom = document.getElementById('likes-date-from')?.value;
+    const dateTo = document.getElementById('likes-date-to')?.value;
+
+    let filtered = _allLikes.filter(l => {
+        if (type && (l.place_type || '').toLowerCase() !== type) return false;
+        if (search && !(l.place_name || '').toLowerCase().includes(search)) return false;
+        if (dateFrom && l.updated_at) { if (new Date(l.updated_at) < new Date(dateFrom)) return false; }
+        if (dateTo && l.updated_at) { if (new Date(l.updated_at) > new Date(dateTo + 'T23:59:59')) return false; }
+        return true;
+    });
+
+    if (sort === 'asc') filtered.sort((a, b) => (a.like_count || 0) - (b.like_count || 0));
+    else if (sort === 'recent') filtered.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+    else filtered.sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
+
+    const typeEmoji = { restaurant: '🍽️', hotel: '🏨', attraction: '🏛️', agency: '🗺️' };
+    const typeColor = { restaurant: '#f59e0b', hotel: '#10b981', attraction: '#3b82f6', agency: '#8b5cf6' };
+
+    const html = filtered.map((l, i) => {
+        const t = (l.place_type || '').toLowerCase();
+        const date = l.updated_at ? new Date(l.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+        const rank = sort === 'asc' ? filtered.length - i : (sort === 'desc' ? i + 1 : null);
+        return `<tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    ${rank !== null && rank <= 3 ? `<span style="font-size:1.1rem;">${['🥇', '🥈', '🥉'][rank - 1]}</span>` : (rank ? `<span style="color:#94a3b8;font-size:0.8rem;min-width:1.2rem;">#${rank}</span>` : '')}
+                    <strong>${l.place_name || '—'}</strong>
+                </div>
+            </td>
+            <td><span class="badge" style="background:${(typeColor[t] || '#6366f1')}15;color:${typeColor[t] || '#6366f1'};border:1px solid ${(typeColor[t] || '#6366f1')}30;">${typeEmoji[t] || '📍'} ${l.place_type || 'Other'}</span></td>
+            <td>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <div style="background:#fee2e2;border-radius:20px;padding:0.25rem 0.75rem;display:inline-flex;align-items:center;gap:0.35rem;">
+                        <span style="color:#ef4444;font-size:1rem;">❤️</span>
+                        <strong style="color:#991b1b;">${(l.like_count || 0).toLocaleString()}</strong>
+                    </div>
+                    ${l.like_count > 100 ? '<span style="font-size:0.75rem;color:#f59e0b;font-weight:600;">🔥 Hot</span>' : ''}
+                </div>
+            </td>
+            <td style="color:#6b7280;font-size:0.875rem;">${date}</td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('likes-table').innerHTML = html || '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94a3b8;">No results match the filters.</td></tr>';
+
+    const infoEl = document.getElementById('likes-count-info');
+    if (infoEl) infoEl.textContent = filtered.length !== _allLikes.length ? `Showing ${filtered.length} of ${_allLikes.length} entries` : `${filtered.length} entries`;
+
+    const summary = document.getElementById('likes-filter-summary');
+    if (filtered.length !== _allLikes.length) {
+        summary.textContent = `Showing ${filtered.length} of ${_allLikes.length} places`;
+        summary.style.display = 'block';
+    } else { summary.style.display = 'none'; }
+}
+
+function clearLikesFilters() {
+    document.getElementById('likes-search').value = '';
+    document.getElementById('likes-type-filter').value = '';
+    document.getElementById('likes-sort-filter').value = 'desc';
+    document.getElementById('likes-date-from').value = '';
+    document.getElementById('likes-date-to').value = '';
+    filterLikes();
 }
 
 async function uploadImage(input, type) {
@@ -2707,4 +2957,3 @@ function paCardHtml(a) {
         }
     } catch (e) { }
 })();
-
