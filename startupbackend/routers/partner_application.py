@@ -87,6 +87,7 @@ class PartnerApplication(Base):
     # Plan chosen on signup form
     plan             = Column(String(50))    # 1month / 3months / 6months / 1year
     plan_amount      = Column(Integer)       # price in USD
+    
 
     # Email verification
     is_email_verified    = Column(Boolean, default=False)
@@ -252,6 +253,7 @@ class SignupRequest(BaseModel):
     description:      Optional[str] = None
     plan:             Optional[str] = None
     plan_amount:      Optional[int] = None
+    payment_proof_url: Optional[str] = None
     # Travel-agency-specific extras
     agency_type:      Optional[str] = None
     years_experience: Optional[int] = None
@@ -303,8 +305,11 @@ async def signup(data: SignupRequest, bg: BackgroundTasks, db: Session = Depends
         city             = data.city,
         website          = data.website,
         description      = data.description,
+        
         plan             = data.plan,
         plan_amount      = data.plan_amount,
+        payment_proof_url = data.payment_proof_url,
+        
         agency_type      = data.agency_type,
         years_experience = data.years_experience,
         languages        = data.languages,
@@ -617,8 +622,15 @@ def _to_dict(a: PartnerApplication) -> dict:
         "city":             a.city,
         "website":          a.website,
         "description":      a.description,
+        
         "plan":             a.plan,
         "plan_amount":      a.plan_amount,
+        "plan_start_date":  a.plan_start_date.isoformat()  if a.plan_start_date  else None,
+        "plan_end_date":    a.plan_end_date.isoformat()    if a.plan_end_date    else None,
+        "grace_period_end": a.grace_period_end.isoformat() if a.grace_period_end else None,
+        "plan_status":      a.plan_status,
+        "payment_proof_url": a.payment_proof_url,
+        
         "agency_type":      a.agency_type,
         "years_experience": a.years_experience,
         "languages":        a.languages,

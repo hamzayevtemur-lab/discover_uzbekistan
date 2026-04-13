@@ -2241,86 +2241,89 @@ async function uploadAgencyImage(input) {
 }
 
 // ══════════════════════════════════════════════════
+// Partner Applications — module-level (no IIFE) so
+// paSetStatus() works from HTML onclick before fetch
+// ══════════════════════════════════════════════════
 
-(function () {   // wrap in IIFE to avoid variable collisions with existing admin.js
+const PA_API = 'http://localhost:8000';
+let _paApps = [];
+let _paStatus = 'all';
 
-    const PA_API = 'http://localhost:8000';
-    let _paApps = [];
-    let _paStatus = 'all';
+const PA_TYPE_LABELS = {
+    restaurant: '🍽️ Restaurant',
+    hotel: '🏨 Hotel',
+    travel_agency: '🌍 Travel Agency',
+    attraction: '🏛️ Attraction',
+    multiple: '📦 Multiple',
+};
+const PA_STATUS_LABELS = {
+    pending: 'Pending Email',
+    email_verified: 'Awaiting Review',
+    approved: 'Approved',
+    rejected: 'Rejected',
+};
 
-    const TYPE_LABELS = {
-        restaurant: '🍽️ Restaurant',
-        hotel: '🏨 Hotel',
-        travel_agency: '🌍 Travel Agency',
-        attraction: '🏛️ Attraction',
-        multiple: '📦 Multiple',
-    };
-    const STATUS_LABELS = {
-        pending: 'Pending Email',
-        email_verified: 'Awaiting Review',
-        approved: 'Approved',
-        rejected: 'Rejected',
-    };
-
-    window.loadPartnerApplications = async function () {
-        try {
-            const resp = await fetch(`${PA_API}/api/partner-applications/admin/list`);
-            _paApps = await resp.json();
-            paUpdateCounts();
-            paRender();
-        } catch (e) {
-            document.getElementById('paGrid').innerHTML =
-                `<div class="pa-empty"><div class="ei">⚠️</div><p>Failed to load. Is the server running?</p></div>`;
-        }
-    };
-
-    function paUpdateCounts() {
-        const c = { all: _paApps.length, pending: 0, email_verified: 0, approved: 0, rejected: 0 };
-        _paApps.forEach(a => { if (c[a.status] !== undefined) c[a.status]++ });
-        Object.entries(c).forEach(([k, v]) => {
-            const el = document.getElementById(`pcnt-${k}`);
-            if (el) el.textContent = v;
-        });
-    }
-
-    window.paSetStatus = function (s, btn) {
-        _paStatus = s;
-        document.querySelectorAll('.pa-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+async function loadPartnerApplications() {
+    try {
+        const resp = await fetch(`${PA_API}/api/partner-applications/admin/list`);
+        _paApps = await resp.json();
+        paUpdateCounts();
         paRender();
-    };
-
-    window.paRender = function () {
-        const typeFilter = document.getElementById('paTypeFilter')?.value || '';
-        let list = _paStatus === 'all' ? _paApps : _paApps.filter(a => a.status === _paStatus);
-        if (typeFilter) list = list.filter(a => a.business_type === typeFilter);
+    } catch (e) {
         const grid = document.getElementById('paGrid');
-        if (!list.length) {
-            grid.innerHTML = `<div class="pa-empty"><div class="ei">📭</div><p>No applications match this filter.</p></div>`;
-            return;
-        }
-        grid.innerHTML = list.map(paCardHtml).join('');
-    };
+        if (grid) grid.innerHTML =
+            `<div class="pa-empty"><div class="ei">⚠️</div><p>Failed to load. Is the server running?</p></div>`;
+    }
+}
 
-    function paCardHtml(a) {
-        const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-        const chips = [
-            a.city ? `<span class="pa-chip">📍 ${a.city}</span>` : '',
-            a.address ? `<span class="pa-chip">🏢 ${a.address}</span>` : '',
-            a.plan ? `<span class="pa-chip">💳 ${a.plan} ($${a.plan_amount || 0})</span>` : '',
-            a.languages ? `<span class="pa-chip">🗣️ ${a.languages}</span>` : '',
-            a.years_experience ? `<span class="pa-chip">📅 ${a.years_experience} yrs</span>` : '',
-            a.website ? `<span class="pa-chip"><a href="${a.website}" target="_blank">🌐 website</a></span>` : '',
-        ].filter(Boolean).join('');
+function paUpdateCounts() {
+    const c = { all: _paApps.length, pending: 0, email_verified: 0, approved: 0, rejected: 0 };
+    _paApps.forEach(a => { if (c[a.status] !== undefined) c[a.status]++; });
+    Object.entries(c).forEach(([k, v]) => {
+        const el = document.getElementById(`pcnt-${k}`);
+        if (el) el.textContent = v;
+    });
+}
 
-        const canApprove = a.status === 'email_verified';
-        const canReject = ['pending', 'email_verified'].includes(a.status);
+function paSetStatus(s, btn) {
+    _paStatus = s;
+    document.querySelectorAll('.pa-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    paRender();
+}
 
-        return `
+function paRender() {
+    const typeFilter = document.getElementById('paTypeFilter')?.value || '';
+    let list = _paStatus === 'all' ? _paApps : _paApps.filter(a => a.status === _paStatus);
+    if (typeFilter) list = list.filter(a => a.business_type === typeFilter);
+    const grid = document.getElementById('paGrid');
+    if (!grid) return;
+    if (!list.length) {
+        grid.innerHTML = `<div class="pa-empty"><div class="ei">📭</div><p>No applications match this filter.</p></div>`;
+        return;
+    }
+    grid.innerHTML = list.map(paCardHtml).join('');
+}
+
+function paCardHtml(a) {
+    const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    const chips = [
+        a.city ? `<span class="pa-chip">📍 ${a.city}</span>` : '',
+        a.address ? `<span class="pa-chip">🏢 ${a.address}</span>` : '',
+        a.plan ? `<span class="pa-chip">💳 ${a.plan} ($${a.plan_amount || 0})</span>` : '',
+        a.languages ? `<span class="pa-chip">🗣️ ${a.languages}</span>` : '',
+        a.years_experience ? `<span class="pa-chip">📅 ${a.years_experience} yrs</span>` : '',
+        a.website ? `<span class="pa-chip"><a href="${a.website}" target="_blank">🌐 website</a></span>` : '',
+    ].filter(Boolean).join('');
+
+    const canApprove = a.status === 'email_verified';
+    const canReject = ['pending', 'email_verified'].includes(a.status);
+
+    return `
   <div class="pa-card" id="pacard-${a.id}">
     <div class="pa-head">
       <div>
-        <div class="pa-biz-type">${TYPE_LABELS[a.business_type] || a.business_type}</div>
+        <div class="pa-biz-type">${PA_TYPE_LABELS[a.business_type] || a.business_type}</div>
         <div class="pa-name">${a.business_name}</div>
         <div class="pa-contact">
           👤 ${a.contact_name} &nbsp;·&nbsp;
@@ -2328,13 +2331,13 @@ async function uploadAgencyImage(input) {
           ${a.phone ? ` &nbsp;·&nbsp; 📞 ${a.phone}` : ''}
         </div>
       </div>
-      <span class="pa-badge pb-${a.status}">${STATUS_LABELS[a.status] || a.status}</span>
+      <span class="pa-badge pb-${a.status}">${PA_STATUS_LABELS[a.status] || a.status}</span>
     </div>
     ${chips ? `<div class="pa-meta">${chips}</div>` : ''}
     ${a.description ? `<div class="pa-desc">${a.description}</div>` : ''}
     <div class="pa-actions">
       ${canApprove ? `<button class="pa-btn-approve" onclick="paApprove(${a.id})">✓ Approve & Send Credentials</button>` : ''}
-      ${canReject ? `<button class="pa-btn-reject"  onclick="paShowReject(${a.id})">✕ Reject</button>` : ''}
+      ${canReject ? `<button class="pa-btn-reject" onclick="paShowReject(${a.id})">✕ Reject</button>` : ''}
       ${a.status === 'approved' ? `
         <span style="font-size:.76rem;color:#64748b">✅ Credentials sent to ${a.email}</span>
         <button class="pa-btn-approve" style="background:#0891b2;" onclick="paResend(${a.id})">↺ Resend Credentials</button>` : ''}
@@ -2345,61 +2348,78 @@ async function uploadAgencyImage(input) {
     <div class="pa-reject-row" id="prr-${a.id}">
       <input type="text" id="prreason-${a.id}" placeholder="Reason for rejection (optional)"/>
       <button class="pa-btn-confirm" onclick="paConfirmReject(${a.id})">Confirm Reject</button>
-      <button class="pa-btn-cancel"  onclick="paHideReject(${a.id})">Cancel</button>
+      <button class="pa-btn-cancel" onclick="paHideReject(${a.id})">Cancel</button>
     </div>
   </div>`;
-    }
+}
 
-    window.paResend = async function (id) {
-        if (!confirm('Generate a new password and resend credentials by email?')) return;
-        try {
-            const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/resend-credentials`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await resp.json();
-            if (!resp.ok) throw new Error(data.detail || 'Resend failed.');
-            alert('✅ ' + data.message);
-        } catch (e) { alert('❌ ' + e.message); }
-    };
+async function paResend(id) {
+    if (!confirm('Generate a new password and resend credentials by email?')) return;
+    try {
+        const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/resend-credentials`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Resend failed.');
+        alert('✅ ' + data.message);
+    } catch (e) { alert('❌ ' + e.message); }
+}
 
-    window.paApprove = async function (id) {
-        if (!confirm('Approve this application and send login credentials by email?')) return;
-        try {
-            const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/approve`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
-            });
-            const data = await resp.json();
-            if (!resp.ok) throw new Error(data.detail || 'Approval failed.');
-            alert('✅ ' + data.message);
-            loadPartnerApplications();
-        } catch (e) { alert('❌ ' + e.message) }
-    };
-
-    window.paShowReject = id => document.getElementById(`prr-${id}`).classList.add('show');
-    window.paHideReject = id => { document.getElementById(`prr-${id}`).classList.remove('show'); document.getElementById(`prreason-${id}`).value = ''; };
-
-    window.paConfirmReject = async function (id) {
-        const reason = document.getElementById(`prreason-${id}`).value.trim();
-        try {
-            const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/reject`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: reason || null })
-            });
-            const data = await resp.json();
-            if (!resp.ok) throw new Error(data.detail || 'Rejection failed.');
-            loadPartnerApplications();
-        } catch (e) { alert('❌ ' + e.message) }
-    };
-
-    // Auto-load
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadPartnerApplications);
-    } else {
+async function paApprove(id) {
+    if (!confirm('Approve this application and send login credentials by email?')) return;
+    try {
+        const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/approve`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Approval failed.');
+        alert('✅ ' + data.message);
         loadPartnerApplications();
-    }
+    } catch (e) { alert('❌ ' + e.message); }
+}
 
-})();
-// end IIFE
+function paShowReject(id) { document.getElementById(`prr-${id}`).classList.add('show'); }
+function paHideReject(id) {
+    document.getElementById(`prr-${id}`).classList.remove('show');
+    document.getElementById(`prreason-${id}`).value = '';
+}
+
+async function paConfirmReject(id) {
+    const reason = document.getElementById(`prreason-${id}`).value.trim();
+    try {
+        const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/reject`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: reason || null })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Rejection failed.');
+        loadPartnerApplications();
+    } catch (e) { alert('❌ ' + e.message); }
+}
+
+// Auto-load on page ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadPartnerApplications);
+} else {
+    loadPartnerApplications();
+}
+
+// ── Platform Analytics ─────────────────────────────
+// The analytics section embeds a Looker Studio iframe — no JS fetch needed.
+// This function just ensures the section is visible; the iframe loads itself.
+function loadPlatformAnalytics() {
+    // Nothing to fetch — Looker Studio iframe is self-loading.
+    // Errors from lookerstudio.google.com/embed/getSchema are a Google-side
+    // 400 on their schema endpoint and do not affect the dashboard display.
+}
+
+function loadRealtimeStats() {
+    // Placeholder — hook into your own realtime endpoint if needed.
+    // Called every 30s from showSection('platform-analytics').
+}
+
+
+
+// (old IIFE removed — all partner application functions are now module-level above)
 
 let _galleryAttractionId = null;
 

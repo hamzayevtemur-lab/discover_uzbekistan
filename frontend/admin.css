@@ -96,7 +96,7 @@ body {
     background: white;
     border-radius: 16px;
     padding: 2rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
     margin-bottom: 1.5rem;
 }
 
@@ -382,7 +382,7 @@ body {
     background: white;
     border-radius: 16px;
     padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     border-left: 4px solid;
     transition: transform 0.2s;
 }
@@ -414,12 +414,12 @@ body {
 
 /* ── Filter bar ─────────────────────────────────────── */
 .filter-bar-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.97);
     border-radius: 14px;
     padding: 1rem 1.25rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     margin-bottom: 1.25rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .filter-bar-inner {
@@ -1143,15 +1143,16 @@ body {
 }
 
 .pa-card {
-    background: #fafbff;
+    background: #ffffff;
     border: 1px solid #dde3f0;
     border-radius: 12px;
     overflow: hidden;
-    transition: box-shadow .2s
+    transition: box-shadow .2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .pa-card:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, .07)
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12)
 }
 
 .pa-head {
