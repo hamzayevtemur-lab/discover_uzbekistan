@@ -1,1410 +1,1548 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hotel Partner Dashboard - Discover Uzbekistan</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-      :root {
-        --primary: #4f46e5;
-        --primary-light: #6366f1;
-        --primary-dark: #3730a3;
-        --success: #059669;
-        --success-light: #d1fae5;
-        --warning: #d97706;
-        --warning-light: #fef3c7;
-        --danger: #dc2626;
-        --danger-light: #fee2e2;
-        --bg: #f8f7ff;
-        --surface: #ffffff;
-        --border: #e5e3ff;
-        --text: #1e1b4b;
-        --muted: #6b7280;
-        --shadow: 0 4px 24px rgba(79, 70, 229, 0.08);
-        --shadow-lg: 0 12px 40px rgba(79, 70, 229, 0.15);
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotel Partner Dashboard - Discover Uzbekistan</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #3730a3;
+      --success: #059669;
+      --success-light: #d1fae5;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --bg: #f8f7ff;
+      --surface: #fff;
+      --border: #e5e3ff;
+      --text: #1e1b4b;
+      --muted: #6b7280;
+      --shadow: 0 4px 24px rgba(79, 70, 229, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .header {
+      background: var(--surface);
+      border-bottom: 2px solid var(--border);
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      height: 64px;
+      display: flex;
+      align-items: center;
+    }
+
+    .header-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .partner-email {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .logout-btn {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .layout {
+      display: flex;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 2rem;
+      gap: 2rem;
+    }
+
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-sticky {
+      position: sticky;
+      top: 84px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--muted);
+      transition: all 0.2s;
+      margin-bottom: 0.25rem;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .nav-item:hover {
+      background: var(--border);
+      color: var(--primary);
+    }
+
+    .nav-item.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .nav-section {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0.5rem 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      transition: all 0.2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .stat-card.warn {
+      border-color: #fcd34d;
+      background: #fffbeb;
+    }
+
+    .stat-card.danger {
+      border-color: #fca5a5;
+      background: #fff5f5;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .stat-value.warn {
+      color: var(--warning);
+    }
+
+    .stat-value.danger {
+      color: var(--danger);
+    }
+
+    .sub-banner {
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .sub-banner.warn {
+      background: var(--warning-light);
+      color: var(--warning);
+      border: 2px solid #fcd34d;
+    }
+
+    .sub-banner.danger {
+      background: var(--danger-light);
+      color: var(--danger);
+      border: 2px solid #fca5a5;
+    }
+
+    .sub-banner button {
+      padding: 0.4rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .status-bar {
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .status-bar.pending {
+      background: var(--warning-light);
+      border-left: 4px solid #fcd34d;
+      color: var(--warning);
+    }
+
+    .status-bar.rejected {
+      background: var(--danger-light);
+      border-left: 4px solid #fca5a5;
+      color: var(--danger);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group.full {
+      grid-column: 1/-1;
+    }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .optional {
+      font-weight: 400;
+      color: var(--muted);
+      text-transform: none;
+      font-size: 0.72rem;
+    }
+
+    input,
+    textarea,
+    select {
+      padding: 0.7rem 0.9rem;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      transition: all 0.2s;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .btn {
+      padding: 0.65rem 1.5rem;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-danger {
+      background: var(--danger-light);
+      color: var(--danger);
+      border: 2px solid #fca5a5;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-success {
+      background: var(--success-light);
+      color: var(--success);
+      border: 2px solid #6ee7b7;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.8rem;
+      font-size: 0.8rem;
+    }
+
+    .img-preview {
+      max-width: 100%;
+      max-height: 160px;
+      border-radius: 10px;
+      margin-top: 0.5rem;
+      display: none;
+      object-fit: cover;
+      border: 2px solid var(--border);
+    }
+
+    .img-preview.show {
+      display: block;
+    }
+
+    /* ROOMS */
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .room-card {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .room-card.pending {
+      border-color: #fcd34d;
+    }
+
+    .room-card.rejected {
+      border-color: #fca5a5;
+    }
+
+    .room-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .room-body {
+      padding: 1rem;
+    }
+
+    .room-name {
+      font-weight: 800;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .room-price {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    /* REVIEWS */
+    .review-card {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .review-card.pending {
+      border-color: #fcd34d;
+      background: #fffbeb;
+    }
+
+    .review-card.rejected {
+      border-color: #fca5a5;
+      background: #fff5f5;
+    }
+
+    .review-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .reviewer-name {
+      font-weight: 700;
+    }
+
+    .review-stars {
+      color: #fbbf24;
+    }
+
+    .review-date {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .review-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .badge-success {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .badge-warning {
+      background: var(--warning-light);
+      color: var(--warning);
+    }
+
+    .badge-danger {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 27, 75, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 20px;
+      max-width: 560px;
+      width: 95%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(79, 70, 229, 0.25);
+    }
+
+    .modal-head {
+      padding: 1.5rem 2rem;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .modal-close:hover {
+      color: var(--danger);
+    }
+
+    .modal-body {
+      padding: 1.75rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-foot {
+      padding: 1.25rem 2rem;
+      border-top: 2px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    /* RENEWAL */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .plan-card {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .plan-card:hover {
+      border-color: var(--primary);
+    }
+
+    .plan-card.selected {
+      border-color: var(--primary);
+      background: #ede9fe;
+    }
+
+    .plan-name {
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .plan-price {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 0.25rem 0;
+    }
+
+    .payment-box {
+      background: #eff6ff;
+      border: 2px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .payment-box h4 {
+      color: #1d4ed8;
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .payment-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #bfdbfe;
+    }
+
+    .payment-row:last-child {
+      border-bottom: none;
+    }
+
+    .payment-row span:first-child {
+      color: var(--muted);
+    }
+
+    .payment-row span:last-child {
+      font-weight: 700;
+    }
+
+    #hotel-map {
+      height: 300px;
+      border-radius: 12px;
+      margin-top: 1rem;
+      border: 2px solid var(--border);
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .toast {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      animation: slideIn 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      max-width: 320px;
+    }
+
+    .toast-success {
+      background: var(--success-light);
+      color: var(--success);
+      border: 2px solid #6ee7b7;
+    }
+
+    .toast-error {
+      background: var(--danger-light);
+      color: var(--danger);
+      border: 2px solid #fca5a5;
+    }
+
+    .toast-info {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 2px solid #93c5fd;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(110%);
+        opacity: 0;
       }
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
       }
-      body {
-        font-family: "Plus Jakarta Sans", sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        min-height: 100vh;
-      }
-      .header {
-        background: var(--surface);
-        border-bottom: 2px solid var(--border);
-        padding: 0 2rem;
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        height: 64px;
-        display: flex;
-        align-items: center;
-      }
-      .header-inner {
-        max-width: 1300px;
-        margin: 0 auto;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .logo {
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: var(--primary);
-      }
-      .partner-email {
-        font-size: 0.85rem;
-        color: var(--muted);
-        font-weight: 500;
-      }
-      .logout-btn {
-        background: var(--bg);
-        border: 2px solid var(--border);
-        color: var(--text);
-        padding: 0.4rem 1rem;
-        border-radius: 8px;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 0.85rem;
-        font-weight: 600;
-        transition: all 0.2s;
-      }
-      .logout-btn:hover {
-        border-color: var(--danger);
-        color: var(--danger);
-      }
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-error {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    .alert-success {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    @media(max-width:900px) {
       .layout {
-        display: flex;
-        max-width: 1300px;
-        margin: 0 auto;
-        padding: 2rem;
-        gap: 2rem;
+        flex-direction: column;
+        padding: 1rem;
       }
+
       .sidebar {
-        width: 220px;
-        flex-shrink: 0;
+        width: 100%;
       }
+
       .sidebar-sticky {
-        position: sticky;
-        top: 84px;
-      }
-      .nav-item {
+        position: static;
         display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: var(--muted);
-        transition: all 0.2s;
-        margin-bottom: 0.25rem;
-        border: none;
-        background: none;
-        width: 100%;
-        text-align: left;
-        font-family: inherit;
-      }
-      .nav-item:hover {
-        background: var(--border);
-        color: var(--primary);
-      }
-      .nav-item.active {
-        background: var(--primary);
-        color: white;
-      }
-      .main {
-        flex: 1;
-        min-width: 0;
-      }
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
-      .stat-card {
-        background: var(--surface);
-        border: 2px solid var(--border);
-        border-radius: 14px;
-        padding: 1.25rem;
-        transition: all 0.2s;
-      }
-      .stat-card:hover {
-        border-color: var(--primary-light);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow);
-      }
-      .stat-label {
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        margin-bottom: 0.5rem;
-      }
-      .stat-value {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: var(--primary);
-      }
-      .section {
-        display: none;
-      }
-      .section.active {
-        display: block;
-      }
-      .card {
-        background: var(--surface);
-        border: 2px solid var(--border);
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-      }
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.75rem;
-      }
-      .card-title {
-        font-size: 1.2rem;
-        font-weight: 800;
-      }
-      .status-bar {
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-      .status-bar.pending {
-        background: var(--warning-light);
-        color: var(--warning);
-        border-left: 4px solid #fcd34d;
-      }
-      .status-bar.rejected {
-        background: var(--danger-light);
-        color: var(--danger);
-        border-left: 4px solid #fca5a5;
-      }
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.25rem;
-      }
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-      }
-      .form-group.full {
-        grid-column: 1/-1;
-      }
-      label {
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--text);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-      .required {
-        color: var(--danger);
-      }
-      input,
-      textarea,
-      select {
-        padding: 0.7rem 0.9rem;
-        border: 2px solid var(--border);
-        border-radius: 10px;
-        font-size: 0.95rem;
-        font-family: inherit;
-        color: var(--text);
-        background: var(--bg);
-        transition: all 0.2s;
-      }
-      input:focus,
-      textarea:focus,
-      select:focus {
-        outline: none;
-        border-color: var(--primary);
-        background: white;
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-      }
-      textarea {
-        min-height: 100px;
-        resize: vertical;
-      }
-      .btn {
-        padding: 0.65rem 1.5rem;
-        border: none;
-        border-radius: 10px;
-        font-family: inherit;
-        font-weight: 700;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-      }
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-      .btn-primary {
-        background: var(--primary);
-        color: white;
-      }
-      .btn-primary:hover:not(:disabled) {
-        background: var(--primary-dark);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-      }
-      .btn-secondary {
-        background: var(--bg);
-        border: 2px solid var(--border);
-        color: var(--text);
-      }
-      .btn-secondary:hover:not(:disabled) {
-        border-color: var(--primary);
-        color: var(--primary);
-      }
-      .btn-danger {
-        background: var(--danger-light);
-        color: var(--danger);
-        border: 2px solid #fca5a5;
-      }
-      .btn-danger:hover:not(:disabled) {
-        background: var(--danger);
-        color: white;
-      }
-      .btn-edit {
-        background: #dbeafe;
-        color: #1d4ed8;
-        border: 2px solid #93c5fd;
-      }
-      .btn-edit:hover:not(:disabled) {
-        background: #1d4ed8;
-        color: white;
-      }
-      .btn-sm {
-        padding: 0.4rem 0.9rem;
-        font-size: 0.8rem;
-      }
-      .rooms-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.5rem;
-      }
-      .room-card {
-        background: var(--surface);
-        border: 2px solid var(--border);
-        border-radius: 16px;
-        overflow: hidden;
-        transition: all 0.25s;
-      }
-      .room-card:hover {
-        border-color: var(--primary-light);
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-3px);
-      }
-      .room-card.pending {
-        border-color: #fcd34d;
-        background: #fffbeb;
-      }
-      .room-card.rejected {
-        border-color: #fca5a5;
-        background: #fff5f5;
-      }
-      .room-img {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-      }
-      .room-img-placeholder {
-        width: 100%;
-        height: 180px;
-        background: linear-gradient(135deg, var(--border) 0%, #e0e7ff 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-      }
-      .room-body {
-        padding: 1.25rem;
-      }
-      .room-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 0.75rem;
-      }
-      .room-name {
-        font-size: 1.05rem;
-        font-weight: 800;
-      }
-      .room-price {
-        font-size: 0.95rem;
-        font-weight: 700;
-        background: var(--primary);
-        color: white;
-        padding: 0.2rem 0.6rem;
-        border-radius: 6px;
-        white-space: nowrap;
-      }
-      .room-meta {
-        font-size: 0.82rem;
-        color: var(--muted);
-        margin-bottom: 0.4rem;
-      }
-      .room-desc {
-        font-size: 0.85rem;
-        color: var(--muted);
-        margin-bottom: 1rem;
-        line-height: 1.5;
-      }
-      .room-badges {
-        display: flex;
-        gap: 0.4rem;
+        gap: 0.5rem;
         flex-wrap: wrap;
-        margin-bottom: 1rem;
       }
-      .room-actions {
-        display: flex;
-        gap: 0.5rem;
+
+      .nav-item {
+        width: auto;
       }
-      .pending-banner {
-        background: var(--warning-light);
-        border: 1px solid #fcd34d;
-        border-radius: 8px;
-        padding: 0.6rem 0.9rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--warning);
-        margin-bottom: 0.75rem;
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-      }
-      .rejection-banner {
-        background: var(--danger-light);
-        border: 1px solid #fca5a5;
-        border-radius: 8px;
-        padding: 0.6rem 0.9rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--danger);
-        margin-bottom: 0.75rem;
-      }
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.2rem 0.6rem;
-        border-radius: 20px;
-        font-size: 0.72rem;
-        font-weight: 700;
-      }
-      .badge-success {
-        background: var(--success-light);
-        color: var(--success);
-      }
-      .badge-warning {
-        background: var(--warning-light);
-        color: var(--warning);
-      }
-      .badge-danger {
-        background: var(--danger-light);
-        color: var(--danger);
-      }
-      #map {
-        height: 380px;
-        border-radius: 12px;
-        margin-top: 1rem;
-        border: 2px solid var(--border);
-      }
-      .modal {
+
+      .nav-section {
         display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(30, 27, 75, 0.5);
-        backdrop-filter: blur(4px);
-        z-index: 2000;
-        align-items: center;
-        justify-content: center;
       }
-      .modal.active {
-        display: flex;
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
-      .modal-box {
-        background: white;
-        border-radius: 20px;
-        max-width: 560px;
-        width: 95%;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 24px 80px rgba(79, 70, 229, 0.25);
+
+      .form-grid {
+        grid-template-columns: 1fr;
       }
-      .modal-head {
-        padding: 1.5rem 2rem;
-        border-bottom: 2px solid var(--border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .modal-title {
-        font-size: 1.2rem;
-        font-weight: 800;
-      }
-      .modal-close {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        color: var(--muted);
-        cursor: pointer;
-        line-height: 1;
-      }
-      .modal-close:hover {
-        color: var(--danger);
-      }
-      .modal-body {
-        padding: 1.75rem 2rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-      .modal-foot {
-        padding: 1.25rem 2rem;
-        border-top: 2px solid var(--border);
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-      }
-      .img-preview {
-        max-width: 100%;
-        max-height: 180px;
-        border-radius: 10px;
-        margin-top: 0.5rem;
-        display: none;
-        object-fit: cover;
-      }
-      .img-preview.show {
-        display: block;
-      }
-      .toast-container {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-      .toast {
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        box-shadow: var(--shadow-lg);
-        animation: slideIn 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        max-width: 340px;
-      }
-      .toast-success {
-        background: var(--success-light);
-        color: var(--success);
-        border: 2px solid #6ee7b7;
-      }
-      .toast-error {
-        background: var(--danger-light);
-        color: var(--danger);
-        border: 2px solid #fca5a5;
-      }
-      .toast-info {
-        background: #dbeafe;
-        color: #1d4ed8;
-        border: 2px solid #93c5fd;
-      }
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-      .empty-state {
-        text-align: center;
-        padding: 3rem;
-        color: var(--muted);
-        grid-column: 1/-1;
-      }
-      .empty-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-      }
-      @media (max-width: 900px) {
-        .layout {
-          flex-direction: column;
-          padding: 1rem;
-        }
-        .sidebar {
-          width: 100%;
-        }
-        .sidebar-sticky {
-          position: static;
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-        }
-        .nav-item {
-          width: auto;
-        }
-        .stats-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .form-grid {
-          grid-template-columns: 1fr;
-        }
-        .rooms-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <header class="header">
-      <div class="header-inner">
-        <div class="logo">
-          🏨 <span id="hotelNameHeader">Hotel Partner Portal</span>
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">🏨 <span id="hotelNameHeader">Hotel Partner Portal</span></div>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <span class="partner-email" id="partnerEmail">—</span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-sticky">
+        <div class="nav-section">Overview</div>
+        <button class="nav-item active" onclick="showSection('dashboard',this)">
+          <i class="fas fa-chart-bar" style="width:18px;text-align:center"></i> Dashboard
+        </button>
+        <div class="nav-section">Hotel</div>
+        <button class="nav-item" onclick="showSection('info',this)">
+          <i class="fas fa-hotel" style="width:18px;text-align:center"></i> Hotel Info
+        </button>
+        <button class="nav-item" onclick="showSection('rooms',this)">
+          <i class="fas fa-bed" style="width:18px;text-align:center"></i> Rooms
+        </button>
+        <button class="nav-item" onclick="showSection('location',this)">
+          <i class="fas fa-map-marker-alt" style="width:18px;text-align:center"></i> Location
+        </button>
+        <div class="nav-section">Feedback</div>
+        <button class="nav-item" onclick="showSection('reviews',this)">
+          <i class="fas fa-star" style="width:18px;text-align:center"></i> Reviews
+        </button>
+        <div class="nav-section">Account</div>
+        <button class="nav-item" onclick="showSection('subscription',this)">
+          <i class="fas fa-credit-card" style="width:18px;text-align:center"></i> Subscription
+        </button>
+        <button class="nav-item" onclick="showSection('password',this)">
+          <i class="fas fa-lock" style="width:18px;text-align:center"></i> Change Password
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Rating</div>
+          <div class="stat-value" id="statRating">—</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 1rem">
-          <span class="partner-email" id="partnerEmail">—</span>
-          <button class="logout-btn" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> Logout
-          </button>
+        <div class="stat-card">
+          <div class="stat-label">Total Reviews</div>
+          <div class="stat-value" id="statReviews">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rooms</div>
+          <div class="stat-value" id="statRooms">—</div>
+        </div>
+        <div class="stat-card" id="statSubCard">
+          <div class="stat-label">Days Left</div>
+          <div class="stat-value" id="statDays">—</div>
         </div>
       </div>
-    </header>
 
-    <div class="layout">
-      <aside class="sidebar">
-        <div class="sidebar-sticky">
-          <button class="nav-item active" onclick="showSection('info', this)">
-            <i class="fas fa-hotel" style="width: 18px; text-align: center"></i>
-            Hotel Info
-          </button>
-          <button class="nav-item" onclick="showSection('rooms', this)">
-            <i class="fas fa-bed" style="width: 18px; text-align: center"></i>
-            Rooms
-          </button>
-          <button class="nav-item" onclick="showSection('location', this)">
-            <i
-              class="fas fa-map-marker-alt"
-              style="width: 18px; text-align: center"
-            ></i>
-            Location
-          </button>
-          <button class="nav-item" onclick="showSection('analytics', this)">
-            <span style="width: 18px; text-align: center; display: inline-block"
-              >📊</span
-            >
-            Analytics
-          </button>
-        </div>
-      </aside>
+      <div id="subBanner" style="display:none;"></div>
 
-      <main class="main">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Total Rooms</div>
-            <div class="stat-value" id="statRooms">—</div>
+      <!-- DASHBOARD -->
+      <div id="section-dashboard" class="section active">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📊 Dashboard</h2>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Rating</div>
-            <div class="stat-value" id="statRating">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Reviews</div>
-            <div class="stat-value" id="statReviews">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Status</div>
-            <div class="stat-value" id="statStatus">—</div>
-          </div>
-        </div>
-
-        <!-- HOTEL INFO -->
-        <div id="section-info" class="section active">
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">Hotel Information</h2>
+          <div id="dashContent">
+            <div class="empty-state">
+              <div class="empty-icon">⏳</div>
+              <p>Loading…</p>
             </div>
-            <div id="hotelStatusBar"></div>
-            <form id="hotelForm">
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Hotel Name <span class="required">*</span></label
-                  ><input
-                    type="text"
-                    id="hName"
-                    required
-                    placeholder="Grand Palace Hotel"
-                  />
-                </div>
-                <div class="form-group">
-                  <label>Hotel Type <span class="required">*</span></label>
-                  <select id="hType" required>
-                    <option value="">Select type…</option>
-                    <option>5 Star Hotel</option>
-                    <option>4 Star Hotel</option>
-                    <option>3 Star Hotel</option>
-                    <option>Boutique Hotel</option>
-                    <option>Resort</option>
-                    <option>Guesthouse</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Phone <span class="required">*</span></label
-                  ><input
-                    type="tel"
-                    id="hPhone"
-                    placeholder="+998 90 123 4567"
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label>Website</label
-                  ><input
-                    type="url"
-                    id="hWebsite"
-                    placeholder="https://yourhotel.com"
-                  />
-                </div>
-                <div class="form-group full">
-                  <label>Description <span class="required">*</span></label
-                  ><textarea
-                    id="hDesc"
-                    placeholder="Describe your hotel…"
-                    required
-                  ></textarea>
-                </div>
-                <div class="form-group">
-                  <label>Special Offer</label
-                  ><input
-                    type="text"
-                    id="hOffer"
-                    placeholder="e.g., 20% off weekends"
-                  />
-                </div>
-                <div class="form-group">
-                  <label>Opening Hours</label
-                  ><input type="text" id="hHours" placeholder="24/7" />
-                </div>
-                <div class="form-group full">
-                  <label>Hotel Photo</label>
-                  <input
-                    type="file"
-                    id="hImageFile"
-                    accept="image/*"
-                    onchange="uploadImage(this, 'hImageUrl', 'hImagePreview')"
-                  />
-                  <input
-                    type="text"
-                    id="hImageUrl"
-                    placeholder="Or paste image URL"
-                    style="margin-top: 0.5rem"
-                  />
-                  <img id="hImagePreview" class="img-preview" alt="Preview" />
-                </div>
-              </div>
-              <div style="display: flex; gap: 0.75rem; margin-top: 1.75rem">
-                <button type="submit" class="btn btn-primary">
-                  <i class="fas fa-save"></i> Save Changes
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  onclick="loadHotelData()"
-                >
-                  <i class="fas fa-undo"></i> Reset
-                </button>
-              </div>
-            </form>
           </div>
         </div>
+      </div>
 
-        <!-- ROOMS -->
-        <div id="section-rooms" class="section">
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">Room Management</h2>
-              <button class="btn btn-primary" onclick="openRoomModal()">
-                <i class="fas fa-plus"></i> Add Room
-              </button>
-            </div>
-            <div id="roomsGrid" class="rooms-grid"></div>
+      <!-- HOTEL INFO -->
+      <div id="section-info" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Hotel Info</h2>
           </div>
-        </div>
-
-        <!-- LOCATION -->
-        <div id="section-location" class="section">
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">Location & Address</h2>
-            </div>
-            <form id="locationForm">
-              <div class="form-grid">
-                <div class="form-group full">
-                  <label>Address <span class="required">*</span></label
-                  ><input
-                    type="text"
-                    id="lAddress"
-                    placeholder="Street, City"
-                    required
-                  />
-                </div>
-                <div class="form-group">
-                  <label>Latitude</label
-                  ><input
-                    type="number"
-                    id="lLat"
-                    step="0.000001"
-                    placeholder="41.311081"
-                  />
-                </div>
-                <div class="form-group">
-                  <label>Longitude</label
-                  ><input
-                    type="number"
-                    id="lLng"
-                    step="0.000001"
-                    placeholder="69.240562"
-                  />
-                </div>
-                <div class="form-group full">
-                  <label>Click map to set pin</label>
-                  <div id="map"></div>
-                </div>
-              </div>
-              <div style="margin-top: 1.75rem">
-                <button type="submit" class="btn btn-primary">
-                  <i class="fas fa-save"></i> Save Location
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- ANALYTICS -->
-        <div id="section-analytics" class="section">
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">📊 Analytics</h2>
-            </div>
-            <div
-              style="
-                background: #dbeafe;
-                padding: 1.25rem;
-                border-radius: 12px;
-                margin-bottom: 1.5rem;
-                border-left: 4px solid #3b82f6;
-              "
-            >
-              <strong style="color: #1e40af"
-                >Real-Time Analytics via Google</strong
-              >
-              <p style="color: #1e40af; font-size: 0.9rem; margin-top: 0.25rem">
-                Stats appear automatically after your page receives visitors.
-              </p>
-            </div>
-            <iframe
-              src="https://lookerstudio.google.com/embed/reporting/41a6d4c1-aed0-4ce8-a814-a1716b0acfee/page/kIV1C"
-              width="100%"
-              height="900"
-              frameborder="0"
-              style="border-radius: 12px; border: 2px solid var(--border)"
-            ></iframe>
-          </div>
-        </div>
-      </main>
-    </div>
-
-    <!-- ROOM MODAL -->
-    <div id="roomModal" class="modal">
-      <div class="modal-box">
-        <div class="modal-head">
-          <h2 class="modal-title" id="roomModalTitle">Add New Room</h2>
-          <button class="modal-close" onclick="closeRoomModal()">×</button>
-        </div>
-        <form id="roomForm">
-          <div class="modal-body">
-            <input type="hidden" id="editRoomId" />
-            <div class="form-group">
-              <label>Room Type <span class="required">*</span></label>
-              <select id="rType" required>
-                <option value="">Select type…</option>
-                <option>Single Room</option>
-                <option>Double Room</option>
-                <option>Twin Room</option>
-                <option>Deluxe Room</option>
-                <option>Suite</option>
-                <option>Family Room</option>
+          <div id="infoStatusBar"></div>
+          <div class="alert alert-error" id="infoAlert"></div>
+          <div class="form-grid">
+            <div class="form-group"><label>Hotel Name</label><input type="text" id="hName"></div>
+            <div class="form-group"><label>Hotel Type</label>
+              <select id="hType">
+                <option value="">Select…</option>
+                <option>Budget</option>
+                <option>3-Star</option>
+                <option>4-Star</option>
+                <option>5-Star</option>
+                <option>Boutique</option>
+                <option>Guesthouse</option>
               </select>
             </div>
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Price / Night <span class="required">*</span></label
-                ><input
-                  type="number"
-                  id="rPrice"
-                  step="0.01"
-                  min="0"
-                  required
-                  placeholder="0.00"
-                />
-              </div>
-              <div class="form-group">
-                <label>Capacity <span class="required">*</span></label
-                ><input
-                  type="number"
-                  id="rCapacity"
-                  min="1"
-                  required
-                  placeholder="2"
-                />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Description</label
-              ><textarea
-                id="rDesc"
-                placeholder="Describe this room…"
-              ></textarea>
-            </div>
-            <div class="form-group">
-              <label>Room Photo</label>
-              <input
-                type="file"
-                id="rImageFile"
-                accept="image/*"
-                onchange="uploadImage(this, 'rImageUrl', 'rImagePreview')"
-              />
-              <input
-                type="text"
-                id="rImageUrl"
-                placeholder="Or paste image URL"
-                style="margin-top: 0.5rem"
-              />
-              <img id="rImagePreview" class="img-preview" alt="Preview" />
-            </div>
-            <div class="form-group">
-              <label
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: 0.5rem;
-                  text-transform: none;
-                  letter-spacing: 0;
-                  font-size: 0.9rem;
-                "
-              >
-                <input
-                  type="checkbox"
-                  id="rAvailable"
-                  checked
-                  style="width: auto"
-                />
-                Available for Booking
-              </label>
+            <div class="form-group"><label>Phone</label><input type="tel" id="hPhone"></div>
+            <div class="form-group"><label>Website <span class="optional">(optional)</span></label><input type="url"
+                id="hWebsite"></div>
+            <div class="form-group"><label>Opening Hours</label><input type="text" id="hHours"
+                placeholder="24/7 or 08:00–22:00"></div>
+            <div class="form-group"><label>Special Offer <span class="optional">(optional)</span></label><input
+                type="text" id="hOffer" placeholder="Free breakfast, Free parking…"></div>
+            <div class="form-group"><label>Instagram <span class="optional">(optional)</span></label><input type="text"
+                id="hInstagram" placeholder="@yourhotel"></div>
+            <div class="form-group"><label>Telegram <span class="optional">(optional)</span></label><input type="text"
+                id="hTelegram" placeholder="@yourtelegram"></div>
+            <div class="form-group full"><label>Description</label><textarea id="hDescription"></textarea></div>
+            <div class="form-group full">
+              <label>Hotel Photo</label>
+              <input type="file" id="hImageFile" accept="image/*" onchange="uploadHotelImage(this)">
+              <input type="text" id="hImageUrl" placeholder="Or paste image URL" style="margin-top:0.5rem;"
+                oninput="showPreview(this.value,'hImagePreview')">
+              <img id="hImagePreview" class="img-preview" alt="Preview">
             </div>
           </div>
-          <div class="modal-foot">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              onclick="closeRoomModal()"
-            >
-              Cancel
-            </button>
-            <button type="submit" class="btn btn-primary" id="roomSubmitBtn">
-              Save Room
-            </button>
+          <div style="display:flex;gap:0.75rem;margin-top:1.75rem;">
+            <button class="btn btn-primary" onclick="saveInfo()"><i class="fas fa-save"></i> Save Changes</button>
+            <button class="btn btn-secondary" onclick="loadInfo()"><i class="fas fa-undo"></i> Reset</button>
           </div>
-        </form>
+        </div>
+      </div>
+
+      <!-- ROOMS -->
+      <div id="section-rooms" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Room Management</h2>
+            <button class="btn btn-primary btn-sm" onclick="openRoomModal()">+ Add Room</button>
+          </div>
+          <div class="rooms-grid" id="roomsGrid">
+            <div class="empty-state">
+              <div class="empty-icon">⏳</div>
+              <p>Loading…</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOCATION -->
+      <div id="section-location" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Location</h2>
+          </div>
+          <div class="form-grid">
+            <div class="form-group full"><label>Address</label><input type="text" id="hAddress"></div>
+            <div class="form-group"><label>Latitude</label><input type="number" id="hLat" step="0.000001"></div>
+            <div class="form-group"><label>Longitude</label><input type="number" id="hLng" step="0.000001"></div>
+          </div>
+          <div id="hotel-map"></div>
+          <div style="margin-top:1rem;">
+            <button class="btn btn-primary" onclick="saveLocation()"><i class="fas fa-map-marker-alt"></i> Save
+              Location</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div id="section-reviews" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Guest Reviews</h2>
+            <div style="display:flex;gap:0.5rem;">
+              <button class="btn btn-primary btn-sm" id="rfAll" onclick="filterReviews('all',this)">All</button>
+              <button class="btn btn-secondary btn-sm" id="rfPending" onclick="filterReviews('pending',this)">⏳
+                Pending</button>
+              <button class="btn btn-secondary btn-sm" id="rfApproved" onclick="filterReviews('approved',this)">✅
+                Approved</button>
+            </div>
+          </div>
+          <div id="reviewsList">
+            <div class="empty-state">
+              <div class="empty-icon">⭐</div>
+              <p>Loading…</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBSCRIPTION -->
+      <div id="section-subscription" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">💳 Subscription</h2>
+          </div>
+          <div id="subDetails">
+            <div class="empty-state">
+              <div class="empty-icon">⏳</div>
+              <p>Loading…</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASSWORD -->
+      <div id="section-password" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🔒 Change Password</h2>
+          </div>
+          <div class="alert alert-error" id="pwAlert"></div>
+          <div class="alert alert-success" id="pwSuccess"></div>
+          <div style="max-width:400px;display:flex;flex-direction:column;gap:1rem;">
+            <div class="form-group"><label>Current Password</label><input type="password" id="pwCurrent"></div>
+            <div class="form-group"><label>New Password</label><input type="password" id="pwNew" minlength="8"></div>
+            <div class="form-group"><label>Confirm New Password</label><input type="password" id="pwConfirm"></div>
+            <button class="btn btn-primary" onclick="changePassword()"><i class="fas fa-lock"></i> Change
+              Password</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ROOM MODAL -->
+  <div id="roomModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 class="modal-title" id="roomModalTitle">Add Room</h2>
+        <button class="modal-close" onclick="closeRoomModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="roomId">
+        <div class="form-group"><label>Room Type</label><input type="text" id="roomType"
+            placeholder="Standard, Deluxe, Suite…"></div>
+        <div class="form-grid" style="gap:1rem;">
+          <div class="form-group"><label>Price per Night ($)</label><input type="number" id="roomPrice" min="0"
+              step="0.01"></div>
+          <div class="form-group"><label>Capacity (guests)</label><input type="number" id="roomCapacity" min="1"></div>
+        </div>
+        <div class="form-group"><label>Description</label><textarea id="roomDesc" style="min-height:70px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Photo</label>
+          <input type="file" id="roomImageFile" accept="image/*" onchange="uploadRoomImage(this)">
+          <input type="text" id="roomImageUrl" placeholder="Or paste image URL" style="margin-top:0.5rem;">
+          <img id="roomImagePreview" class="img-preview" alt="Preview">
+        </div>
+        <div class="form-group" style="flex-direction:row;align-items:center;gap:0.75rem;">
+          <input type="checkbox" id="roomAvailable" checked style="width:20px;height:20px;border-radius:4px;">
+          <label style="text-transform:none;letter-spacing:0;">Room is available</label>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-secondary" onclick="closeRoomModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveRoom()">Save Room</button>
       </div>
     </div>
+  </div>
 
-    <div class="toast-container" id="toastContainer"></div>
+  <!-- RENEWAL MODAL -->
+  <div id="renewalModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 class="modal-title">💳 Renew Plan</h2>
+        <button class="modal-close" onclick="closeRenewalModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9rem;">Choose a plan and pay to the card below, then upload your
+          screenshot.</p>
+        <div class="plan-grid">
+          <div class="plan-card" id="hplan-1month" onclick="selectPlan('1month',20)">
+            <div class="plan-name">1 Month</div>
+            <div class="plan-price">$20</div>
+          </div>
+          <div class="plan-card" id="hplan-3months" onclick="selectPlan('3months',50)">
+            <div class="plan-name">3 Months</div>
+            <div class="plan-price">$50</div>
+          </div>
+          <div class="plan-card" id="hplan-6months" onclick="selectPlan('6months',110)">
+            <div class="plan-name">6 Months</div>
+            <div class="plan-price">$110</div>
+          </div>
+          <div class="plan-card" id="hplan-1year" onclick="selectPlan('1year',220)">
+            <div class="plan-name">1 Year</div>
+            <div class="plan-price">$220</div>
+          </div>
+        </div>
+        <div class="payment-box">
+          <h4>💳 Payment Details</h4>
+          <div class="payment-row"><span>Card</span><span id="payCard">Loading…</span></div>
+          <div class="payment-row"><span>Amount</span><span id="payAmount">Select a plan</span></div>
+        </div>
+        <div class="form-group">
+          <label>Payment Screenshot</label>
+          <input type="file" id="renewProofFile" accept="image/*" onchange="uploadRenewalProof(this)">
+          <img id="renewProofPreview" class="img-preview" alt="Proof">
+        </div>
+        <input type="hidden" id="renewProofUrl">
+        <div class="alert alert-error" id="renewalAlert"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-secondary" onclick="closeRenewalModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitRenewal()">Submit Request</button>
+      </div>
+    </div>
+  </div>
 
-    <script>
-      const API = "http://localhost:8000";
-      let hotelId = null;
-      let map = null,
-        marker = null;
+  <div class="toast-container" id="toastContainer"></div>
 
-      function getToken() {
-        return localStorage.getItem("partner_token");
-      }
+  <script>
+    const API = 'http://localhost:8000';
+    let hotelId = null, partnerEmail = null;
+    let hMap = null, hMarker = null;
+    let allReviews = [], reviewFilter = 'all';
+    let selectedRenewalPlan = null;
 
-      function authHeaders() {
-        return {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        };
-      }
+    function getToken() { return localStorage.getItem('partner_token'); }
+    function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }; }
+    function authFD() { return { 'Authorization': `Bearer ${getToken()}` }; }
 
-      function authHeadersFormData() {
-        return { Authorization: `Bearer ${getToken()}` };
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      hotelId = params.get('id') || localStorage.getItem('hotel_id');
+      partnerEmail = localStorage.getItem('partner_email');
+      if (!getToken() || !hotelId) { window.location.href = '/partner-login.html'; return; }
+      document.getElementById('partnerEmail').textContent = partnerEmail || '';
+      initMap();
+      loadDashboard();
+      loadSubscription();
+    });
 
-      document.addEventListener("DOMContentLoaded", () => {
-        checkAuth();
-        loadHotelData();
-        initMap();
-      });
+    function logout() {
+      if (!confirm('Logout?')) return;
+      ['partner_token', 'hotel_id', 'partner_email', 'partner_type', 'partner_name', 'partner_record_id']
+        .forEach(k => localStorage.removeItem(k));
+      window.location.href = '/partner-login.html';
+    }
 
-      function checkAuth() {
-        const params = new URLSearchParams(window.location.search);
-        hotelId = params.get("id") || localStorage.getItem("hotel_id");
-        const email = localStorage.getItem("partner_email");
-        if (!getToken() || !hotelId) {
-          window.location.href = "/partner-login.html";
-          return;
+    async function api(method, path, body) {
+      const opts = { method, headers: authHeaders() };
+      if (body !== undefined) opts.body = JSON.stringify(body);
+      const r = await fetch(API + path, opts);
+      if (r.status === 401 || r.status === 403) { window.location.href = '/partner-login.html'; return; }
+      if (!r.ok) { const t = await r.json(); throw new Error(t.detail || 'Request failed'); }
+      return method === 'DELETE' ? null : r.json();
+    }
+
+    function showSection(name, btn) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.getElementById(`section-${name}`).classList.add('active');
+      if (btn) btn.classList.add('active');
+      if (name === 'dashboard') loadDashboard();
+      if (name === 'info') loadInfo();
+      if (name === 'rooms') loadRooms();
+      if (name === 'location') { loadLocation(); setTimeout(() => hMap?.invalidateSize(), 100); }
+      if (name === 'reviews') loadReviews();
+      if (name === 'subscription') loadSubscription();
+    }
+
+    async function loadDashboard() {
+      try {
+        const hotel = await api('GET', `/hotels/${hotelId}/partner`);
+        document.getElementById('hotelNameHeader').textContent = hotel.name || 'Hotel Portal';
+        document.getElementById('statRating').textContent = hotel.rating?.toFixed(1) || '0.0';
+        document.getElementById('statReviews').textContent = hotel.review_count ?? '0';
+        document.getElementById('statRooms').textContent = hotel.rooms?.length ?? '0';
+
+        const reviews = await api('GET', `/hotels/${hotelId}/reviews`);
+        const pending = reviews.filter(r => (r.status || 'approved') === 'pending').length;
+        document.getElementById('dashContent').innerHTML = pending > 0
+          ? `<div style="background:var(--warning-light);border-left:4px solid #fcd34d;border-radius:8px;padding:1rem;font-weight:600;color:var(--warning);">
+               ⚠️ You have <strong>${pending}</strong> pending review${pending > 1 ? 's' : ''} waiting for approval.
+               <button class="btn btn-secondary btn-sm" style="margin-left:1rem;" onclick="showSection('reviews',document.querySelector('[onclick*=reviews]'))">Review them →</button></div>`
+          : `<div style="background:var(--success-light);border-radius:8px;padding:1rem;font-weight:600;color:var(--success);">✅ No pending reviews!</div>`;
+
+        const sb = hotel.status || 'approved';
+        if (sb !== 'approved') {
+          document.getElementById('dashContent').innerHTML +=
+            `<div class="status-bar ${sb}" style="margin-top:1rem;">${sb === 'pending' ? '⏳ Hotel profile pending admin approval.' : '❌ Hotel was rejected. Update your info and save.'}</div>`;
         }
-        document.getElementById("partnerEmail").textContent = email || "";
-      }
+      } catch (e) { console.error(e); }
+    }
 
-      function logout() {
-        if (!confirm("Logout?")) return;
-        [
-          "partner_token",
-          "hotel_id",
-          "partner_email",
-          "partner_type",
-          "partner_name",
-          "partner_record_id",
-          "restaurant_id",
-        ].forEach((k) => localStorage.removeItem(k));
-        window.location.href = "/partner-login.html";
-      }
+    async function loadInfo() {
+      try {
+        const hotel = await api('GET', `/hotels/${hotelId}/partner`);
+        document.getElementById('hName').value = hotel.name || '';
+        document.getElementById('hType').value = hotel.type || '';
+        document.getElementById('hPhone').value = hotel.phone || '';
+        document.getElementById('hWebsite').value = hotel.website || '';
+        document.getElementById('hHours').value = hotel.opening_hours || '';
+        document.getElementById('hOffer').value = hotel.offer || '';
+        document.getElementById('hDescription').value = hotel.description || '';
+        document.getElementById('hImageUrl').value = hotel.image_url || '';
+        document.getElementById('hInstagram').value = hotel.instagram || '';
+        document.getElementById('hTelegram').value = hotel.telegram || '';
+        if (hotel.image_url) showPreview(hotel.image_url, 'hImagePreview');
 
-      async function loadHotelData() {
-        try {
-          // Use partner endpoint — returns this hotel with ALL room statuses
-          const res = await fetch(`${API}/hotels/${hotelId}/partner`, {
-            headers: authHeaders(),
-          });
+        const bar = document.getElementById('infoStatusBar');
+        const status = hotel.status || 'approved';
+        if (status === 'pending') bar.innerHTML = `<div class="status-bar pending">⏳ Profile pending admin approval.</div>`;
+        else if (status === 'rejected') bar.innerHTML = `<div class="status-bar rejected">❌ Profile rejected. Update and save to resubmit.</div>`;
+        else bar.innerHTML = '';
+      } catch (e) { toast('Failed to load hotel info', 'error'); }
+    }
 
-          if (res.status === 401 || res.status === 403) {
-            window.location.href = "/partner-login.html";
-            return;
-          }
-          if (!res.ok) throw new Error("Failed to load hotel");
+    async function saveInfo() {
+      const body = {
+        name: document.getElementById('hName').value,
+        type: document.getElementById('hType').value || null,
+        phone: document.getElementById('hPhone').value || null,
+        website: document.getElementById('hWebsite').value || null,
+        opening_hours: document.getElementById('hHours').value || null,
+        offer: document.getElementById('hOffer').value || null,
+        description: document.getElementById('hDescription').value || null,
+        image_url: document.getElementById('hImageUrl').value || null,
+        instagram: document.getElementById('hInstagram').value || null,
+        telegram: document.getElementById('hTelegram').value || null,
+      };
+      try {
+        await api('PUT', `/hotels/${hotelId}/info`, body);
+        toast('Hotel info saved! Waiting for admin approval.', 'info');
+      } catch (e) { toast('Save failed: ' + e.message, 'error'); }
+    }
 
-          const hotel = await res.json();
+    async function uploadHotelImage(input) {
+      const file = input.files[0]; if (!file) return;
+      try {
+        const fd = new FormData(); fd.append('file', file);
+        const r = await fetch(`${API}/admin/upload-image`, { method: 'POST', body: fd });
+        const d = await r.json(); if (!r.ok) throw new Error(d.detail);
+        document.getElementById('hImageUrl').value = d.url;
+        showPreview(`${API}${d.url}`, 'hImagePreview');
+      } catch (e) { toast('Upload failed', 'error'); }
+    }
 
-          document.getElementById("hotelNameHeader").textContent =
-            hotel.name || "Hotel Partner Portal";
-
-          // Fill forms
-          document.getElementById("hName").value = hotel.name || "";
-          document.getElementById("hType").value = hotel.type || "";
-          document.getElementById("hPhone").value = hotel.phone || "";
-          document.getElementById("hWebsite").value = hotel.website || "";
-          document.getElementById("hDesc").value = hotel.description || "";
-          document.getElementById("hOffer").value = hotel.offer || "";
-          document.getElementById("hHours").value = hotel.opening_hours || "";
-          document.getElementById("hImageUrl").value = hotel.image_url || "";
-          document.getElementById("lAddress").value = hotel.address || "";
-          document.getElementById("lLat").value = hotel.latitude || "";
-          document.getElementById("lLng").value = hotel.longitude || "";
-
-          if (hotel.image_url) {
-            showPreview(
-              hotel.image_url.startsWith("http")
-                ? hotel.image_url
-                : `${API}${hotel.image_url}`,
-              "hImagePreview",
-            );
-          }
-
-          // Stats
-          document.getElementById("statRooms").textContent =
-            hotel.rooms?.length ?? "—";
-          document.getElementById("statRating").textContent =
-            hotel.rating?.toFixed(1) ?? "0.0";
-          document.getElementById("statReviews").textContent =
-            hotel.review_count ?? 0;
-
-          // Status
-          const status = hotel.status || "approved";
-          const el = document.getElementById("statStatus");
-          const statusBar = document.getElementById("hotelStatusBar");
-
-          if (status === "pending") {
-            el.innerHTML =
-              '<span class="badge badge-warning">⏰ Pending</span>';
-            statusBar.innerHTML =
-              '<div class="status-bar pending">⏳ Your hotel is pending admin approval. It is not visible to the public yet.</div>';
-          } else if (status === "approved") {
-            el.innerHTML = '<span class="badge badge-success">✅ Active</span>';
-            statusBar.innerHTML = "";
-          } else {
-            el.innerHTML =
-              '<span class="badge badge-danger">❌ Rejected</span>';
-            statusBar.innerHTML =
-              '<div class="status-bar rejected">❌ Your hotel was rejected. Please update your information and save again.</div>';
-          }
-
-          if (hotel.latitude && hotel.longitude)
-            updateMapPin(hotel.latitude, hotel.longitude);
-
-          renderRooms(hotel.rooms || []);
-        } catch (err) {
-          toast("Failed to load hotel data", "error");
-          console.error(err);
-        }
-      }
-
-      function renderRooms(rooms) {
-        const grid = document.getElementById("roomsGrid");
-        document.getElementById("statRooms").textContent = rooms.length;
-
+    async function loadRooms() {
+      const grid = document.getElementById('roomsGrid');
+      try {
+        const hotel = await api('GET', `/hotels/${hotelId}/partner`);
+        const rooms = hotel.rooms || [];
+        document.getElementById('statRooms').textContent = rooms.length;
         if (!rooms.length) {
-          grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🛏️</div><p>No rooms yet — add your first room!</p></div>`;
+          grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🛏️</div><p>No rooms added yet.</p></div>';
           return;
         }
-
-        grid.innerHTML = rooms
-          .map((room) => {
-            const status = room.status || "approved";
-            let statusBadge = "",
-              cardClass = "",
-              banner = "";
-
-            if (status === "pending") {
-              statusBadge =
-                '<span class="badge badge-warning">⏰ Pending Approval</span>';
-              cardClass = "pending";
-              banner = `<div class="pending-banner">⏳ Waiting for admin approval before going live</div>`;
-            } else if (status === "approved") {
-              statusBadge =
-                '<span class="badge badge-success">✅ Approved</span>';
-            } else {
-              statusBadge =
-                '<span class="badge badge-danger">❌ Rejected</span>';
-              cardClass = "rejected";
-              if (room.rejection_reason)
-                banner = `<div class="rejection-banner">❌ <strong>Reason:</strong> ${room.rejection_reason}</div>`;
-            }
-
-            const imgUrl = room.image_url
-              ? room.image_url.startsWith("http")
-                ? room.image_url
-                : `${API}${room.image_url}`
-              : null;
-            const imgHtml = imgUrl
-              ? `<img class="room-img" src="${imgUrl}" alt="${room.room_type}" onerror="this.parentElement.innerHTML='<div class=room-img-placeholder>🛏️</div>'">`
-              : `<div class="room-img-placeholder">🛏️</div>`;
-
-            const roomData = encodeURIComponent(JSON.stringify(room));
-
-            return `
-                <div class="room-card ${cardClass}">
-                    ${imgHtml}
-                    <div class="room-body">
-                        <div class="room-top">
-                            <div class="room-name">${room.room_type}</div>
-                            <div class="room-price">$${room.price}/night</div>
-                        </div>
-                        <div class="room-meta">👥 Capacity: ${room.capacity} people</div>
-                        ${room.description ? `<div class="room-desc">${room.description}</div>` : ""}
-                        ${banner}
-                        <div class="room-badges">
-                            ${statusBadge}
-                            ${room.available ? '<span class="badge badge-success">Available</span>' : '<span class="badge badge-danger">Not Available</span>'}
-                        </div>
-                        <div class="room-actions">
-                            <button class="btn btn-edit btn-sm" onclick="openEditRoomModal(${room.id},'${roomData}')">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteRoom(${room.id})">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </div>
+        grid.innerHTML = rooms.map(room => {
+          const status = room.status || 'approved';
+          return `
+            <div class="room-card ${status === 'pending' ? 'pending' : status === 'rejected' ? 'rejected' : ''}">
+                ${room.image_url ? `<img class="room-img" src="${API}${room.image_url}" alt="${room.room_type}" onerror="this.style.display='none'">` : ''}
+                <div class="room-body">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
+                        <div class="room-name">${room.room_type}</div>
+                        <div class="room-price">$${room.price}/night</div>
                     </div>
-                </div>`;
-          })
-          .join("");
-      }
+                    <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem;">👥 Capacity: ${room.capacity}</div>
+                    ${status === 'pending' ? '<span class="badge badge-warning">⏳ Pending Approval</span>' :
+              status === 'rejected' ? `<span class="badge badge-danger">❌ Rejected${room.rejection_reason ? ' — ' + room.rejection_reason : ''}</span>`
+                : '<span class="badge badge-success">✅ Approved</span>'}
+                    <p style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem;">${room.description || ''}</p>
+                    <div style="margin-top:0.75rem;">
+                        <button class="btn btn-danger btn-sm" onclick="deleteRoom(${room.id})">✕ Delete</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+      } catch (e) { grid.innerHTML = '<div class="empty-state" style="color:var(--danger);">Failed to load rooms.</div>'; }
+    }
 
-      document
-        .getElementById("hotelForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const btn = e.target.querySelector("[type=submit]");
-          btn.disabled = true;
-          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
-          const data = {
-            name: document.getElementById("hName").value,
-            type: document.getElementById("hType").value,
-            phone: document.getElementById("hPhone").value,
-            website: document.getElementById("hWebsite").value,
-            description: document.getElementById("hDesc").value,
-            offer: document.getElementById("hOffer").value,
-            opening_hours: document.getElementById("hHours").value,
-            image_url: document.getElementById("hImageUrl").value,
-          };
-          try {
-            const res = await fetch(`${API}/hotels/${hotelId}/info`, {
-              method: "PUT",
-              headers: authHeaders(),
-              body: JSON.stringify(data),
-            });
-            if (res.status === 401 || res.status === 403) {
-              toast("Session expired. Please log in again.", "error");
-              setTimeout(
-                () => (window.location.href = "/partner-login.html"),
-                2000,
-              );
-              return;
-            }
-            if (!res.ok) throw new Error((await res.json()).detail || "Failed");
-            toast("Hotel info saved! Waiting for admin approval.", "info");
-            loadHotelData();
-          } catch (err) {
-            toast("Error: " + err.message, "error");
-          } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-          }
+    function openRoomModal() {
+      document.getElementById('roomId').value = '';
+      document.getElementById('roomModalTitle').textContent = 'Add Room';
+      ['roomType', 'roomDesc', 'roomImageUrl'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('roomPrice').value = '';
+      document.getElementById('roomCapacity').value = '';
+      document.getElementById('roomAvailable').checked = true;
+      document.getElementById('roomImagePreview').classList.remove('show');
+      document.getElementById('roomModal').classList.add('active');
+    }
+    function closeRoomModal() { document.getElementById('roomModal').classList.remove('active'); }
+
+    async function saveRoom() {
+      const body = {
+        hotel_id: parseInt(hotelId),
+        room_type: document.getElementById('roomType').value,
+        price: parseFloat(document.getElementById('roomPrice').value) || 0,
+        capacity: parseInt(document.getElementById('roomCapacity').value) || 1,
+        description: document.getElementById('roomDesc').value || null,
+        image_url: document.getElementById('roomImageUrl').value || null,
+        available: document.getElementById('roomAvailable').checked,
+      };
+      if (!body.room_type) { toast('Room type is required', 'error'); return; }
+      try {
+        await api('POST', `/hotels/${hotelId}/rooms`, body);
+        toast('Room added! Waiting for admin approval.', 'info');
+        closeRoomModal();
+        loadRooms();
+      } catch (e) { toast('Save failed: ' + e.message, 'error'); }
+    }
+
+    async function deleteRoom(id) {
+      if (!confirm('Delete this room?')) return;
+      try {
+        await api('DELETE', `/hotels/${hotelId}/rooms/${id}`);
+        toast('Room deleted', 'success');
+        loadRooms();
+      } catch (e) { toast('Delete failed', 'error'); }
+    }
+
+    async function uploadRoomImage(input) {
+      const file = input.files[0]; if (!file) return;
+      try {
+        const fd = new FormData(); fd.append('file', file);
+        const r = await fetch(`${API}/admin/upload-image`, { method: 'POST', body: fd });
+        const d = await r.json(); if (!r.ok) throw new Error(d.detail);
+        document.getElementById('roomImageUrl').value = d.url;
+        showPreview(`${API}${d.url}`, 'roomImagePreview');
+      } catch (e) { toast('Upload failed', 'error'); }
+    }
+
+    // LOCATION
+    function initMap() {
+      hMap = L.map('hotel-map').setView([41.3111, 69.2797], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(hMap);
+      hMap.on('click', e => {
+        setPin(e.latlng.lat, e.latlng.lng);
+        document.getElementById('hLat').value = e.latlng.lat.toFixed(6);
+        document.getElementById('hLng').value = e.latlng.lng.toFixed(6);
+      });
+    }
+    function setPin(lat, lng) {
+      if (hMarker) hMap.removeLayer(hMarker);
+      hMarker = L.marker([lat, lng]).addTo(hMap);
+      hMap.setView([lat, lng], 14);
+    }
+    async function loadLocation() {
+      try {
+        const hotel = await api('GET', `/hotels/${hotelId}/partner`);
+        document.getElementById('hAddress').value = hotel.address || '';
+        document.getElementById('hLat').value = hotel.latitude || '';
+        document.getElementById('hLng').value = hotel.longitude || '';
+        if (hotel.latitude && hotel.longitude) setPin(hotel.latitude, hotel.longitude);
+      } catch (e) { }
+    }
+    async function saveLocation() {
+      const lat = parseFloat(document.getElementById('hLat').value);
+      const lng = parseFloat(document.getElementById('hLng').value);
+      if (!lat || !lng) { toast('Click the map to set location', 'error'); return; }
+      try {
+        await api('PUT', `/hotels/${hotelId}/info`, {
+          address: document.getElementById('hAddress').value || null,
+          latitude: lat, longitude: lng
         });
+        toast('Location saved!', 'success');
+      } catch (e) { toast('Failed: ' + e.message, 'error'); }
+    }
 
-      document
-        .getElementById("locationForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const btn = e.target.querySelector("[type=submit]");
-          btn.disabled = true;
-          const data = {
-            address: document.getElementById("lAddress").value,
-            latitude: parseFloat(document.getElementById("lLat").value) || 0,
-            longitude: parseFloat(document.getElementById("lLng").value) || 0,
-          };
-          try {
-            const res = await fetch(`${API}/hotels/${hotelId}/info`, {
-              method: "PUT",
-              headers: authHeaders(),
-              body: JSON.stringify(data),
-            });
-            if (res.status === 401 || res.status === 403) {
-              toast("Session expired.", "error");
-              return;
-            }
-            if (!res.ok) throw new Error((await res.json()).detail || "Failed");
-            toast("Location saved! Waiting for admin approval.", "info");
-          } catch (err) {
-            toast("Error: " + err.message, "error");
-          } finally {
-            btn.disabled = false;
-          }
+    // REVIEWS
+    async function loadReviews() {
+      const wrap = document.getElementById('reviewsList');
+      wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><p>Loading…</p></div>';
+      try {
+        allReviews = await api('GET', `/hotels/${hotelId}/reviews`);
+        renderReviews();
+      } catch (e) { wrap.innerHTML = '<div class="empty-state" style="color:var(--danger);">Failed to load reviews.</div>'; }
+    }
+    function filterReviews(f, btn) {
+      reviewFilter = f;
+      document.querySelectorAll('#section-reviews .btn').forEach(b => { b.classList.add('btn-secondary'); b.classList.remove('btn-primary'); });
+      if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-primary'); }
+      renderReviews();
+    }
+    function renderReviews() {
+      const wrap = document.getElementById('reviewsList');
+      const list = reviewFilter === 'all' ? allReviews : allReviews.filter(r => (r.status || 'approved') === reviewFilter);
+      if (!list.length) { wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">⭐</div><p>No reviews here.</p></div>'; return; }
+      wrap.innerHTML = list.map(r => {
+        const stars = '★'.repeat(Math.round(r.rating)) + '☆'.repeat(5 - Math.round(r.rating));
+        const status = r.status || 'approved';
+        return `
+        <div class="review-card ${status === 'pending' ? 'pending' : status === 'rejected' ? 'rejected' : ''}">
+            <div class="review-top">
+                <div>
+                    <div class="reviewer-name">${r.reviewer_name || 'Anonymous'}</div>
+                    <div class="review-stars">${stars}</div>
+                    <div class="review-date">${r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</div>
+                </div>
+                <span class="badge ${status === 'approved' ? 'badge-success' : status === 'rejected' ? 'badge-danger' : 'badge-warning'}">
+                    ${status === 'approved' ? '✅ Approved' : status === 'rejected' ? '❌ Rejected' : '⏳ Pending'}
+                </span>
+            </div>
+            <p style="font-size:0.9rem;color:var(--muted);margin:0.5rem 0;line-height:1.6;">${r.comment || ''}</p>
+            ${status === 'pending' ? `<div class="review-actions">
+                <button class="btn btn-success btn-sm" onclick="reviewAction(${r.id},'approve')">✅ Approve</button>
+                <button class="btn btn-danger btn-sm" onclick="reviewAction(${r.id},'reject')">❌ Reject</button>
+            </div>`: ''}
+        </div>`;
+      }).join('');
+    }
+    async function reviewAction(id, action) {
+      try {
+        await api('POST', `/hotels/${hotelId}/reviews/${id}/${action}`);
+        toast(action === 'approve' ? 'Review approved!' : 'Review rejected.', 'success');
+        loadReviews(); loadDashboard();
+      } catch (e) { toast('Failed: ' + e.message, 'error'); }
+    }
+
+    // SUBSCRIPTION
+    async function loadSubscription() {
+      if (!partnerEmail) return;
+      try {
+        const res = await fetch(`${API}/api/subscription/status?email=${encodeURIComponent(partnerEmail)}`);
+        if (!res.ok) return;
+        const s = await res.json();
+        const daysEl = document.getElementById('statDays');
+        const card = document.getElementById('statSubCard');
+        daysEl.textContent = s.days_remaining ?? '—';
+        if (s.is_expired) { daysEl.className = 'stat-value danger'; card.className = 'stat-card danger'; }
+        else if (s.days_remaining <= 7) { daysEl.className = 'stat-value warn'; card.className = 'stat-card warn'; }
+        else { daysEl.className = 'stat-value'; card.className = 'stat-card'; }
+
+        const banner = document.getElementById('subBanner');
+        if (s.is_expired) {
+          banner.style.display = 'flex'; banner.className = 'sub-banner danger';
+          banner.innerHTML = `<span>⚠️ Plan expired! Grace ends <strong>${fmt(s.grace_period_end)}</strong>.</span><button onclick="openRenewalModal()">Renew Now</button>`;
+        } else if (s.days_remaining <= 7) {
+          banner.style.display = 'flex'; banner.className = 'sub-banner warn';
+          banner.innerHTML = `<span>⏰ Expires in <strong>${s.days_remaining} days</strong> (${fmt(s.plan_end_date)}).</span><button onclick="openRenewalModal()">Renew Plan</button>`;
+        } else { banner.style.display = 'none'; }
+
+        const planLabel = { '1month': '1 Month', '3months': '3 Months', '6months': '6 Months', '1year': '1 Year' };
+        document.getElementById('subDetails').innerHTML = `
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:1.25rem;">
+                    <div class="stat-label">Plan</div>
+                    <div style="font-size:1.5rem;font-weight:800;color:var(--primary);">${planLabel[s.plan] || s.plan || '—'}</div>
+                    <div style="font-size:0.85rem;color:var(--muted);">$${s.plan_amount || '—'}</div>
+                </div>
+                <div style="background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:1.25rem;">
+                    <div class="stat-label">Days Left</div>
+                    <div style="font-size:1.5rem;font-weight:800;color:${s.is_expired ? 'var(--danger)' : s.days_remaining <= 7 ? 'var(--warning)' : 'var(--success)'};">${s.days_remaining ?? '—'}</div>
+                    <div style="font-size:0.85rem;color:var(--muted);">Expires ${fmt(s.plan_end_date)}</div>
+                </div>
+            </div>
+            ${s.renewal_pending
+            ? `<div style="background:#dbeafe;border:2px solid #93c5fd;border-radius:12px;padding:1rem;font-weight:600;color:#1d4ed8;">⏳ Renewal pending admin review.</div>`
+            : `<button class="btn btn-primary" onclick="openRenewalModal()"><i class="fas fa-redo"></i> Renew Plan</button>`}`;
+
+        const plansRes = await fetch(`${API}/api/subscription/plans`).then(r => r.json());
+        window._paymentInfo = plansRes.payment_info || {};
+        document.getElementById('payCard').textContent = window._paymentInfo.card_number || 'Contact admin';
+      } catch (e) { }
+    }
+
+    function openRenewalModal() {
+      selectedRenewalPlan = null;
+      document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('renewProofUrl').value = '';
+      document.getElementById('renewProofPreview').classList.remove('show');
+      document.getElementById('renewalAlert').classList.remove('show');
+      document.getElementById('payAmount').textContent = 'Select a plan';
+      document.getElementById('renewalModal').classList.add('active');
+    }
+    function closeRenewalModal() { document.getElementById('renewalModal').classList.remove('active'); }
+    function selectPlan(key, amount) {
+      selectedRenewalPlan = { key, amount };
+      document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById(`hplan-${key}`).classList.add('selected');
+      document.getElementById('payAmount').textContent = `$${amount}`;
+    }
+    async function uploadRenewalProof(input) {
+      const file = input.files[0]; if (!file) return;
+      try {
+        const fd = new FormData(); fd.append('file', file);
+        const r = await fetch(`${API}/admin/upload-image`, { method: 'POST', body: fd });
+        const d = await r.json(); if (!r.ok) throw new Error(d.detail);
+        document.getElementById('renewProofUrl').value = `${API}${d.url}`;
+        showPreview(`${API}${d.url}`, 'renewProofPreview');
+      } catch (e) { toast('Upload failed', 'error'); }
+    }
+    async function submitRenewal() {
+      if (!selectedRenewalPlan) { showAlert('renewalAlert', 'Please select a plan.'); return; }
+      const proofUrl = document.getElementById('renewProofUrl').value;
+      if (!proofUrl) { showAlert('renewalAlert', 'Please upload your payment screenshot.'); return; }
+      try {
+        const res = await fetch(`${API}/api/subscription/renew`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: partnerEmail, plan: selectedRenewalPlan.key, payment_proof_url: proofUrl })
         });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed');
+        closeRenewalModal();
+        toast('✅ Renewal submitted! Admin will review shortly.', 'success');
+        loadSubscription();
+      } catch (e) { showAlert('renewalAlert', e.message); }
+    }
 
-      function openRoomModal() {
-        document.getElementById("roomForm").reset();
-        document.getElementById("editRoomId").value = "";
-        document.getElementById("roomModalTitle").textContent = "Add New Room";
-        document.getElementById("roomSubmitBtn").textContent = "Save Room";
-        document.getElementById("rImagePreview").classList.remove("show");
-        document.getElementById("roomModal").classList.add("active");
-      }
-
-      function openEditRoomModal(roomId, encodedRoom) {
-        const room = JSON.parse(decodeURIComponent(encodedRoom));
-        document.getElementById("editRoomId").value = roomId;
-        document.getElementById("roomModalTitle").textContent = "Edit Room";
-        document.getElementById("roomSubmitBtn").textContent = "Update Room";
-        document.getElementById("rType").value = room.room_type || "";
-        document.getElementById("rPrice").value = room.price || "";
-        document.getElementById("rCapacity").value = room.capacity || "";
-        document.getElementById("rDesc").value = room.description || "";
-        document.getElementById("rImageUrl").value = room.image_url || "";
-        document.getElementById("rAvailable").checked = room.available ?? true;
-        if (room.image_url) {
-          showPreview(
-            room.image_url.startsWith("http")
-              ? room.image_url
-              : `${API}${room.image_url}`,
-            "rImagePreview",
-          );
-        } else {
-          document.getElementById("rImagePreview").classList.remove("show");
-        }
-        document.getElementById("roomModal").classList.add("active");
-      }
-
-      function closeRoomModal() {
-        document.getElementById("roomModal").classList.remove("active");
-      }
-
-      document
-        .getElementById("roomForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const btn = e.target.querySelector("[type=submit]");
-          btn.disabled = true;
-          const editId = document.getElementById("editRoomId").value;
-          const isEdit = !!editId;
-          const data = {
-            hotel_id: parseInt(hotelId),
-            room_type: document.getElementById("rType").value,
-            price: parseFloat(document.getElementById("rPrice").value),
-            capacity: parseInt(document.getElementById("rCapacity").value),
-            description: document.getElementById("rDesc").value,
-            image_url: document.getElementById("rImageUrl").value,
-            available: document.getElementById("rAvailable").checked,
-          };
-          try {
-            const url = isEdit
-              ? `${API}/hotels/${hotelId}/rooms/${editId}`
-              : `${API}/hotels/${hotelId}/rooms`;
-            const res = await fetch(url, {
-              method: isEdit ? "PUT" : "POST",
-              headers: authHeaders(),
-              body: JSON.stringify(data),
-            });
-            if (res.status === 401 || res.status === 403) {
-              toast("Session expired.", "error");
-              return;
-            }
-            if (!res.ok) throw new Error((await res.json()).detail || "Failed");
-            toast(
-              isEdit
-                ? "Room updated! Waiting for admin approval."
-                : "Room added! Waiting for admin approval.",
-              "info",
-            );
-            closeRoomModal();
-            loadHotelData();
-          } catch (err) {
-            toast("Error: " + err.message, "error");
-          } finally {
-            btn.disabled = false;
-          }
+    // CHANGE PASSWORD
+    async function changePassword() {
+      ['pwAlert', 'pwSuccess'].forEach(id => { document.getElementById(id).classList.remove('show'); });
+      const cur = document.getElementById('pwCurrent').value;
+      const nw = document.getElementById('pwNew').value;
+      const cfm = document.getElementById('pwConfirm').value;
+      if (!cur || !nw || !cfm) { showAlert('pwAlert', 'All fields are required.'); return; }
+      if (nw !== cfm) { showAlert('pwAlert', 'New passwords do not match.'); return; }
+      if (nw.length < 8) { showAlert('pwAlert', 'Password must be at least 8 characters.'); return; }
+      try {
+        const res = await fetch(`${API}/api/partner-applications/change-password`, {
+          method: 'POST', headers: authHeaders(),
+          body: JSON.stringify({ email: partnerEmail, current_password: cur, new_password: nw })
         });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed');
+        const el = document.getElementById('pwSuccess');
+        el.textContent = '✅ Password changed successfully!';
+        el.classList.add('show');
+        ['pwCurrent', 'pwNew', 'pwConfirm'].forEach(id => document.getElementById(id).value = '');
+      } catch (e) { showAlert('pwAlert', e.message); }
+    }
 
-      async function deleteRoom(roomId) {
-        if (!confirm("Delete this room permanently?")) return;
-        try {
-          const res = await fetch(`${API}/hotels/${hotelId}/rooms/${roomId}`, {
-            method: "DELETE",
-            headers: authHeaders(),
-          });
-          if (res.status === 401 || res.status === 403) {
-            toast("Session expired.", "error");
-            return;
-          }
-          if (!res.ok) throw new Error("Delete failed");
-          toast("Room deleted.", "success");
-          loadHotelData();
-        } catch (err) {
-          toast("Error: " + err.message, "error");
-        }
-      }
+    // HELPERS
+    function showPreview(url, id) { const el = document.getElementById(id); if (!el || !url) return; el.src = url; el.classList.add('show'); }
+    function fmt(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); }
+    function showAlert(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.classList.add('show'); }
+    function clearAlert(id) { const el = document.getElementById(id); el.textContent = ''; el.classList.remove('show'); }
+    function toast(msg, type = 'info') {
+      const c = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.innerHTML = `<span>${{ success: '✅', error: '❌', info: 'ℹ️' }[type] || 'ℹ️'}</span> ${msg}`;
+      c.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+  </script>
+</body>
 
-      async function uploadImage(input, urlId, previewId) {
-        const file = input.files[0];
-        if (!file) return;
-        try {
-          const formData = new FormData();
-          formData.append("file", file);
-          const res = await fetch(`${API}/admin/upload-image`, {
-            method: "POST",
-            headers: authHeadersFormData(),
-            body: formData,
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.detail);
-          document.getElementById(urlId).value = data.url;
-          showPreview(`${API}${data.url}`, previewId);
-          toast("Image uploaded!", "success");
-        } catch (err) {
-          toast("Upload failed: " + err.message, "error");
-        }
-      }
-
-      function showPreview(url, previewId) {
-        const el = document.getElementById(previewId);
-        el.src = url;
-        el.classList.add("show");
-      }
-
-      function showSection(name, btn) {
-        document
-          .querySelectorAll(".section")
-          .forEach((s) => s.classList.remove("active"));
-        document
-          .querySelectorAll(".nav-item")
-          .forEach((b) => b.classList.remove("active"));
-        document.getElementById(`section-${name}`).classList.add("active");
-        btn.classList.add("active");
-        if (name === "location" && map)
-          setTimeout(() => map.invalidateSize(), 100);
-      }
-
-      function initMap() {
-        map = L.map("map").setView([41.3111, 69.2797], 13);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-          map,
-        );
-        map.on("click", (e) => {
-          updateMapPin(e.latlng.lat, e.latlng.lng);
-          document.getElementById("lLat").value = e.latlng.lat.toFixed(6);
-          document.getElementById("lLng").value = e.latlng.lng.toFixed(6);
-        });
-      }
-
-      function updateMapPin(lat, lng) {
-        if (marker) map.removeLayer(marker);
-        marker = L.marker([lat, lng]).addTo(map);
-        map.setView([lat, lng], 15);
-      }
-
-      function toast(msg, type = "info") {
-        const c = document.getElementById("toastContainer");
-        const el = document.createElement("div");
-        el.className = `toast toast-${type}`;
-        const icons = { success: "✅", error: "❌", info: "ℹ️" };
-        el.innerHTML = `<span>${icons[type] || "ℹ️"}</span> ${msg}`;
-        c.appendChild(el);
-        setTimeout(() => el.remove(), 4000);
-      }
-    </script>
-  </body>
 </html>

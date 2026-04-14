@@ -352,3 +352,67 @@ async def upload_partner_image(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
+    
+    
+# ─────────────────────────────────────────────────────────────
+
+@router.get("/restaurant/{restaurant_id}/reviews")
+async def get_restaurant_reviews(
+    restaurant_id: int,
+    token: dict = Depends(get_partner_token),
+    db: Session = Depends(get_db)
+):
+    check_restaurant_owner(restaurant_id, token)
+    from models.restaurant import Review
+    reviews = db.query(Review).filter(
+        Review.restaurant_id == restaurant_id
+    ).order_by(Review.created_at.desc()).all()
+    return [
+        {
+            "id":            r.id,
+            "reviewer_name": r.reviewer_name,
+            "rating":        r.rating,
+            "comment":       r.comment,
+            "status":        getattr(r, "status", "approved"),
+            "created_at":    r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reviews
+    ]
+
+@router.post("/restaurant/{restaurant_id}/reviews/{review_id}/approve")
+async def approve_restaurant_review(
+    restaurant_id: int,
+    review_id: int,
+    token: dict = Depends(get_partner_token),
+    db: Session = Depends(get_db)
+):
+    check_restaurant_owner(restaurant_id, token)
+    from models.restaurant import Review
+    review = db.query(Review).filter(
+        Review.id == review_id,
+        Review.restaurant_id == restaurant_id
+    ).first()
+    if not review:
+        raise HTTPException(404, "Review not found.")
+    review.status = "approved"
+    db.commit()
+    return {"success": True, "message": "Review approved."}
+
+@router.post("/restaurant/{restaurant_id}/reviews/{review_id}/reject")
+async def reject_restaurant_review(
+    restaurant_id: int,
+    review_id: int,
+    token: dict = Depends(get_partner_token),
+    db: Session = Depends(get_db)
+):
+    check_restaurant_owner(restaurant_id, token)
+    from models.restaurant import Review
+    review = db.query(Review).filter(
+        Review.id == review_id,
+        Review.restaurant_id == restaurant_id
+    ).first()
+    if not review:
+        raise HTTPException(404, "Review not found.")
+    review.status = "rejected"
+    db.commit()
+    return {"success": True, "message": "Review rejected."}

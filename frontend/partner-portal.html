@@ -23,7 +23,7 @@
             --warning: #f59e0b;
             --danger: #ef4444;
             --bg: #f8fafc;
-            --white: #ffffff;
+            --white: #fff;
             --text: #1e293b;
             --muted: #64748b;
             --border: #e2e8f0;
@@ -40,7 +40,7 @@
         .header {
             background: white;
             border-bottom: 1px solid var(--border);
-            padding: 1.5rem 2rem;
+            padding: 1.25rem 2rem;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -48,7 +48,7 @@
         }
 
         .header-content {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -57,7 +57,7 @@
 
         .logo {
             font-family: 'Playfair Display', serif;
-            font-size: 1.75rem;
+            font-size: 1.6rem;
             font-weight: 700;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
@@ -68,10 +68,11 @@
         .back-link {
             color: var(--muted);
             text-decoration: none;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s;
+            gap: 0.4rem;
+            transition: color 0.2s;
         }
 
         .back-link:hover {
@@ -81,7 +82,7 @@
         /* ── HERO ── */
         .hero {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 4rem 2rem;
+            padding: 3.5rem 2rem;
             text-align: center;
             color: white;
             position: relative;
@@ -91,16 +92,13 @@
         .hero::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><path d="M0 0L50 50L0 100M50 0L100 50L50 100M100 0L100 100" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/></svg>');
-            opacity: 0.3;
+            inset: 0;
+            background: url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><path d="M0 0L30 30L0 60M30 0L60 30L30 60" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" fill="none"/></svg>');
+            opacity: 0.5;
         }
 
         .hero-content {
-            max-width: 800px;
+            max-width: 700px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -108,54 +106,53 @@
 
         .hero h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: 900;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             line-height: 1.2;
         }
 
         .hero p {
-            font-size: 1.25rem;
-            opacity: 0.95;
+            font-size: 1.15rem;
+            opacity: 0.92;
             margin-bottom: 2rem;
         }
 
-        .trust-indicators {
+        .trust-row {
             display: flex;
             justify-content: center;
             gap: 3rem;
-            margin-top: 3rem;
             flex-wrap: wrap;
+            margin-top: 2rem;
         }
 
         .trust-item {
             text-align: center;
         }
 
-        .trust-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
+        .trust-num {
+            font-size: 2rem;
+            font-weight: 800;
         }
 
-        .trust-label {
-            opacity: 0.9;
-            font-size: 0.95rem;
+        .trust-lbl {
+            opacity: 0.85;
+            font-size: 0.9rem;
         }
 
         /* ── MAIN ── */
         .main-content {
-            max-width: 1100px;
+            max-width: 900px;
             margin: -3rem auto 4rem;
-            padding: 0 2rem;
+            padding: 0 1.5rem;
             position: relative;
             z-index: 10;
         }
 
-        .signup-container {
+        .card {
             background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -163,7 +160,7 @@
         .progress-bar {
             display: flex;
             background: var(--bg);
-            padding: 2rem;
+            padding: 1.75rem 2rem;
             border-bottom: 1px solid var(--border);
         }
 
@@ -171,7 +168,7 @@
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
             position: relative;
         }
 
@@ -179,7 +176,7 @@
             content: '';
             position: absolute;
             right: -50%;
-            top: 20px;
+            top: 18px;
             width: 100%;
             height: 2px;
             background: var(--border);
@@ -191,8 +188,8 @@
         }
 
         .step-circle {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: white;
             border: 2px solid var(--border);
@@ -200,9 +197,11 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
+            font-size: 0.9rem;
             position: relative;
             z-index: 1;
             transition: all 0.3s;
+            flex-shrink: 0;
         }
 
         .progress-step.active .step-circle {
@@ -219,7 +218,9 @@
 
         .step-label {
             font-weight: 600;
+            font-size: 0.82rem;
             color: var(--muted);
+            line-height: 1.3;
         }
 
         .progress-step.active .step-label {
@@ -233,18 +234,18 @@
         /* ── STEP CONTENT ── */
         .step-content {
             display: none;
-            padding: 3rem;
+            padding: 2.5rem;
         }
 
         .step-content.active {
             display: block;
-            animation: fadeIn 0.3s;
+            animation: fadeUp 0.3s ease;
         }
 
-        @keyframes fadeIn {
+        @keyframes fadeUp {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(12px);
             }
 
             to {
@@ -255,27 +256,29 @@
 
         .step-title {
             font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.85rem;
+            margin-bottom: 0.4rem;
+            color: var(--text);
         }
 
         .step-desc {
             color: var(--muted);
             margin-bottom: 2rem;
+            font-size: 0.95rem;
         }
 
         /* ── FORM ── */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
+            gap: 1.25rem;
             margin-bottom: 2rem;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
 
         .form-group.full {
@@ -284,7 +287,7 @@
 
         label {
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.82rem;
             color: var(--text);
         }
 
@@ -295,12 +298,13 @@
         input,
         select,
         textarea {
-            padding: 0.875rem 1rem;
+            padding: 0.8rem 1rem;
             border: 2px solid var(--border);
             border-radius: 10px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-family: inherit;
-            transition: all 0.3s;
+            transition: all 0.25s;
+            color: var(--text);
         }
 
         input:focus,
@@ -313,222 +317,379 @@
 
         textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 90px;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 0.85rem 1.75rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-size: 0.95rem;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--border);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        /* ── ALERT ── */
+        .alert {
+            padding: 0.9rem 1.1rem;
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid var(--success);
+        }
+
+        /* ── VERIFY GATE ── */
+        .verify-gate {
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        .verify-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .verify-status {
+            border-radius: 12px;
+            padding: 1.1rem 1.5rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin: 1.5rem 0;
+            transition: all 0.4s;
+        }
+
+        .verify-status.waiting {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 2px solid #bfdbfe;
+        }
+
+        .verify-status.done {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #6ee7b7;
+        }
+
+        .resend-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            margin-top: 0.75rem;
+        }
+
+        .resend-btn:hover {
+            color: var(--primary-dark);
         }
 
         /* ── PRICING ── */
         .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 1.75rem;
         }
 
-        .pricing-card {
+        .plan-card {
             border: 2px solid var(--border);
-            border-radius: 16px;
-            padding: 2rem;
+            border-radius: 14px;
+            padding: 1.75rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.25s;
             position: relative;
             background: white;
         }
 
-        .pricing-card:hover {
+        .plan-card:hover {
             border-color: var(--primary);
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(99, 102, 241, 0.15);
         }
 
-        .pricing-card.selected {
+        .plan-card.selected {
             border-color: var(--primary);
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
-        }
-
-        .pricing-card.popular {
             border-width: 3px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(139, 92, 246, 0.04));
+            box-shadow: 0 10px 28px rgba(99, 102, 241, 0.15);
         }
 
-        .popular-badge {
+        .plan-card.selected::after {
+            content: '✓ Selected';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .plan-card.popular {
+            border-color: #f59e0b;
+        }
+
+        .plan-card.popular:not(.selected)::after {
+            content: 'Most Popular';
             position: absolute;
             top: -12px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--warning);
             color: white;
-            padding: 0.375rem 1.25rem;
+            padding: 0.25rem 1rem;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            white-space: nowrap;
         }
 
         .plan-duration {
-            font-size: 1.125rem;
-            font-weight: 600;
+            font-size: 1rem;
+            font-weight: 700;
             color: var(--muted);
-            margin-bottom: 1rem;
-        }
-
-        .plan-price {
-            font-size: 3rem;
-            font-weight: 900;
-            color: var(--primary);
             margin-bottom: 0.5rem;
         }
 
+        .plan-price {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: var(--primary);
+            line-height: 1;
+        }
+
         .plan-price small {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             color: var(--muted);
+            font-weight: 600;
         }
 
         .plan-save {
+            display: inline-block;
             background: var(--success);
             color: white;
-            padding: 0.25rem 1rem;
+            padding: 0.2rem 0.8rem;
             border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 1.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin: 0.5rem 0 1rem;
         }
 
         .plan-features {
             list-style: none;
             text-align: left;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
         }
 
         .plan-features li {
-            padding: 0.5rem 0;
+            padding: 0.4rem 0;
+            font-size: 0.88rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.95rem;
+            gap: 0.4rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .plan-features li:last-child {
+            border-bottom: none;
         }
 
         .plan-features li::before {
             content: '✓';
             color: var(--success);
-            font-weight: 700;
-            font-size: 1.25rem;
+            font-weight: 800;
+            flex-shrink: 0;
         }
 
-        /* ── PAYMENT SECTION ── */
-        .payment-summary {
+        /* ── INFO BOX ── */
+        .info-box {
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin: 1.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        /* ── PAYMENT ── */
+        .order-summary {
             background: var(--bg);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.75rem;
         }
 
         .summary-title {
             font-weight: 700;
-            margin-bottom: 1rem;
-            font-size: 1.125rem;
+            font-size: 1.05rem;
+            margin-bottom: 0.9rem;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 0.75rem 0;
+            align-items: center;
+            padding: 0.6rem 0;
             border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
         }
 
         .summary-row:last-child {
             border-bottom: none;
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--primary);
-            padding-top: 1rem;
-            margin-top: 0.5rem;
             border-top: 2px solid var(--border);
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--primary);
+            padding-top: 0.9rem;
         }
 
-        /* Card display boxes */
         .card-methods {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.9rem;
+            margin-bottom: 1.5rem;
         }
 
         .card-method {
             border: 2px solid var(--border);
-            border-radius: 14px;
-            padding: 1.25rem 1.75rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            min-width: 140px;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
             background: white;
             transition: all 0.2s;
         }
 
+        .card-method:hover {
+            border-color: var(--primary);
+        }
+
         .card-method-icon {
-            font-size: 2rem;
+            font-size: 1.75rem;
+            margin-bottom: 0.35rem;
         }
 
         .card-method-name {
             font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--text);
+            font-size: 0.82rem;
+            margin-bottom: 0.2rem;
         }
 
         .card-method-number {
             font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             color: var(--muted);
-            letter-spacing: 0.05em;
+            word-break: break-all;
         }
 
-        /* Payment instruction box */
-        .pay-instruction {
+        .pay-steps {
             background: #eff6ff;
             border: 2px solid #bfdbfe;
-            border-radius: 14px;
-            padding: 1.5rem;
+            border-radius: 12px;
+            padding: 1.25rem;
             margin-bottom: 1.5rem;
         }
 
-        .pay-instruction h4 {
+        .pay-steps h4 {
             color: #1d4ed8;
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            font-size: 0.92rem;
+            margin-bottom: 0.6rem;
         }
 
-        .pay-instruction ol {
-            padding-left: 1.25rem;
+        .pay-steps ol {
+            padding-left: 1.2rem;
         }
 
-        .pay-instruction ol li {
+        .pay-steps ol li {
             color: #1e40af;
-            font-size: 0.9rem;
-            padding: 0.3rem 0;
+            font-size: 0.87rem;
+            padding: 0.2rem 0;
             font-weight: 500;
         }
 
-        /* Upload proof */
         .upload-zone {
             border: 2px dashed var(--border);
-            border-radius: 14px;
-            padding: 2rem;
+            border-radius: 12px;
+            padding: 1.75rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.25s;
             position: relative;
             background: var(--bg);
         }
 
-        .upload-zone:hover {
+        .upload-zone:hover,
+        .upload-zone.dragover {
             border-color: var(--primary);
             background: #f5f3ff;
         }
@@ -538,21 +699,23 @@
             inset: 0;
             opacity: 0;
             cursor: pointer;
+            width: 100%;
+            height: 100%;
         }
 
         .upload-icon {
             font-size: 2.5rem;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.6rem;
         }
 
         .upload-text {
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.2rem;
         }
 
         .upload-hint {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--muted);
         }
 
@@ -563,7 +726,7 @@
 
         .proof-preview img {
             max-width: 100%;
-            max-height: 200px;
+            max-height: 220px;
             border-radius: 10px;
             border: 2px solid var(--border);
             object-fit: contain;
@@ -572,100 +735,36 @@
         .proof-preview .proof-name {
             font-size: 0.85rem;
             color: var(--success);
-            font-weight: 600;
-            margin-top: 0.5rem;
+            font-weight: 700;
+            margin-top: 0.4rem;
         }
 
-        /* Upload progress */
         .upload-progress {
             display: none;
-            margin-top: 0.75rem;
+            margin-top: 0.6rem;
             background: #dbeafe;
             border-radius: 8px;
-            padding: 0.6rem 1rem;
+            padding: 0.5rem 1rem;
             font-size: 0.85rem;
             font-weight: 600;
             color: #1d4ed8;
         }
 
-        .upload-progress.active {
+        .upload-progress.show {
             display: block;
-        }
-
-        /* ── BUTTONS ── */
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .btn {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: inherit;
-        }
-
-        .btn-secondary {
-            background: var(--bg);
-            color: var(--text);
-            border: 2px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* ── INFO BOX ── */
-        .info-box {
-            background: rgba(99, 102, 241, 0.1);
-            border-left: 4px solid var(--primary);
-            padding: 1.25rem;
-            border-radius: 8px;
-            margin: 1.5rem 0;
-        }
-
-        .info-box p {
-            margin: 0;
-            color: var(--text);
         }
 
         /* ── SUCCESS ── */
         .success-screen {
             text-align: center;
-            padding: 3rem 2rem;
+            padding: 2rem 1rem;
         }
 
         .success-icon {
-            font-size: 6rem;
-            margin-bottom: 1.5rem;
+            font-size: 5rem;
             animation: bounce 0.6s;
+            display: block;
+            margin-bottom: 1rem;
         }
 
         @keyframes bounce {
@@ -676,120 +775,105 @@
             }
 
             50% {
-                transform: scale(1.1);
+                transform: scale(1.15);
             }
         }
 
         .success-title {
             font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             color: var(--success);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
-        .success-message {
+        .success-msg {
             color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.7;
             margin-bottom: 2rem;
-            line-height: 1.8;
-            font-size: 1.125rem;
         }
 
-        .next-steps {
+        .next-steps-box {
             background: var(--bg);
-            border-radius: 16px;
-            padding: 2rem;
-            margin: 2rem auto;
-            max-width: 600px;
+            border-radius: 14px;
+            padding: 1.75rem;
+            max-width: 540px;
+            margin: 0 auto 2rem;
             text-align: left;
         }
 
-        .next-steps h3 {
-            font-weight: 700;
-            margin-bottom: 1.25rem;
-            font-size: 1.1rem;
+        .next-steps-box h3 {
+            font-weight: 800;
+            margin-bottom: 1.1rem;
+            font-size: 1rem;
         }
 
-        .next-step-item {
+        .ns-item {
             display: flex;
-            gap: 1rem;
+            gap: 0.9rem;
             align-items: flex-start;
-            padding: 0.75rem 0;
+            padding: 0.65rem 0;
             border-bottom: 1px solid var(--border);
         }
 
-        .next-step-item:last-child {
+        .ns-item:last-child {
             border-bottom: none;
         }
 
-        .step-num {
-            width: 28px;
-            height: 28px;
+        .ns-num {
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 0.8rem;
+            font-weight: 800;
+            font-size: 0.75rem;
             flex-shrink: 0;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
-        .step-num.done {
+        .ns-done {
             background: var(--success);
             color: white;
         }
 
-        .step-num.pending {
-            background: #f59e0b;
+        .ns-pending {
+            background: var(--warning);
             color: white;
         }
 
-        .step-num.waiting {
+        .ns-waiting {
             background: #94a3b8;
             color: white;
         }
 
-        .step-text strong {
+        .ns-text strong {
             display: block;
             font-weight: 700;
-            margin-bottom: 0.2rem;
+            font-size: 0.9rem;
         }
 
-        .step-text span {
-            font-size: 0.85rem;
+        .ns-text span {
+            font-size: 0.82rem;
             color: var(--muted);
         }
 
-        /* ── ERROR ── */
-        .error-msg {
-            background: #fee2e2;
-            border-left: 4px solid var(--danger);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            color: #991b1b;
-            font-weight: 600;
-            display: none;
-        }
-
-        .error-msg.show {
-            display: block;
-        }
-
         /* ── RESPONSIVE ── */
-        @media(max-width:768px) {
+        @media(max-width:700px) {
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2.1rem;
             }
 
             .form-grid,
-            .pricing-grid {
+            .pricing-grid,
+            .card-methods {
                 grid-template-columns: 1fr;
             }
 
             .progress-bar {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 0.75rem;
             }
 
             .progress-step:not(:last-child)::after {
@@ -797,15 +881,20 @@
             }
 
             .step-content {
-                padding: 2rem 1.5rem;
+                padding: 1.75rem 1.25rem;
             }
 
-            .trust-indicators {
+            .trust-row {
                 gap: 1.5rem;
             }
 
-            .card-methods {
+            .btn-group {
                 flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -825,19 +914,19 @@
     <section class="hero">
         <div class="hero-content">
             <h1>Grow Your Business With Us</h1>
-            <p>Join hundreds of successful partners reaching thousands of travelers across Uzbekistan every day</p>
-            <div class="trust-indicators">
+            <p>Join hundreds of successful partners reaching thousands of travelers every day</p>
+            <div class="trust-row">
                 <div class="trust-item">
-                    <div class="trust-number">500+</div>
-                    <div class="trust-label">Active Partners</div>
+                    <div class="trust-num">500+</div>
+                    <div class="trust-lbl">Active Partners</div>
                 </div>
                 <div class="trust-item">
-                    <div class="trust-number">50K+</div>
-                    <div class="trust-label">Monthly Visitors</div>
+                    <div class="trust-num">50K+</div>
+                    <div class="trust-lbl">Monthly Visitors</div>
                 </div>
                 <div class="trust-item">
-                    <div class="trust-number">95%</div>
-                    <div class="trust-label">Partner Satisfaction</div>
+                    <div class="trust-num">95%</div>
+                    <div class="trust-lbl">Partner Satisfaction</div>
                 </div>
             </div>
         </div>
@@ -845,9 +934,9 @@
 
     <!-- MAIN -->
     <main class="main-content">
-        <div class="signup-container">
+        <div class="card">
 
-            <!-- PROGRESS BAR -->
+            <!-- PROGRESS BAR (4 steps) -->
             <div class="progress-bar">
                 <div class="progress-step active" id="ind-1">
                     <div class="step-circle">1</div>
@@ -855,10 +944,14 @@
                 </div>
                 <div class="progress-step" id="ind-2">
                     <div class="step-circle">2</div>
-                    <div class="step-label">Choose Plan</div>
+                    <div class="step-label">Verify Email</div>
                 </div>
                 <div class="progress-step" id="ind-3">
                     <div class="step-circle">3</div>
+                    <div class="step-label">Choose Plan</div>
+                </div>
+                <div class="progress-step" id="ind-4">
+                    <div class="step-circle">4</div>
                     <div class="step-label">Payment</div>
                 </div>
             </div>
@@ -866,11 +959,11 @@
             <!-- ── STEP 1: BUSINESS INFO ── -->
             <div class="step-content active" id="step1">
                 <h2 class="step-title">Tell us about your business</h2>
-                <p class="step-desc">We need some basic information to set up your partner account</p>
+                <p class="step-desc">Fill in your details — a verification email will be sent after you submit.</p>
 
-                <div class="error-msg" id="step1Error"></div>
+                <div class="alert alert-error" id="err1"></div>
 
-                <form id="step1Form">
+                <form id="step1Form" novalidate>
                     <div class="form-grid">
                         <div class="form-group full">
                             <label>Business Type <span class="required">*</span></label>
@@ -889,19 +982,19 @@
                         </div>
                         <div class="form-group">
                             <label>Contact Person <span class="required">*</span></label>
-                            <input type="text" id="contactPerson" placeholder="Your full name" required>
+                            <input type="text" id="contactName" placeholder="Your full name" required>
                         </div>
                         <div class="form-group">
                             <label>Email Address <span class="required">*</span></label>
                             <input type="email" id="email" placeholder="contact@business.com" required>
                         </div>
                         <div class="form-group">
-                            <label>Phone Number <span class="required">*</span></label>
-                            <input type="tel" id="phone" placeholder="+998 90 123 4567" required>
+                            <label>Phone Number</label>
+                            <input type="tel" id="phone" placeholder="+998 90 123 4567">
                         </div>
                         <div class="form-group full">
-                            <label>Business Address <span class="required">*</span></label>
-                            <input type="text" id="address" placeholder="Registan Street, Samarkand" required>
+                            <label>Business Address</label>
+                            <input type="text" id="address" placeholder="Registan Street, Samarkand">
                         </div>
                         <div class="form-group">
                             <label>City</label>
@@ -913,50 +1006,75 @@
                         </div>
                         <div class="form-group full">
                             <label>About Your Business (optional)</label>
-                            <textarea id="description"
-                                placeholder="What makes your business special? What can travelers expect?"></textarea>
+                            <textarea id="description" placeholder="What makes your business special?"></textarea>
                         </div>
                     </div>
-                    <div class="button-group">
+                    <div class="btn-group">
                         <a href="/index.html" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary" id="step1Btn">Next: Choose Plan →</button>
+                        <button type="submit" class="btn btn-primary" id="btn1">
+                            Next: Verify Email →
+                        </button>
                     </div>
                 </form>
             </div>
 
-            <!-- ── STEP 2: CHOOSE PLAN ── -->
+            <!-- ── STEP 2: VERIFY EMAIL ── -->
             <div class="step-content" id="step2">
+                <div class="verify-gate">
+                    <span class="verify-icon">📧</span>
+                    <h2 class="step-title">Check your email</h2>
+                    <p class="step-desc">
+                        We sent a verification link to <strong id="verifyEmailDisplay"></strong><br>
+                        Click the link in the email, then this page will move forward automatically.
+                    </p>
+
+                    <div class="verify-status waiting" id="verifyStatus">
+                        ⏳ Waiting for email verification…
+                    </div>
+
+                    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:0.5rem;">
+                        Didn't receive it? Check your spam folder, or:
+                    </p>
+                    <button class="resend-btn" id="resendBtn" onclick="resendVerification()">
+                        Resend verification email
+                    </button>
+
+                    <div class="alert alert-success" id="resendSuccess" style="margin-top:1rem;">
+                        ✅ Verification email resent! Check your inbox.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── STEP 3: CHOOSE PLAN ── -->
+            <div class="step-content" id="step3">
                 <h2 class="step-title">Choose the perfect plan</h2>
-                <p class="step-desc">All plans include full partner dashboard access, unlimited updates, and analytics
-                </p>
+                <p class="step-desc">All plans include full dashboard access, unlimited updates, and analytics.</p>
+
+                <div class="alert alert-error" id="err3"></div>
 
                 <div class="pricing-grid">
-
-                    <div class="pricing-card" onclick="selectPlan(this,'1month',20)">
+                    <div class="plan-card" onclick="selectPlan(this,'1month',20)">
                         <div class="plan-duration">1 Month</div>
                         <div class="plan-price">$20<small>/mo</small></div>
                         <ul class="plan-features">
                             <li>Full dashboard access</li>
-                            <li>Unlimited updates</li>
-                            <li>Analytics</li>
+                            <li>Unlimited listing updates</li>
+                            <li>Analytics & insights</li>
                             <li>Email support</li>
                         </ul>
                     </div>
-
-                    <div class="pricing-card popular" onclick="selectPlan(this,'3months',50)">
-                        <span class="popular-badge">Most Popular</span>
+                    <div class="plan-card popular" onclick="selectPlan(this,'3months',50)">
                         <div class="plan-duration">3 Months</div>
                         <div class="plan-price">$50<small>/3mo</small></div>
                         <div class="plan-save">Save $10</div>
                         <ul class="plan-features">
                             <li>Everything in 1 Month</li>
                             <li>Priority support</li>
-                            <li>Featured listing</li>
+                            <li>Featured listing badge</li>
                             <li>Photo gallery</li>
                         </ul>
                     </div>
-
-                    <div class="pricing-card" onclick="selectPlan(this,'6months',110)">
+                    <div class="plan-card" onclick="selectPlan(this,'6months',110)">
                         <div class="plan-duration">6 Months</div>
                         <div class="plan-price">$110<small>/6mo</small></div>
                         <div class="plan-save">Save $10</div>
@@ -967,11 +1085,10 @@
                             <li>Custom branding</li>
                         </ul>
                     </div>
-
-                    <div class="pricing-card" onclick="selectPlan(this,'1year',220)">
+                    <div class="plan-card" onclick="selectPlan(this,'1year',220)">
                         <div class="plan-duration">1 Year</div>
                         <div class="plan-price">$220<small>/yr</small></div>
-                        <div class="plan-save">Best Value! Save $20</div>
+                        <div class="plan-save">Best Value — Save $20</div>
                         <ul class="plan-features">
                             <li>Everything in 6 Months</li>
                             <li>Dedicated support</li>
@@ -979,137 +1096,137 @@
                             <li>Exclusive promotions</li>
                         </ul>
                     </div>
-
                 </div>
 
                 <div class="info-box">
-                    <p>💡 <strong>Tip:</strong> Longer plans save you money! After your plan expires, you'll have a
-                        3-day grace period to renew before your listing is deactivated.</p>
+                    💡 <strong>Tip:</strong> Longer plans save money! After expiry you have a 3-day grace period to
+                    renew before your listing is paused.
                 </div>
 
-                <div class="button-group">
-                    <button type="button" class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
-                    <button type="button" class="btn btn-primary" id="step2Btn" onclick="goToStep(3)" disabled>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="goBack3()">← Back</button>
+                    <button type="button" class="btn btn-primary" id="btn3" onclick="goToPayment()" disabled>
                         Continue to Payment →
                     </button>
                 </div>
             </div>
 
-            <!-- ── STEP 3: PAYMENT ── -->
-            <div class="step-content" id="step3">
+            <!-- ── STEP 4: PAYMENT ── -->
+            <div class="step-content" id="step4">
                 <h2 class="step-title">Complete your payment</h2>
-                <p class="step-desc">Send payment to one of the cards below, then upload your receipt screenshot</p>
+                <p class="step-desc">Send payment to any card below, then upload your receipt screenshot.</p>
 
                 <!-- Order summary -->
-                <div class="payment-summary">
+                <div class="order-summary">
                     <div class="summary-title">📋 Order Summary</div>
-                    <div class="summary-row"><span>Business Name:</span><span id="sumBusiness">—</span></div>
-                    <div class="summary-row"><span>Email:</span><span id="sumEmail">—</span></div>
-                    <div class="summary-row"><span>Plan:</span><span id="sumPlan">—</span></div>
-                    <div class="summary-row"><span>Total Amount:</span><span id="sumAmount">$0</span></div>
+                    <div class="summary-row"><span>Business Name</span><span id="sumBusiness">—</span></div>
+                    <div class="summary-row"><span>Email</span><span id="sumEmail">—</span></div>
+                    <div class="summary-row"><span>Plan</span><span id="sumPlan">—</span></div>
+                    <div class="summary-row"><span>Total</span><span id="sumAmount">$0</span></div>
                 </div>
 
                 <!-- Payment cards -->
-                <h3 style="font-weight:700;margin-bottom:1rem;">💳 Send Payment to One of These Cards</h3>
+                <h3 style="font-weight:700;margin-bottom:0.9rem;font-size:1rem;">
+                    💳 Send Payment to One of These Cards
+                </h3>
                 <div class="card-methods">
                     <div class="card-method">
                         <div class="card-method-icon">💳</div>
                         <div class="card-method-name">Visa / Humo</div>
-                        <div class="card-method-number" id="cardVisa">Loading…</div>
+                        <div class="card-method-number" id="cardVisa">—</div>
                     </div>
                     <div class="card-method">
                         <div class="card-method-icon">🏦</div>
                         <div class="card-method-name">Uzcard</div>
-                        <div class="card-method-number" id="cardUzcard">Loading…</div>
+                        <div class="card-method-number" id="cardUzcard">—</div>
                     </div>
                     <div class="card-method">
                         <div class="card-method-icon">📱</div>
                         <div class="card-method-name">Click / Payme</div>
-                        <div class="card-method-number" id="cardClick">Loading…</div>
+                        <div class="card-method-number" id="cardClick">—</div>
                     </div>
                 </div>
 
-                <!-- Instructions -->
-                <div class="pay-instruction">
+                <!-- How to pay -->
+                <div class="pay-steps">
                     <h4>📌 How to pay:</h4>
                     <ol>
-                        <li>Choose any card above and send exactly <strong id="payAmount">$0</strong></li>
+                        <li>Send exactly <strong id="payAmt">$0</strong> to any card above</li>
                         <li>Take a screenshot of your successful payment confirmation</li>
                         <li>Upload the screenshot below</li>
-                        <li>We will verify your payment and activate your account within 1–2 business days</li>
+                        <li>We verify your payment and activate your account within 1–2 business days</li>
                     </ol>
                 </div>
 
-                <!-- Upload proof -->
-                <h3 style="font-weight:700;margin-bottom:1rem;">📸 Upload Payment Screenshot <span
-                        class="required">*</span></h3>
+                <!-- Screenshot upload -->
+                <h3 style="font-weight:700;margin-bottom:0.75rem;font-size:1rem;">
+                    📸 Upload Payment Screenshot <span class="required">*</span>
+                </h3>
                 <div class="upload-zone" id="uploadZone">
-                    <input type="file" id="proofFile" accept="image/*" onchange="handleProofUpload(this)">
+                    <input type="file" id="proofFile" accept="image/jpeg,image/png,image/webp,image/jpg"
+                        onchange="handleProofUpload(this)">
                     <div class="upload-icon">📤</div>
                     <div class="upload-text">Click to upload your payment screenshot</div>
-                    <div class="upload-hint">JPG, PNG or WEBP — max 5MB</div>
+                    <div class="upload-hint">JPG, PNG or WEBP — max 5 MB</div>
                 </div>
-                <div class="upload-progress" id="uploadProgress">⏳ Uploading screenshot…</div>
+                <div class="upload-progress" id="uploadProgress">⏳ Uploading…</div>
                 <div class="proof-preview" id="proofPreview">
                     <img id="proofImg" src="" alt="Payment proof">
                     <div class="proof-name" id="proofName"></div>
                 </div>
                 <input type="hidden" id="proofUrl">
 
-                <div class="error-msg" id="step3Error"></div>
+                <div class="alert alert-error" id="err4" style="margin-top:1rem;"></div>
 
                 <div class="info-box">
-                    <p>🔒 Your payment screenshot is only used to verify your payment. It is stored securely and only
-                        visible to our admin team.</p>
+                    🔒 Your screenshot is only used to verify payment. It is stored securely and visible only to our
+                    admin team.
                 </div>
 
-                <div class="button-group">
-                    <button type="button" class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
-                    <button type="button" class="btn btn-primary" id="step3Btn" onclick="submitApplication()">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="goToStep(3)">← Back</button>
+                    <button type="button" class="btn btn-primary" id="btn4" onclick="submitApplication()">
                         ✅ Submit Application
                     </button>
                 </div>
             </div>
 
-            <!-- ── SUCCESS SCREEN ── -->
+            <!-- ── SUCCESS ── -->
             <div class="step-content" id="stepSuccess">
                 <div class="success-screen">
-                    <div class="success-icon">🎉</div>
+                    <span class="success-icon">🎉</span>
                     <h2 class="success-title">Application Submitted!</h2>
-                    <p class="success-message">
-                        Your application and payment proof have been submitted successfully.<br>
-                        We've sent a verification email to <strong id="successEmail"></strong>
+                    <p class="success-msg">
+                        Your application and payment proof have been submitted.<br>
+                        We sent a confirmation to <strong id="successEmail"></strong>
                     </p>
-
-                    <div class="next-steps">
+                    <div class="next-steps-box">
                         <h3>What happens next:</h3>
-                        <div class="next-step-item">
-                            <div class="step-num done">✓</div>
-                            <div class="step-text"><strong>Application submitted</strong><span>Done! ✅</span></div>
+                        <div class="ns-item">
+                            <div class="ns-num ns-done">✓</div>
+                            <div class="ns-text"><strong>Application submitted</strong><span>Done ✅</span></div>
                         </div>
-                        <div class="next-step-item">
-                            <div class="step-num done">✓</div>
-                            <div class="step-text"><strong>Verification email sent</strong><span>Check your inbox and
-                                    click the link to verify your email</span></div>
+                        <div class="ns-item">
+                            <div class="ns-num ns-done">✓</div>
+                            <div class="ns-text"><strong>Email verified</strong><span>Done ✅</span></div>
                         </div>
-                        <div class="next-step-item">
-                            <div class="step-num pending">2</div>
-                            <div class="step-text"><strong>Admin reviews your application &
-                                    payment</strong><span>Usually within 1–2 business days</span></div>
+                        <div class="ns-item">
+                            <div class="ns-num ns-pending">2</div>
+                            <div class="ns-text"><strong>Admin reviews payment & application</strong><span>Usually
+                                    within 1–2 business days</span></div>
                         </div>
-                        <div class="next-step-item">
-                            <div class="step-num waiting">3</div>
-                            <div class="step-text"><strong>Receive login credentials</strong><span>Sent automatically by
-                                    email once approved</span></div>
+                        <div class="ns-item">
+                            <div class="ns-num ns-waiting">3</div>
+                            <div class="ns-text"><strong>Receive login credentials by email</strong><span>Sent
+                                    automatically once approved</span></div>
                         </div>
-                        <div class="next-step-item">
-                            <div class="step-num waiting">4</div>
-                            <div class="step-text"><strong>Access your dashboard</strong><span>Manage your listing,
+                        <div class="ns-item">
+                            <div class="ns-num ns-waiting">4</div>
+                            <div class="ns-text"><strong>Access your partner dashboard</strong><span>Manage listings,
                                     photos, reviews and more</span></div>
                         </div>
                     </div>
-
-                    <div style="margin-top:2.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
                         <a href="/partner-login.html" class="btn btn-primary">Go to Login →</a>
                         <a href="/index.html" class="btn btn-secondary">Back to Home</a>
                     </div>
@@ -1120,197 +1237,322 @@
     </main>
 
     <script>
+        // ── CONFIG ────────────────────────────────────────────────────────
         const API = 'http://localhost:8000';
 
-        let currentStep = 1;
-        let selectedPlanKey = null;
-        let selectedPlanAmt = 0;
-        let applicationId = null;
-        const formData = {};
-
-        // ── Payment card details ─────────────────────────────────
-        // Update these with your real card numbers
+        // ⚠️ Update these with your real card numbers before launch
         const PAYMENT_CARDS = {
-            visa: '8600 XXXX XXXX XXXX',   // ← replace with your Visa/Humo card
-            uzcard: '6262 XXXX XXXX XXXX',   // ← replace with your Uzcard
-            click: '+998 XX XXX XX XX',      // ← replace with your Click/Payme number
+            visa: '8600 XXXX XXXX XXXX',
+            uzcard: '6262 XXXX XXXX XXXX',
+            click: '+998 XX XXX XX XX',
         };
 
-        document.getElementById('cardVisa').textContent = PAYMENT_CARDS.visa;
-        document.getElementById('cardUzcard').textContent = PAYMENT_CARDS.uzcard;
-        document.getElementById('cardClick').textContent = PAYMENT_CARDS.click;
-
-        // ── PLAN NAMES ───────────────────────────────────────────
-        const PLAN_NAMES = {
+        const PLAN_LABELS = {
             '1month': '1 Month Plan  — $20',
             '3months': '3 Months Plan — $50',
             '6months': '6 Months Plan — $110',
             '1year': '1 Year Plan   — $220',
         };
 
-        // ── STEP NAVIGATION ──────────────────────────────────────
-        function goToStep(n) {
-            // Validate step 2 — must have selected plan
-            if (n === 3 && !selectedPlanKey) return;
+        // ── STATE ─────────────────────────────────────────────────────────
+        let currentStep = 1;
+        let selectedPlanKey = null;
+        let selectedPlanAmt = 0;
+        let formData = {};
+        let verifyInterval = null;
 
-            // Hide current
-            document.getElementById(`step${currentStep}`).classList.remove('active');
-            document.getElementById(`ind-${currentStep}`).classList.remove('active');
-            if (n > currentStep) document.getElementById(`ind-${currentStep}`).classList.add('completed');
-            else document.getElementById(`ind-${currentStep}`).classList.remove('completed');
+        // ── ON LOAD ───────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fill payment card numbers
+            document.getElementById('cardVisa').textContent = PAYMENT_CARDS.visa;
+            document.getElementById('cardUzcard').textContent = PAYMENT_CARDS.uzcard;
+            document.getElementById('cardClick').textContent = PAYMENT_CARDS.click;
+
+            // Check if returning from email verification link
+            checkReturnFromVerify();
+        });
+
+        // When a partner clicks the email verify link they land on
+        // partner-verify.html which then redirects back here with
+        // ?verified=true&email=xxx — detect that and jump to step 3.
+        function checkReturnFromVerify() {
+            const params = new URLSearchParams(window.location.search);
+            const verified = params.get('verified');
+            const email = params.get('email');
+
+            if (verified === 'true' && email) {
+                // Restore saved form data from sessionStorage
+                const saved = sessionStorage.getItem('partnerFormData');
+                if (saved) {
+                    formData = JSON.parse(saved);
+                } else {
+                    formData.email = email;
+                }
+                // Go straight to step 3
+                setStep(3);
+                return;
+            }
+        }
+
+        // ── STEP NAVIGATION ───────────────────────────────────────────────
+        function setStep(n) {
+            // Update indicators
+            for (let i = 1; i <= 4; i++) {
+                const ind = document.getElementById(`ind-${i}`);
+                if (!ind) continue;
+                ind.classList.remove('active', 'completed');
+                if (i < n) ind.classList.add('completed');
+                else if (i === n) ind.classList.add('active');
+            }
+
+            // Hide all steps
+            ['step1', 'step2', 'step3', 'step4', 'stepSuccess'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('active');
+            });
+
+            // Show target step
+            const target = n <= 4 ? `step${n}` : 'stepSuccess';
+            const el = document.getElementById(target);
+            if (el) el.classList.add('active');
 
             currentStep = n;
-
-            // Show next
-            document.getElementById(`step${currentStep}`).classList.add('active');
-            document.getElementById(`ind-${currentStep}`).classList.add('active');
-
-            if (currentStep === 3) fillPaymentSummary();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function selectPlan(card, key, amount) {
-            document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            selectedPlanKey = key;
-            selectedPlanAmt = amount;
-            document.getElementById('step2Btn').disabled = false;
+        function goToStep(n) { setStep(n); }
+
+        // ── FORM HELPERS ──────────────────────────────────────────────────
+        function showError(elId, msg) {
+            const el = document.getElementById(elId);
+            el.textContent = '❌ ' + msg;
+            el.classList.add('show');
+        }
+        function clearError(elId) {
+            const el = document.getElementById(elId);
+            el.textContent = '';
+            el.classList.remove('show');
         }
 
-        function fillPaymentSummary() {
-            document.getElementById('sumBusiness').textContent = formData.business_name || '—';
-            document.getElementById('sumEmail').textContent = formData.email || '—';
-            document.getElementById('sumPlan').textContent = PLAN_NAMES[selectedPlanKey] || selectedPlanKey;
-            document.getElementById('sumAmount').textContent = `$${selectedPlanAmt}`;
-            document.getElementById('payAmount').textContent = `$${selectedPlanAmt}`;
-        }
-
-        // ── STEP 1: SUBMIT BUSINESS INFO ─────────────────────────
+        // ── STEP 1: SUBMIT BUSINESS INFO ─────────────────────────────────
         document.getElementById('step1Form').addEventListener('submit', async e => {
             e.preventDefault();
+            clearError('err1');
 
-            const btn = document.getElementById('step1Btn');
-            const errEl = document.getElementById('step1Error');
-            errEl.classList.remove('show');
+            const btn = document.getElementById('btn1');
 
-            formData.business_type = document.getElementById('businessType').value;
-            formData.business_name = document.getElementById('businessName').value;
-            formData.contact_name = document.getElementById('contactPerson').value;
-            formData.email = document.getElementById('email').value;
-            formData.phone = document.getElementById('phone').value;
-            formData.address = document.getElementById('address').value;
-            formData.city = document.getElementById('city').value || null;
-            formData.website = document.getElementById('website').value || null;
-            formData.description = document.getElementById('description').value || null;
+            // Collect fields
+            const bType = document.getElementById('businessType').value;
+            const bName = document.getElementById('businessName').value.trim();
+            const cName = document.getElementById('contactName').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            if (!bType) { showError('err1', 'Please select a business type.'); return; }
+            if (!bName) { showError('err1', 'Please enter your business name.'); return; }
+            if (!cName) { showError('err1', 'Please enter the contact person name.'); return; }
+            if (!email) { showError('err1', 'Please enter your email address.'); return; }
+
+            formData = {
+                business_type: bType,
+                business_name: bName,
+                contact_name: cName,
+                email: email,
+                phone: document.getElementById('phone').value.trim() || null,
+                address: document.getElementById('address').value.trim() || null,
+                city: document.getElementById('city').value.trim() || null,
+                website: document.getElementById('website').value.trim() || null,
+                description: document.getElementById('description').value.trim() || null,
+            };
+
+            // Save to sessionStorage so we can restore after email redirect
+            sessionStorage.setItem('partnerFormData', JSON.stringify(formData));
 
             btn.disabled = true;
-            btn.textContent = '⏳ Saving…';
+            btn.textContent = '⏳ Submitting…';
 
             try {
                 const resp = await fetch(`${API}/api/partner-applications/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        business_type: formData.business_type,
-                        business_name: formData.business_name,
-                        contact_name: formData.contact_name,
-                        email: formData.email,
-                        phone: formData.phone,
-                        address: formData.address,
-                        city: formData.city,
-                        website: formData.website,
-                        description: formData.description,
-                    })
+                    body: JSON.stringify(formData),
                 });
-
                 const data = await resp.json();
 
-                if (!resp.ok) {
-                    errEl.textContent = '❌ ' + (data.detail || 'Something went wrong.');
-                    errEl.classList.add('show');
+                // 400 "already under review" is fine — move to verify step anyway
+                if (!resp.ok && !data.detail?.includes('already under review')) {
+                    showError('err1', data.detail || 'Something went wrong. Please try again.');
                     return;
                 }
 
-                applicationId = data.application_id;
-                goToStep(2);
+                // Move to step 2 and start polling
+                setStep(2);
+                document.getElementById('verifyEmailDisplay').textContent = email;
+                startVerifyPolling(email);
 
             } catch (err) {
-                errEl.textContent = '❌ Could not connect to server. Please try again.';
-                errEl.classList.add('show');
+                showError('err1', 'Could not connect to server. Is it running?');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Next: Choose Plan →';
+                btn.textContent = 'Next: Verify Email →';
             }
         });
 
-        // ── UPLOAD PAYMENT PROOF ─────────────────────────────────
+        // ── STEP 2: POLLING ───────────────────────────────────────────────
+        function startVerifyPolling(email) {
+            // Clear any previous interval
+            if (verifyInterval) clearInterval(verifyInterval);
+
+            verifyInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(
+                        `${API}/api/partner-applications/status?email=${encodeURIComponent(email)}`
+                    );
+                    if (!res.ok) return;
+                    const data = await res.json();
+
+                    if (data.is_email_verified) {
+                        clearInterval(verifyInterval);
+                        verifyInterval = null;
+
+                        const statusEl = document.getElementById('verifyStatus');
+                        statusEl.className = 'verify-status done';
+                        statusEl.textContent = '✅ Email verified! Taking you to plan selection…';
+
+                        setTimeout(() => setStep(3), 1500);
+                    }
+                } catch (e) { /* network error — retry next interval */ }
+            }, 4000); // poll every 4 seconds
+        }
+
+        async function resendVerification() {
+            const email = formData.email;
+            if (!email) return;
+
+            const btn = document.getElementById('resendBtn');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+
+            try {
+                const res = await fetch(
+                    `${API}/api/partner-applications/resend-verification?email=${encodeURIComponent(email)}`,
+                    { method: 'POST' }
+                );
+                if (res.ok) {
+                    document.getElementById('resendSuccess').classList.add('show');
+                    setTimeout(() => document.getElementById('resendSuccess').classList.remove('show'), 4000);
+                }
+            } catch (e) { }
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = 'Resend verification email';
+            }, 5000);
+        }
+
+        // ── STEP 3: PLAN SELECTION ────────────────────────────────────────
+        function selectPlan(card, key, amount) {
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedPlanKey = key;
+            selectedPlanAmt = amount;
+            document.getElementById('btn3').disabled = false;
+            clearError('err3');
+        }
+
+        function goBack3() {
+            // Go back to verify step and restart polling if needed
+            setStep(2);
+            if (formData.email && !verifyInterval) {
+                startVerifyPolling(formData.email);
+            }
+        }
+
+        function goToPayment() {
+            if (!selectedPlanKey) {
+                showError('err3', 'Please select a plan before continuing.');
+                return;
+            }
+            fillOrderSummary();
+            setStep(4);
+        }
+
+        // ── STEP 4: PAYMENT ───────────────────────────────────────────────
+        function fillOrderSummary() {
+            document.getElementById('sumBusiness').textContent = formData.business_name || '—';
+            document.getElementById('sumEmail').textContent = formData.email || '—';
+            document.getElementById('sumPlan').textContent = PLAN_LABELS[selectedPlanKey] || selectedPlanKey;
+            document.getElementById('sumAmount').textContent = `$${selectedPlanAmt}`;
+            document.getElementById('payAmt').textContent = `$${selectedPlanAmt}`;
+        }
+
         async function handleProofUpload(input) {
             const file = input.files[0];
             if (!file) return;
+            clearError('err4');
 
+            // Validate
             if (!file.type.startsWith('image/')) {
-                showStep3Error('Please select an image file (JPG, PNG, or WEBP).');
+                showError('err4', 'Please select an image file (JPG, PNG, or WEBP).');
+                input.value = '';
                 return;
             }
             if (file.size > 5 * 1024 * 1024) {
-                showStep3Error('File too large. Maximum size is 5MB.');
+                showError('err4', 'File too large — maximum size is 5 MB.');
+                input.value = '';
                 return;
             }
 
-            const progress = document.getElementById('uploadProgress');
-            progress.classList.add('active');
-            progress.textContent = '⏳ Uploading screenshot…';
-
-            // Show local preview immediately
+            // Local preview immediately
             const reader = new FileReader();
-            reader.onload = e => {
-                document.getElementById('proofImg').src = e.target.result;
+            reader.onload = ev => {
+                document.getElementById('proofImg').src = ev.target.result;
                 document.getElementById('proofName').textContent = `✅ ${file.name}`;
                 document.getElementById('proofPreview').style.display = 'block';
             };
             reader.readAsDataURL(file);
 
+            // Upload to server
+            const progress = document.getElementById('uploadProgress');
+            progress.classList.add('show');
+            progress.textContent = '⏳ Uploading screenshot…';
+
             try {
-                const formPayload = new FormData();
-                formPayload.append('file', file);
+                const fd = new FormData();
+                fd.append('file', file);
 
-                const res = await fetch(`${API}/admin/upload-image`, {
-                    method: 'POST',
-                    body: formPayload
-                });
-
+                const res = await fetch(`${API}/admin/upload-image`, { method: 'POST', body: fd });
                 const data = await res.json();
+
                 if (!res.ok) throw new Error(data.detail || 'Upload failed');
 
                 document.getElementById('proofUrl').value = `${API}${data.url}`;
                 progress.textContent = '✅ Screenshot uploaded successfully!';
-                setTimeout(() => progress.classList.remove('active'), 3000);
+                setTimeout(() => progress.classList.remove('show'), 3000);
 
             } catch (err) {
-                progress.classList.remove('active');
-                showStep3Error('Upload failed: ' + err.message + '. You can still submit — admin will contact you.');
-                // Don't block submission if upload fails — admin can request proof manually
+                progress.classList.remove('show');
+                // Don't block submission — admin can ask for proof manually
+                showError('err4',
+                    `Upload failed (${err.message}). You can still submit — admin will contact you if needed.`
+                );
             }
         }
 
-        // ── SUBMIT FINAL APPLICATION ─────────────────────────────
         async function submitApplication() {
-            const btn = document.getElementById('step3Btn');
-            const errEl = document.getElementById('step3Error');
-            errEl.classList.remove('show');
+            clearError('err4');
 
             const proofUrl = document.getElementById('proofUrl').value;
             if (!proofUrl) {
-                showStep3Error('Please upload your payment screenshot before submitting.');
+                showError('err4', 'Please upload your payment screenshot before submitting.');
                 return;
             }
 
+            const btn = document.getElementById('btn4');
             btn.disabled = true;
-            btn.innerHTML = '⏳ Submitting…';
+            btn.textContent = '⏳ Submitting…';
 
             try {
-                // Update the application with plan + payment proof
-                // We re-submit with full data including plan selection
+                // Update the existing application with plan + payment proof
                 const resp = await fetch(`${API}/api/partner-applications/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1319,33 +1561,35 @@
                         plan: selectedPlanKey,
                         plan_amount: selectedPlanAmt,
                         payment_proof_url: proofUrl,
-                    })
+                    }),
                 });
+                const data = await resp.json();
 
-                // 400 "already under review" is acceptable — we just want to store plan + proof
-                // If the application was already saved in step 1, this will return 400
-                // which is fine — the data was already recorded
+                // Both 200 and 400 "already under review / updated" are fine here
+                // The backend update logic handles it
+                if (!resp.ok && !data.detail?.includes('updated') && !data.detail?.includes('review')) {
+                    showError('err4', data.detail || 'Submission failed. Please try again.');
+                    return;
+                }
 
                 // Show success
-                document.getElementById('step3').classList.remove('active');
-                document.getElementById('ind-3').classList.remove('active');
-                document.getElementById('ind-3').classList.add('completed');
-                document.getElementById('stepSuccess').classList.add('active');
                 document.getElementById('successEmail').textContent = formData.email;
-
+                // Mark step 4 complete and show success
+                document.getElementById('ind-4').classList.remove('active');
+                document.getElementById('ind-4').classList.add('completed');
+                document.getElementById('step4').classList.remove('active');
+                document.getElementById('stepSuccess').classList.add('active');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            } catch (err) {
-                showStep3Error('Submission failed: ' + err.message);
-                btn.disabled = false;
-                btn.innerHTML = '✅ Submit Application';
-            }
-        }
+                // Clear sessionStorage
+                sessionStorage.removeItem('partnerFormData');
 
-        function showStep3Error(msg) {
-            const el = document.getElementById('step3Error');
-            el.textContent = msg;
-            el.classList.add('show');
+            } catch (err) {
+                showError('err4', 'Could not connect to server. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✅ Submit Application';
+            }
         }
     </script>
 </body>

@@ -744,3 +744,63 @@ def _dest_dict(dest: TourDestination) -> dict:
         "description":      dest.description,
         "image_url":        getattr(dest, "image_url", None),
     }
+    
+    
+# ─────────────────────────────────────────────────────────────
+
+@router.post("/reviews/{review_id}/approve")
+async def approve_agency_review(
+    review_id: int,
+    agency: TravelAgency = Depends(get_current_agency),
+    db: Session = Depends(get_db)
+):
+    from models.travel_agency import AgencyReview
+    review = db.query(AgencyReview).filter(
+        AgencyReview.id == review_id,
+        AgencyReview.agency_id == agency.id
+    ).first()
+    if not review:
+        raise HTTPException(404, "Review not found.")
+    review.status = "approved"
+    db.commit()
+    return {"success": True, "message": "Review approved."}
+
+@router.post("/reviews/{review_id}/reject")
+async def reject_agency_review(
+    review_id: int,
+    agency: TravelAgency = Depends(get_current_agency),
+    db: Session = Depends(get_db)
+):
+    from models.travel_agency import AgencyReview
+    review = db.query(AgencyReview).filter(
+        AgencyReview.id == review_id,
+        AgencyReview.agency_id == agency.id
+    ).first()
+    if not review:
+        raise HTTPException(404, "Review not found.")
+    review.status = "rejected"
+    db.commit()
+    return {"success": True, "message": "Review rejected."}
+
+# Also add GET /reviews for agency that includes status:
+@router.get("/reviews")
+async def get_agency_reviews(
+    agency: TravelAgency = Depends(get_current_agency),
+    db: Session = Depends(get_db)
+):
+    from models.travel_agency import AgencyReview
+    reviews = db.query(AgencyReview).filter(
+        AgencyReview.agency_id == agency.id
+    ).order_by(AgencyReview.created_at.desc()).all()
+    return [
+        {
+            "id":            r.id,
+            "tourist_name":  getattr(r, "tourist_name", None) or getattr(r, "reviewer_name", "Anonymous"),
+            "rating":        r.rating,
+            "comment":       r.comment,
+            "status":        getattr(r, "status", "approved"),
+            "tour_taken":    getattr(r, "tour_taken", None),
+            "created_at":    r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reviews
+    ]

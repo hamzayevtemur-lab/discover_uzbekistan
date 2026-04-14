@@ -202,3 +202,64 @@ async def delete_hotel_room(
     db.delete(room)
     db.commit()
     return {"success": True, "message": "Room deleted successfully"}
+
+
+# ─────────────────────────────────────────────────────────────
+
+@router.get("/hotels/{hotel_id}/reviews")
+async def get_hotel_reviews(
+    hotel_id: int,
+    token: dict = Depends(require_hotel_owner),
+    db: Session = Depends(get_db)
+):
+    from models.hotel import HotelReview
+    reviews = db.query(HotelReview).filter(
+        HotelReview.hotel_id == hotel_id
+    ).order_by(HotelReview.created_at.desc()).all()
+    return [
+        {
+            "id":            r.id,
+            "reviewer_name": getattr(r, "reviewer_name", None) or getattr(r, "tourist_name", "Anonymous"),
+            "rating":        r.rating,
+            "comment":       r.comment,
+            "status":        getattr(r, "status", "approved"),
+            "created_at":    r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reviews
+    ]
+
+@router.post("/hotels/{hotel_id}/reviews/{review_id}/approve")
+async def approve_hotel_review(
+    hotel_id: int,
+    review_id: int,
+    token: dict = Depends(require_hotel_owner),
+    db: Session = Depends(get_db)
+):
+    from models.hotel import HotelReview
+    review = db.query(HotelReview).filter(
+        HotelReview.id == review_id,
+        HotelReview.hotel_id == hotel_id
+    ).first()
+    if not review:
+        raise HTTPException(404, "Review not found.")
+    review.status = "approved"
+    db.commit()
+    return {"success": True, "message": "Review approved."}
+
+@router.post("/hotels/{hotel_id}/reviews/{review_id}/reject")
+async def reject_hotel_review(
+    hotel_id: int,
+    review_id: int,
+    token: dict = Depends(require_hotel_owner),
+    db: Session = Depends(get_db)
+):
+    from models.hotel import HotelReview
+    review = db.query(HotelReview).filter(
+        HotelReview.id == review_id,
+        HotelReview.hotel_id == hotel_id
+    ).first()
+    if not review:
+        raise HTTPException(404, "Review not found.")
+    review.status = "rejected"
+    db.commit()
+    return {"success": True, "message": "Review rejected."}
