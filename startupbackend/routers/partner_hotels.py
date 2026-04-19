@@ -21,8 +21,11 @@ class HotelInfoUpdate(BaseModel):
     longitude: Optional[float] = None
     opening_hours: Optional[str] = None
     image_url: Optional[str] = None
+    instagram: Optional[str] = None
+    telegram:  Optional[str] = None 
     type: Optional[str] = None
     offer: Optional[str] = None
+    
 
 class HotelRoomCreate(BaseModel):
     hotel_id: int
@@ -64,6 +67,8 @@ async def get_partner_hotel(
         "opening_hours": hotel.opening_hours,
         "is_partner": hotel.is_partner,
         "website": hotel.website,
+        "instagram":hotel.instagram,
+        "telegram" : hotel.telegram,
         "offer": hotel.offer,
         "status": getattr(hotel, 'status', 'approved'),
         "rooms": [
@@ -206,12 +211,13 @@ async def delete_hotel_room(
 
 # ─────────────────────────────────────────────────────────────
 
-@router.get("/hotels/{hotel_id}/reviews")
-async def get_hotel_reviews(
+@router.get("/{hotel_id}/partner-reviews")  # ← different URL
+async def get_hotel_partner_reviews(
     hotel_id: int,
     token: dict = Depends(require_hotel_owner),
     db: Session = Depends(get_db)
 ):
+    """Partner endpoint — returns ALL reviews including pending"""
     from models.hotel import HotelReview
     reviews = db.query(HotelReview).filter(
         HotelReview.hotel_id == hotel_id
@@ -219,16 +225,16 @@ async def get_hotel_reviews(
     return [
         {
             "id":            r.id,
-            "reviewer_name": getattr(r, "reviewer_name", None) or getattr(r, "tourist_name", "Anonymous"),
+            "reviewer_name": r.reviewer_name or "Anonymous",
             "rating":        r.rating,
             "comment":       r.comment,
-            "status":        getattr(r, "status", "approved"),
+            "status":        r.status or "pending",
             "created_at":    r.created_at.isoformat() if r.created_at else None,
         }
         for r in reviews
     ]
 
-@router.post("/hotels/{hotel_id}/reviews/{review_id}/approve")
+@router.post("/{hotel_id}/reviews/{review_id}/approve")
 async def approve_hotel_review(
     hotel_id: int,
     review_id: int,
@@ -246,7 +252,7 @@ async def approve_hotel_review(
     db.commit()
     return {"success": True, "message": "Review approved."}
 
-@router.post("/hotels/{hotel_id}/reviews/{review_id}/reject")
+@router.post("/{hotel_id}/reviews/{review_id}/reject")
 async def reject_hotel_review(
     hotel_id: int,
     review_id: int,
@@ -263,3 +269,21 @@ async def reject_hotel_review(
     review.status = "rejected"
     db.commit()
     return {"success": True, "message": "Review rejected."}
+
+@router.delete("/{hotel_id}/reviews/{review_id}")
+async def delete_hotel_review(
+    hotel_id: int,
+    review_id: int,
+    token: dict = Depends(require_hotel_owner),
+    db: Session = Depends(get_db)
+):
+    from models.hotel import HotelReview
+    review = db.query(HotelReview).filter(
+        HotelReview.id == review_id,
+        HotelReview.hotel_id == hotel_id
+    ).first()
+    if not review:
+        raise HTTPException(404, "Review not found.")
+    db.delete(review)
+    db.commit()
+    return {"success": True, "message": "Review deleted."}

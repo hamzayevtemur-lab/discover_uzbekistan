@@ -800,6 +800,14 @@
         <i class="fas fa-globe"></i>
         <span>Website</span>
       </button>
+      <button class="quick-action-btn" id="instagramBtn" style="display: none">
+        <i class="fab fa-instagram"></i>
+        <span>Instagram</span>
+      </button>
+      <button class="quick-action-btn" id="telegramBtn" style="display: none">
+        <i class="fab fa-telegram-plane"></i>
+        <span>Telegram</span>
+      </button>
       <button class="quick-action-btn" id="addReviewBtn">
         <i class="fas fa-star"></i>
         <span>Write Review</span>
@@ -1092,6 +1100,40 @@
         elements.websiteBtn.style.display = currentHotel.website
           ? "flex"
           : "none";
+      }
+      // After the website button logic, add:
+
+      // Instagram Button
+      const instagramBtn = document.getElementById('instagramBtn');
+      if (instagramBtn) {
+        if (currentHotel.instagram) {
+          const instaLink = currentHotel.instagram.startsWith('http')
+            ? currentHotel.instagram
+            : `https://instagram.com/${currentHotel.instagram.replace('@', '')}`;
+
+          instagramBtn.style.display = 'flex';
+          instagramBtn.onclick = () => window.open(instaLink, '_blank');
+        } else {
+          instagramBtn.style.display = 'none';
+        }
+      }
+
+      // Telegram Button
+      const telegramBtn = document.getElementById('telegramBtn');
+      if (telegramBtn) {
+        if (currentHotel.telegram) {
+          let tgLink = currentHotel.telegram;
+          if (!tgLink.startsWith('http')) {
+            tgLink = tgLink.startsWith('@')
+              ? `https://t.me/${tgLink.replace('@', '')}`
+              : `https://t.me/${tgLink}`;
+          }
+
+          telegramBtn.style.display = 'flex';
+          telegramBtn.onclick = () => window.open(tgLink, '_blank');
+        } else {
+          telegramBtn.style.display = 'none';
+        }
       }
 
       // Special offer

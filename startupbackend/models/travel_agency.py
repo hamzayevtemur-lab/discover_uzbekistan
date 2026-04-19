@@ -52,6 +52,8 @@ class AgencyReview(Base):
     tour_taken = Column(String(200))
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
     
+    status = Column(String(20), default="pending")
+    
     agency = relationship("TravelAgency", back_populates="reviews")
 
     

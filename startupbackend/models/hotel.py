@@ -25,6 +25,9 @@ class Hotel(Base):
         server_default=expression.false()
     )
     website = Column(String(255))
+    instagram=Column(String(255))
+    telegram=Column(String(255))
+    
     offer = Column(String(255))  # e.g., "15% off for 3+ nights"
     
     partner_email = Column(String(255), unique=True, nullable=True)
@@ -67,6 +70,8 @@ class HotelReview(Base):
     rating = Column(Integer, nullable=False)  # 1–5
     comment = Column(Text, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
+    
+    status = Column(String(20), default="pending")
 
     hotel = relationship("Hotel", back_populates="reviews")
     

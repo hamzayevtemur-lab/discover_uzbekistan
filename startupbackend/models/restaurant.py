@@ -33,6 +33,8 @@ class Restaurant(Base):
     )
     
     website = Column(String(255))
+    instagram=Column(String(255))
+    telegram=Column(String(255))
 
     menu_items = relationship("RestaurantMenu", back_populates="restaurant")
     reviews    = relationship("Review", back_populates="restaurant")
@@ -74,5 +76,7 @@ class Review(Base):
     rating = Column(Integer, nullable=False)          # 1–5
     comment = Column(Text, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
+    
+    status = Column(String(20), default="pending")
 
     restaurant = relationship("Restaurant", back_populates="reviews")

@@ -357,7 +357,8 @@ def delete_destination(tour_id: int, dest_id: int, db: Session=Depends(get_db)):
 @router.get("/{agency_id}/reviews", response_model=List[AgencyReviewOut])
 def get_agency_reviews(agency_id: int, db: Session=Depends(get_db)):
     return db.query(AgencyReview).filter(
-        AgencyReview.agency_id==agency_id
+        AgencyReview.agency_id == agency_id,
+        AgencyReview.status == "approved"    # ← ADD THIS
     ).order_by(AgencyReview.created_at.desc()).all()
 
 
@@ -365,7 +366,7 @@ def get_agency_reviews(agency_id: int, db: Session=Depends(get_db)):
 def create_review(review: AgencyReviewCreate, db: Session=Depends(get_db)):
     if not db.query(TravelAgency).filter(TravelAgency.id==review.agency_id).first():
         raise HTTPException(status_code=404, detail="Agency not found")
-    new_review = AgencyReview(**review.dict())
+    new_review = AgencyReview(**review.dict(), status="pending")
     db.add(new_review)
     all_reviews = db.query(AgencyReview).filter(AgencyReview.agency_id==review.agency_id).all()
     agency = db.query(TravelAgency).filter(TravelAgency.id==review.agency_id).first()

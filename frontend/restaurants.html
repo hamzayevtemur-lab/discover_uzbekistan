@@ -184,7 +184,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.75) 100%);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.75) 100%);
         }
 
         .hero-content {
@@ -595,21 +595,25 @@
             bottom: 28px;
             left: 50%;
             transform: translateX(-50%) translateY(80px);
-            background: rgba(16,16,16,0.97);
+            background: rgba(16, 16, 16, 0.97);
             color: white;
             padding: 12px 26px;
             border-radius: 30px;
             font-size: 14px;
-            border: 1px solid rgba(255,107,53,0.35);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 107, 53, 0.35);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
             z-index: 9999;
-            transition: transform 0.35s cubic-bezier(.175,.885,.32,1.275), opacity 0.3s;
+            transition: transform 0.35s cubic-bezier(.175, .885, .32, 1.275), opacity 0.3s;
             opacity: 0;
             pointer-events: none;
             white-space: nowrap;
             font-family: 'Poppins', sans-serif;
         }
-        .toast-msg.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        .toast-msg.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
 
         .map-note {
             text-align: center;
@@ -1030,6 +1034,16 @@
                 <i class="fas fa-phone"></i>
                 <span id="restaurantPhone">Loading...</span>
             </div>
+            <div class="info-item" id="instagramItem" style="display: none;">
+                <i class="fab fa-instagram"></i>
+                <a href="#" id="restaurantInstagram" target="_blank"
+                    style="color: inherit; text-decoration: none;">@username</a>
+            </div>
+            <div class="info-item" id="telegramItem" style="display: none;">
+                <i class="fab fa-telegram-plane"></i>
+                <a href="#" id="restaurantTelegram" target="_blank"
+                    style="color: inherit; text-decoration: none;">@username</a>
+            </div>
             <div class="info-item">
                 <i class="fas fa-clock"></i>
                 <span id="restaurantHours">10:00 AM - 11:00 PM</span>
@@ -1046,6 +1060,12 @@
             </button>
             <button class="btn-secondary" id="websiteBtn">
                 <i class="fas fa-globe"></i> Website
+            </button>
+            <button class="btn-secondary" id="instagramBtn" style="display: none;">
+                <i class="fab fa-instagram"></i> Instagram
+            </button>
+            <button class="btn-secondary" id="telegramBtn" style="display: none;">
+                <i class="fab fa-telegram-plane"></i> Telegram
             </button>
         </div>
 
@@ -1208,9 +1228,9 @@
         function escHtml(s) {
             if (s == null) return '';
             return String(s)
-                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-                .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-                .replace(/'/g,'&#039;');
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         // ── TOAST ────────────────────────────────────────────────────────
@@ -1239,30 +1259,30 @@
         document.addEventListener('DOMContentLoaded', async () => {
             // Build element refs NOW that DOM exists
             elements = {
-                restaurantName:    document.getElementById('restaurantName'),
-                restaurantHero:    document.getElementById('restaurantHero'),
-                restaurantRating:  document.getElementById('restaurantRating'),
-                reviewCount:       document.getElementById('reviewCount'),
-                partnerBadge:      document.getElementById('partnerBadge'),
+                restaurantName: document.getElementById('restaurantName'),
+                restaurantHero: document.getElementById('restaurantHero'),
+                restaurantRating: document.getElementById('restaurantRating'),
+                reviewCount: document.getElementById('reviewCount'),
+                partnerBadge: document.getElementById('partnerBadge'),
                 restaurantAddress: document.getElementById('restaurantAddress'),
-                restaurantPhone:   document.getElementById('restaurantPhone'),
-                restaurantHours:   document.getElementById('restaurantHours'),
-                categoryTitle:     document.getElementById('categoryTitle'),
-                menuItemsGrid:     document.getElementById('menuItemsGrid'),
-                offersGrid:        document.getElementById('offersGrid'),
-                reviewsContainer:  document.getElementById('reviewsContainer'),
-                similarGrid:       document.getElementById('similarGrid'),
-                favoriteBtn:       document.getElementById('favoriteBtn'),
-                callBtn:           document.getElementById('callBtn'),
-                directionsBtn:     document.getElementById('directionsBtn'),
-                websiteBtn:        document.getElementById('websiteBtn'),
-                shareBtn:          document.getElementById('shareBtn'),
-                addReviewBtn:      document.getElementById('addReviewBtn'),
-                reviewModal:       document.getElementById('reviewModal'),
-                closeModal:        document.getElementById('closeModal'),
-                submitReview:      document.getElementById('submitReview'),
-                reviewText:        document.getElementById('reviewText'),
-                reviewerName:      document.getElementById('reviewerName')
+                restaurantPhone: document.getElementById('restaurantPhone'),
+                restaurantHours: document.getElementById('restaurantHours'),
+                categoryTitle: document.getElementById('categoryTitle'),
+                menuItemsGrid: document.getElementById('menuItemsGrid'),
+                offersGrid: document.getElementById('offersGrid'),
+                reviewsContainer: document.getElementById('reviewsContainer'),
+                similarGrid: document.getElementById('similarGrid'),
+                favoriteBtn: document.getElementById('favoriteBtn'),
+                callBtn: document.getElementById('callBtn'),
+                directionsBtn: document.getElementById('directionsBtn'),
+                websiteBtn: document.getElementById('websiteBtn'),
+                shareBtn: document.getElementById('shareBtn'),
+                addReviewBtn: document.getElementById('addReviewBtn'),
+                reviewModal: document.getElementById('reviewModal'),
+                closeModal: document.getElementById('closeModal'),
+                submitReview: document.getElementById('submitReview'),
+                reviewText: document.getElementById('reviewText'),
+                reviewerName: document.getElementById('reviewerName')
             };
 
             setupEventListeners();
@@ -1330,6 +1350,7 @@
             elements.restaurantRating.textContent = currentRestaurant.rating?.toFixed(1) || 'N/A';
             elements.reviewCount.textContent = currentRestaurant.review_count ?? "0";
             elements.restaurantAddress.textContent = currentRestaurant.address || 'No address';
+
             elements.restaurantPhone.textContent = currentRestaurant.phone || 'No phone';
             elements.restaurantHours.textContent = currentRestaurant.opening_hours || 'N/A';
 
@@ -1344,6 +1365,46 @@
 
             if (elements.websiteBtn) {
                 elements.websiteBtn.style.display = currentRestaurant.website ? 'flex' : 'none';
+            }
+            // === NEW: Instagram & Telegram ===
+            const instagramBtn = document.getElementById('instagramBtn');
+            const telegramBtn = document.getElementById('telegramBtn');
+            const instagramItem = document.getElementById('instagramItem');
+            const telegramItem = document.getElementById('telegramItem');
+
+            // Instagram
+            if (currentRestaurant.instagram && instagramBtn && instagramItem) {
+                const instaLink = currentRestaurant.instagram.startsWith('http')
+                    ? currentRestaurant.instagram
+                    : `https://instagram.com/${currentRestaurant.instagram.replace('@', '')}`;
+
+                instagramBtn.style.display = 'flex';
+                instagramBtn.onclick = () => window.open(instaLink, '_blank');
+
+                // Also show in quick info
+                document.getElementById('restaurantInstagram').href = instaLink;
+                document.getElementById('restaurantInstagram').textContent =
+                    currentRestaurant.instagram.startsWith('@') ? currentRestaurant.instagram : '@' + currentRestaurant.instagram;
+                instagramItem.style.display = 'flex';
+            }
+
+            // Telegram
+            if (currentRestaurant.telegram && telegramBtn && telegramItem) {
+                let tgLink = currentRestaurant.telegram;
+                if (!tgLink.startsWith('http')) {
+                    tgLink = tgLink.startsWith('@')
+                        ? `https://t.me/${tgLink.replace('@', '')}`
+                        : `https://t.me/${tgLink}`;
+                }
+
+                telegramBtn.style.display = 'flex';
+                telegramBtn.onclick = () => window.open(tgLink, '_blank');
+
+                // Quick info
+                document.getElementById('restaurantTelegram').href = tgLink;
+                document.getElementById('restaurantTelegram').textContent =
+                    currentRestaurant.telegram.startsWith('@') ? currentRestaurant.telegram : '@' + currentRestaurant.telegram;
+                telegramItem.style.display = 'flex';
             }
         }
 
@@ -1664,7 +1725,7 @@
             };
 
             try {
-                const response = await fetch(`${API_BASE_URL}/reviews`, {
+                const response = await fetch(`${API_BASE_URL}/restaurants/reviews`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(reviewData)

@@ -22,6 +22,8 @@ class RestaurantUpdate(BaseModel):
     phone: str
     website: Optional[str] = None
     image_url: Optional[str] = None
+    instagram: Optional[str] = None
+    telegram:  Optional[str] = None 
 
 class LocationUpdate(BaseModel):
     address: str
@@ -71,6 +73,8 @@ async def get_partner_restaurant(
         "phone": restaurant.phone,
         "website": restaurant.website,
         "image_url": restaurant.image_url,
+        "instagram" :restaurant.instagram,
+        "telegram" : restaurant.telegram,
         "address": restaurant.address,
         "latitude": restaurant.latitude,
         "longitude": restaurant.longitude,
@@ -100,6 +104,8 @@ async def update_restaurant_info(
     restaurant.phone = data.phone
     restaurant.website = data.website
     restaurant.image_url = data.image_url
+    restaurant.instagram=data.instagram
+    restaurant.telegram=data.telegram
 
     if hasattr(restaurant, 'status'):
         restaurant.status = 'pending'
@@ -293,32 +299,6 @@ async def get_restaurant_stats(
     }
 
 
-@router.get("/restaurant/{restaurant_id}/reviews")
-async def get_restaurant_reviews(
-    restaurant_id: int,
-    token: dict = Depends(get_partner_token),
-    db: Session = Depends(get_db)
-):
-    check_restaurant_owner(restaurant_id, token)
-
-    restaurant = db.query(Restaurant).filter(Restaurant.id == restaurant_id).first()
-    if not restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
-
-    reviews = db.query(Review).filter(Review.restaurant_id == restaurant_id).all()
-
-    return [
-        {
-            "id": review.id,
-            "reviewer_name": review.reviewer_name,
-            "rating": review.rating,
-            "comment": review.comment,
-            "created_at": review.created_at.isoformat()
-        }
-        for review in reviews
-    ]
-
-
 @router.post("/upload-image")
 async def upload_partner_image(
     file: UploadFile = File(...),
@@ -373,11 +353,13 @@ async def get_restaurant_reviews(
             "reviewer_name": r.reviewer_name,
             "rating":        r.rating,
             "comment":       r.comment,
-            "status":        getattr(r, "status", "approved"),
+            "status":        getattr(r, "status", "pending"),
             "created_at":    r.created_at.isoformat() if r.created_at else None,
         }
         for r in reviews
     ]
+
+
 
 @router.post("/restaurant/{restaurant_id}/reviews/{review_id}/approve")
 async def approve_restaurant_review(
@@ -416,3 +398,23 @@ async def reject_restaurant_review(
     review.status = "rejected"
     db.commit()
     return {"success": True, "message": "Review rejected."}
+
+
+@router.delete("/restaurant/{restaurant_id}/reviews/{review_id}")
+async def delete_restaurant_review(
+    restaurant_id: int,
+    review_id: int,
+    token: dict = Depends(get_partner_token),
+    db: Session = Depends(get_db)
+):
+    check_restaurant_owner(restaurant_id, token)
+    from models.restaurant import Review
+    review = db.query(Review).filter(
+        Review.id == review_id,
+        Review.restaurant_id == restaurant_id
+    ).first()
+    if not review:
+        raise HTTPException(404, "Review not found.")
+    db.delete(review)
+    db.commit()
+    return {"success": True, "message": "Review deleted."}

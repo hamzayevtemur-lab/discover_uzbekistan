@@ -34,7 +34,9 @@ def get_all_restaurants(db: Session = Depends(get_db)):
             "phone": r.phone,                   
             "opening_hours": r.opening_hours,   
             "is_partner": r.is_partner,        
-            "website": r.website
+            "website": r.website,
+            "instagram":r.instagram,
+            "telegram":r.telegram
         }
         for r in restaurants
     ]
@@ -61,6 +63,8 @@ def get_restaurant(restaurant_id: int, db: Session = Depends(get_db)):
         "opening_hours": restaurant.opening_hours,
         "is_partner": restaurant.is_partner,
         "website": restaurant.website,
+        "instagram":restaurant.instagram,
+        "telegram":restaurant.telegram,
         "review_count": db.query(func.count(Review.id))
                          .filter(Review.restaurant_id == restaurant.id)
                          .scalar() or 0
@@ -91,12 +95,14 @@ def get_menu(restaurant_id: int, category: str = None, db: Session = Depends(get
 
 @router.get("/{restaurant_id}/reviews", response_model=List[ReviewOut])
 def get_reviews(restaurant_id: int, db: Session = Depends(get_db)):
-    """Get all reviews for a restaurant"""
     reviews = (
         db.query(Review)
-         .filter(Review.restaurant_id == restaurant_id)
-         .order_by(Review.created_at.desc())
-         .all()
+        .filter(
+            Review.restaurant_id == restaurant_id,
+            Review.status == "approved"    # ← ADD THIS
+        )
+        .order_by(Review.created_at.desc())
+        .all()
     )
     return reviews
 
@@ -110,7 +116,7 @@ def create_review(review: ReviewCreate, db: Session = Depends(get_db)):
     if not review.comment.strip():
         raise HTTPException(status_code=400, detail="Comment cannot be empty")
 
-    db_review = Review(**review.dict())
+    db_review = Review(**review.dict(), status="pending")
     db.add(db_review)
     db.commit()
     db.refresh(db_review)

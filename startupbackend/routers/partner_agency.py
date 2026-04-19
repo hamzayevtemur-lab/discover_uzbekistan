@@ -798,9 +798,27 @@ async def get_agency_reviews(
             "tourist_name":  getattr(r, "tourist_name", None) or getattr(r, "reviewer_name", "Anonymous"),
             "rating":        r.rating,
             "comment":       r.comment,
-            "status":        getattr(r, "status", "approved"),
+            "status":        getattr(r, "status", "pending"),
             "tour_taken":    getattr(r, "tour_taken", None),
             "created_at":    r.created_at.isoformat() if r.created_at else None,
         }
         for r in reviews
     ]
+    
+    
+@router.delete("/reviews/{review_id}")
+async def delete_agency_review(
+    review_id: int,
+    agency: TravelAgency = Depends(get_current_agency),
+    db: Session = Depends(get_db)
+):
+    from models.travel_agency import AgencyReview
+    review = db.query(AgencyReview).filter(
+        AgencyReview.id == review_id,
+        AgencyReview.agency_id == agency.id
+    ).first()
+    if not review:
+        raise HTTPException(404, "Review not found.")
+    db.delete(review)
+    db.commit()
+    return {"success": True, "message": "Review deleted."}

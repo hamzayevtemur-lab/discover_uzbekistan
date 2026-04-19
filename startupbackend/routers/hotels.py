@@ -31,6 +31,8 @@ def get_all_hotels(db: Session = Depends(get_db)):
             "opening_hours": h.opening_hours,
             "is_partner": h.is_partner,
             "website": h.website,
+            "instagram":h.instagram,
+            "telegram":h.telegram,
             "offer": h.offer
         }
         for h in hotels
@@ -59,6 +61,8 @@ def get_hotel(hotel_id: int, db: Session = Depends(get_db)):
         "opening_hours": hotel.opening_hours,
         "is_partner": hotel.is_partner,
         "website": hotel.website,
+        "instagram":hotel.instagram,
+        "telegram":hotel.telegram,
         "offer": hotel.offer
     }
 
@@ -84,20 +88,23 @@ def get_hotel_rooms(hotel_id: int, db: Session = Depends(get_db)):
 
 @router.get("/{hotel_id}/reviews", response_model=List[dict])
 def get_hotel_reviews(hotel_id: int, db: Session = Depends(get_db)):
-    """Get all reviews for a hotel"""
+    """Public endpoint — only returns approved reviews"""
     reviews = (
         db.query(HotelReview)
-        .filter(HotelReview.hotel_id == hotel_id)
+        .filter(
+            HotelReview.hotel_id == hotel_id,
+            HotelReview.status == "approved"   # ← only approved for public
+        )
         .order_by(HotelReview.created_at.desc())
         .all()
     )
     return [
         {
-            "id": r.id,
+            "id":            r.id,
             "reviewer_name": r.reviewer_name,
-            "rating": r.rating,
-            "comment": r.comment,
-            "created_at": r.created_at
+            "rating":        r.rating,
+            "comment":       r.comment,
+            "created_at":    r.created_at,
         }
         for r in reviews
     ]
@@ -112,7 +119,7 @@ def create_hotel_review(review: HotelReviewCreate, db: Session = Depends(get_db)
     if not review.comment.strip():
         raise HTTPException(status_code=400, detail="Comment cannot be empty")
 
-    db_review = HotelReview(**review.dict())
+    db_review = HotelReview(**review.dict(), status="pending")
     db.add(db_review)
     db.commit()
     db.refresh(db_review)
