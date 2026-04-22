@@ -2,6 +2,8 @@ const API_BASE = 'http://localhost:8000';
 
 let restaurantMap, restaurantMarker;
 
+let pendingAgencies = [];
+
 const ADMIN_KEY = "668e4a2d545ddcdd0a8d40e0cf7a8079fadeeb21872198a1354cd6c4a9b739b6"
 
 async function fetchAPI(endpoint, options = {}) {
@@ -93,15 +95,25 @@ async function loadDashboard() {
 async function loadPendingApprovals() {
     try {
         // ✅ Destructure ALL 5 results — was missing pendingTours causing crash
-        const [pendingRestaurants, pendingMenuItems, pendingHotels, pendingRooms, pendingTours] = await Promise.all([
+        const [
+            pendingRestaurants,
+            pendingMenuItems,
+            pendingHotels,
+            pendingRooms,
+            pendingTours,
+            pendingAgencies
+        ] = await Promise.all([
             fetchAPI('/api/admin-approval/restaurants/pending'),
             fetchAPI('/api/admin-approval/menu-items/pending'),
             fetchAPI('/api/admin-approval/hotels/pending'),
             fetchAPI('/api/admin-approval/hotel-rooms/pending'),
             fetchAPI('/api/admin-approval/tours/pending'),
+            fetchAPI('/api/admin-approval/agencies/pending'),
         ]);
 
-        const total = pendingRestaurants.length + pendingMenuItems.length + pendingHotels.length + pendingRooms.length + pendingTours.length;
+        const total = pendingRestaurants.length + pendingMenuItems.length +
+            pendingHotels.length + pendingRooms.length + pendingTours.length + pendingAgencies.length;
+
         const badge = document.getElementById('nav-pending-badge');
         if (total > 0) {
             badge.textContent = total;
@@ -303,6 +315,47 @@ async function loadPendingApprovals() {
                     </div>`;
             });
             html += '</div></div>';
+
+
+            // ── Pending Agencies ─────────────────────────────────────────
+            if (pendingAgencies.length > 0) {
+                html += `<div class="table-container" style="margin-bottom:1.5rem;">
+        <h3 style="padding:1rem;border-bottom:1px solid #e5e7eb;margin:0;">
+            🌍 Pending Travel Agencies (${pendingAgencies.length})
+        </h3>
+        <div style="padding:1rem;">`;
+                pendingAgencies.forEach(a => {
+                    html += `
+        <div style="background:white;padding:1.5rem;margin-bottom:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);display:flex;gap:1.5rem;">
+            ${a.image_url ? `<img src="${a.image_url}" style="width:150px;height:120px;object-fit:cover;border-radius:10px;flex-shrink:0;">` : ''}
+            <div style="flex:1;">
+                <h4 style="font-size:1.1rem;margin-bottom:0.3rem;">${a.name}</h4>
+                <p style="color:#6b7280;font-size:0.85rem;margin-bottom:0.4rem;">
+                    ${a.agency_type || 'Tour Operator'} ${a.city ? '· ' + a.city : ''}
+                </p>
+                <p style="color:#374151;font-size:0.9rem;">${a.description || 'No description'}</p>
+                <div style="font-size:0.85rem;color:#374151;margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.75rem;">
+                    ${a.phone ? `<span>📞 ${a.phone}</span>` : ''}
+                    ${a.email ? `<span>✉️ ${a.email}</span>` : ''}
+                    ${a.website ? `<span>🌐 <a href="${a.website}" target="_blank">${a.website}</a></span>` : ''}
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;">
+                <button onclick="approveItem('agency',${a.id})" 
+                    class="btn-create" style="background:#10b981;padding:0.5rem 1rem;white-space:nowrap;">
+                    ✅ Approve
+                </button>
+                <button onclick="rejectItem('agency',${a.id})" 
+                    class="btn-danger" style="padding:0.5rem 1rem;white-space:nowrap;">
+                    ❌ Reject
+                </button>
+            </div>
+        </div>`;
+                });
+                html += '</div></div>';
+            }
+
+
         }
 
         if (total === 0) {
@@ -335,7 +388,7 @@ async function rejectItem(type, id) {
     const reason = prompt('Rejection reason:');
     if (!reason) return;
     try {
-        await fetchAPI(`/api/admin-approval/${type}/${id}/approve`, {
+        await fetchAPI(`/api/admin-approval/${type}/${id}/reject`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'rejected', rejection_reason: reason, admin_email: 'ceo@example.com' })
@@ -2626,7 +2679,7 @@ function renderPartnersPage() {
     };
 
     if (!slice.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8;">No partners found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8;">No partners found.</td></tr>';
         pagDiv.innerHTML = '';
         return;
     }
@@ -2635,43 +2688,67 @@ function renderPartnersPage() {
         const endDate = p.plan_end_date ? new Date(p.plan_end_date) : null;
         const days = endDate ? Math.ceil((endDate - now) / 86400000) : null;
         const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+        const isBlocked = p.plan_status === 'blocked';
 
+        // Days remaining display
         let daysHtml = '—';
-        let statusHtml = '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">No plan</span>';
+        let statusHtml;
 
-        if (days !== null) {
-            if (days <= 0) {
-                daysHtml = '<span style="color:#ef4444;font-weight:700;">Expired</span>';
-                statusHtml = '<span style="background:#fee2e2;color:#991b1b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">❌ Expired</span>';
-            } else if (days <= 7) {
-                daysHtml = `<span style="color:#d97706;font-weight:700;">${days}d</span>`;
-                statusHtml = '<span style="background:#fef3c7;color:#92400e;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">⚠️ Expiring</span>';
-            } else {
-                daysHtml = `<span style="color:#10b981;font-weight:700;">${days}d</span>`;
-                statusHtml = '<span style="background:#d1fae5;color:#065f46;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">✅ Active</span>';
-            }
+        if (isBlocked) {
+            daysHtml = '—';
+            statusHtml = '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">🚫 Blocked</span>';
+        } else if (days === null) {
+            statusHtml = '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">No plan</span>';
+        } else if (days <= 0) {
+            daysHtml = '<span style="color:#ef4444;font-weight:700;">Expired</span>';
+            statusHtml = '<span style="background:#fee2e2;color:#991b1b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">❌ Expired</span>';
+        } else if (days <= 7) {
+            daysHtml = `<span style="color:#d97706;font-weight:700;">${days}d</span>`;
+            statusHtml = '<span style="background:#fef3c7;color:#92400e;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">⚠️ Expiring</span>';
+        } else {
+            daysHtml = `<span style="color:#10b981;font-weight:700;">${days}d</span>`;
+            statusHtml = '<span style="background:#d1fae5;color:#065f46;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">✅ Active</span>';
         }
 
-        const planLabel = {
-            '1month': '1 Month', '3months': '3 Months', '6months': '6 Months', '1year': '1 Year'
-        }[p.plan] || p.plan || '—';
+        const planLabel = { '1month': '1 Month', '3months': '3 Months', '6months': '6 Months', '1year': '1 Year' }[p.plan] || p.plan || '—';
+        const safeName = p.business_name.replace(/'/g, "\\'");
 
-        return `<tr>
-            <td><div style="font-weight:700;color:#1e293b;">${p.business_name}</div><div style="font-size:0.75rem;color:#94a3b8;">#${p.id}</div></td>
+        return `<tr style="${isBlocked ? 'opacity:0.6;' : ''}">
+            <td>
+                <div style="font-weight:700;color:#1e293b;">${p.business_name}</div>
+                <div style="font-size:0.75rem;color:#94a3b8;">#${p.id}</div>
+            </td>
             <td><span style="font-size:0.82rem;">${TYPE_LABELS[p.business_type] || p.business_type}</span></td>
             <td><a href="mailto:${p.email}" style="color:#6366f1;font-size:0.875rem;">${p.email}</a></td>
-            <td><span style="font-size:0.82rem;font-weight:600;">${planLabel}</span>${p.plan_amount ? `<br><span style="font-size:0.75rem;color:#94a3b8;">$${p.plan_amount}</span>` : ''}</td>
+            <td>
+                <span style="font-size:0.82rem;font-weight:600;">${planLabel}</span>
+                ${p.plan_amount ? `<br><span style="font-size:0.75rem;color:#94a3b8;">$${p.plan_amount}</span>` : ''}
+            </td>
             <td style="font-size:0.82rem;">${fmtDate(p.plan_end_date)}</td>
             <td>${daysHtml}</td>
             <td>${statusHtml}</td>
             <td>
                 <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                     <button onclick="paResend(${p.id})"
-                        style="padding:0.3rem 0.7rem;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                        style="padding:0.3rem 0.7rem;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;
+                               border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
                         ↺ Resend
                     </button>
-                    <button onclick="deletePartner(${p.id},'${p.business_name.replace(/'/g, "\\'")}')"
-                        style="padding:0.3rem 0.7rem;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                    ${isBlocked
+                ? `<button onclick="unblockPartner(${p.id},'${safeName}')"
+                               style="padding:0.3rem 0.7rem;background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;
+                                      border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                               ✅ Unblock
+                           </button>`
+                : `<button onclick="blockPartner(${p.id},'${safeName}')"
+                               style="padding:0.3rem 0.7rem;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;
+                                      border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                               🚫 Block
+                           </button>`
+            }
+                    <button onclick="deletePartner(${p.id},'${safeName}')"
+                        style="padding:0.3rem 0.7rem;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;
+                               border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
                         🗑 Delete
                     </button>
                 </div>
@@ -2680,41 +2757,87 @@ function renderPartnersPage() {
     }).join('');
 
     // Pagination
-    if (pages <= 1) { pagDiv.innerHTML = `Showing ${total} partner${total !== 1 ? 's' : ''}`; return; }
+    if (pages <= 1) {
+        pagDiv.innerHTML = `Showing ${total} partner${total !== 1 ? 's' : ''}`;
+        return;
+    }
     pagDiv.innerHTML = `
         Showing ${start + 1}–${Math.min(start + PARTNER_PAGE_SIZE, total)} of ${total} partners &nbsp;
-        <button onclick="_partnerPage=Math.max(0,_partnerPage-1);renderPartnersPage()" ${_partnerPage === 0 ? 'disabled' : ''} 
-            style="padding:0.3rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:white;">← Prev</button>
+        <button onclick="_partnerPage=Math.max(0,_partnerPage-1);renderPartnersPage()"
+            ${_partnerPage === 0 ? 'disabled' : ''}
+            style="padding:0.3rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:white;">
+            ← Prev
+        </button>
         &nbsp;Page ${_partnerPage + 1} of ${pages}&nbsp;
-        <button onclick="_partnerPage=Math.min(pages-1,_partnerPage+1);renderPartnersPage()" ${_partnerPage >= pages - 1 ? 'disabled' : ''}
-            style="padding:0.3rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:white;">Next →</button>`;
+        <button onclick="_partnerPage=Math.min(${pages}-1,_partnerPage+1);renderPartnersPage()"
+            ${_partnerPage >= pages - 1 ? 'disabled' : ''}
+            style="padding:0.3rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:white;">
+            Next →
+        </button>`;
 }
 
-async function deletePartner(id, name) {
-    if (!confirm(`⚠️ Delete partner "${name}"?\n\nThis will:\n• Delete their account\n• Remove all their data (listings, rooms, tours)\n• This CANNOT be undone.\n\nType DELETE to confirm.`)) return;
-    const typed = prompt('Type DELETE to confirm:');
-    if (typed !== 'DELETE') { alert('Cancelled — you must type DELETE exactly.'); return; }
 
+// ── BLOCK PARTNER ─────────────────────────────────────────────
+async function blockPartner(id, name) {
+    if (!confirm(`Block "${name}"?\n\nTheir listing will be hidden from the public site.\nAll data is kept. You can unblock them anytime.`)) return;
     try {
-        // Reject the application to mark as deleted
-        const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/reject`, {
+        const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/block`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-            body: JSON.stringify({ reason: 'Partner account deleted by admin.' })
         });
-        if (!resp.ok) throw new Error((await resp.json()).detail || 'Failed');
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Failed');
+        alert(`✅ ${name} has been blocked. Their listing is now hidden.`);
+        loadPartners();
+        loadPartnerApplications();
+    } catch (e) { alert('❌ ' + e.message); }
+}
 
-        // Also trigger data deletion via subscription endpoint
-        await fetch(`${API_BASE}/api/subscription/admin/delete-partner/${id}`, {
+// ── UNBLOCK PARTNER ───────────────────────────────────────────
+async function unblockPartner(id, name) {
+    if (!confirm(`Unblock "${name}"?\n\nTheir listing will reappear on the public site.`)) return;
+    try {
+        const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/unblock`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Failed');
+        alert(`✅ ${name} has been unblocked. Their listing is now visible.`);
+        loadPartners();
+        loadPartnerApplications();
+    } catch (e) { alert('❌ ' + e.message); }
+}
+
+
+
+// ── DELETE PARTNER (permanent) ────────────────────────────────
+async function deletePartner(id, name) {
+    if (!confirm(
+        `⚠️ PERMANENTLY DELETE "${name}"?\n\n` +
+        `This will remove:\n` +
+        `• Their partner account\n` +
+        `• Their listing (restaurant/hotel/agency)\n` +
+        `• All rooms, menu items, tours\n` +
+        `• All reviews\n\n` +
+        `Their email will be FREE to register again.\n` +
+        `This CANNOT be undone.`
+    )) return;
+
+    const typed = prompt('Type DELETE to confirm:');
+    if (typed !== 'DELETE') { alert('Cancelled.'); return; }
+
+    try {
+        const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/delete`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-        }).catch(() => { }); // best-effort
-
-        alert(`✅ Partner "${name}" has been deleted.`);
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Failed');
+        alert(`✅ ${name} and all their data have been permanently deleted.`);
         loadPartners();
-    } catch (e) {
-        alert('❌ ' + e.message);
-    }
+        loadPartnerApplications();
+    } catch (e) { alert('❌ ' + e.message); }
 }
 
 
@@ -2943,13 +3066,13 @@ function paCardHtml(a) {
         <div class="pa-actions">
             ${canApprove ? `<button class="pa-btn-approve" onclick="paApprove(${a.id})">✓ Approve & Send Credentials</button>` : ''}
             ${canReject ? `<button class="pa-btn-reject"  onclick="paShowReject(${a.id})">✕ Reject</button>` : ''}
+            
             ${a.status === 'approved' ? `
                 <span style="font-size:.76rem;color:#64748b">✅ Credentials sent to ${a.email}</span>
                 <button class="pa-btn-approve" style="background:#0891b2;" onclick="paResend(${a.id})">↺ Resend Credentials</button>
-                <button onclick="deletePartner(${a.id},'${a.business_name.replace(/'/g, "\\'")}')"
-                    style="padding:0.35rem 0.75rem;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">
-                    🗑 Delete
-                </button>` : ''}
+                <button onclick="blockPartner(${a.id},'${a.business_name.replace(/'/g, "\\'")}')">🚫 Block</button>
+            <button onclick="deletePartner(${a.id},'${a.business_name.replace(/'/g, "\\'")}')">🗑 Delete</button>` : ''}
+
             ${a.status === 'rejected' ? `<span style="font-size:.76rem;color:#64748b">✕ Rejected${a.rejection_reason ? ' — ' + a.rejection_reason : ''}</span>` : ''}
             ${a.status === 'pending' ? `<span style="font-size:.74rem;color:#c2410c">⚠️ Waiting for email verification</span>` : ''}
             <span class="pa-date">Applied ${fmtDate(a.applied_at)}</span>

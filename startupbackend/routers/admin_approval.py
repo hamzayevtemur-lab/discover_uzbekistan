@@ -324,6 +324,67 @@ async def approve_tour(
         "tour_id": tour_id,
         "status": tour.status
     }
+    
+# ==================== TRAVEL AGENCIES ====================
+
+@router.get("/agencies/pending")
+async def get_pending_agencies(db: Session = Depends(get_db)):
+    """Get all pending travel agency submissions"""
+    from models.travel_agency import TravelAgency
+    agencies = db.query(TravelAgency).filter(
+        TravelAgency.status == "pending"
+    ).all()
+    return [
+        {
+            "id":          a.id,
+            "name":        a.name,
+            "agency_type": a.agency_type,
+            "description": a.description,
+            "city":        a.city,
+            "phone":       a.phone,
+            "email":       a.email,
+            "website":     a.website,
+            "image_url":   a.image_url,
+            "is_partner":  a.is_partner,
+            "status":      a.status,
+        }
+        for a in agencies
+    ]
+
+
+@router.post("/agency/{agency_id}/approve")
+async def approve_agency(
+    agency_id: int,
+    action: ApprovalAction,
+    db: Session = Depends(get_db)
+):
+    """CEO approves or rejects a travel agency profile"""
+    from models.travel_agency import TravelAgency
+    agency = db.query(TravelAgency).filter(TravelAgency.id == agency_id).first()
+    if not agency:
+        raise HTTPException(status_code=404, detail="Agency not found")
+
+    agency.status = action.status
+
+    if action.status == "approved":
+        agency.rejection_reason = None
+        if hasattr(agency, 'approved_at'):
+            agency.approved_at = datetime.now()
+        if hasattr(agency, 'approved_by'):
+            agency.approved_by = action.admin_email
+    else:
+        if hasattr(agency, 'rejection_reason'):
+            agency.rejection_reason = action.rejection_reason
+
+    db.commit()
+    db.refresh(agency)
+
+    return {
+        "success": True,
+        "message": f"Agency {action.status}",
+        "agency_id": agency_id,
+        "status": agency.status
+    }
 
 
 # ==================== UPDATED STATS ====================

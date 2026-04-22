@@ -1026,32 +1026,6 @@
 
       <!-- REVIEWS -->
       <div id="section-reviews" class="section">
-        <div class="card" style="margin-bottom:1.25rem;">
-          <div class="card-header">
-            <h2 class="card-title">✍️ Write a Test Review</h2>
-          </div>
-          <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.25rem;">Use this to submit a review as a
-            customer would. New reviews will appear as pending for you to approve.</p>
-          <div class="form-grid">
-            <div class="form-group"><label>Your Name</label><input type="text" id="newReviewName"
-                placeholder="Customer name"></div>
-            <div class="form-group">
-              <label>Rating</label>
-              <select id="newReviewRating">
-                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                <option value="4">⭐⭐⭐⭐ (4)</option>
-                <option value="3">⭐⭐⭐ (3)</option>
-                <option value="2">⭐⭐ (2)</option>
-                <option value="1">⭐ (1)</option>
-              </select>
-            </div>
-            <div class="form-group full"><label>Comment</label><textarea id="newReviewComment"
-                placeholder="Share your experience…" style="min-height:80px;"></textarea></div>
-          </div>
-          <div class="alert alert-error" id="reviewFormAlert"></div>
-          <button class="btn btn-primary" onclick="submitTestReview()" style="margin-top:0.75rem;">Submit
-            Review</button>
-        </div>
         <div class="card">
           <div class="card-header">
             <h2 class="card-title">Customer Reviews</h2>
@@ -1684,40 +1658,6 @@
       } catch (e) { showAlert('pwAlert', e.message); }
     }
 
-    // ── SUBMIT REVIEW (test/demo — same endpoint customers use) ─────
-    async function submitTestReview() {
-      const name = document.getElementById('newReviewName').value.trim();
-      const rating = parseInt(document.getElementById('newReviewRating').value);
-      const comment = document.getElementById('newReviewComment').value.trim();
-      const alertEl = document.getElementById('reviewFormAlert');
-      alertEl.classList.remove('show');
-
-      if (!name) { alertEl.textContent = 'Please enter your name.'; alertEl.classList.add('show'); return; }
-      if (!comment) { alertEl.textContent = 'Please write a comment.'; alertEl.classList.add('show'); return; }
-
-      try {
-        const res = await fetch(`${API}/restaurants/reviews`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            restaurant_id: parseInt(restaurantId),
-            reviewer_name: name,
-            rating: rating,
-            comment: comment,
-          })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Failed to submit review');
-
-        // Clear form
-        document.getElementById('newReviewName').value = '';
-        document.getElementById('newReviewComment').value = '';
-        document.getElementById('newReviewRating').selectedIndex = 0;
-
-        toast('✅ Review submitted! It will appear as pending below.', 'success');
-        loadReviews();
-      } catch (e) { alertEl.textContent = '❌ ' + e.message; alertEl.classList.add('show'); }
-    }
 
     // ── HELPERS ───────────────────────────────────────────────────
     function showPreview(url, previewId) {

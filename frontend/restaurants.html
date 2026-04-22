@@ -2,2204 +2,1428 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJHCVBY91E"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-KJHCVBY91E');
-    </script>
-
-    <title>Restaurants - Discover Uzbekistan</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Restaurant — Discover Uzbekistan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJHCVBY91E"></script>
+    <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-KJHCVBY91E');</script>
     <style>
-        /* restaurant.css - Restaurant Detail Page Styles */
-
-        /* Reset & Base Styles */
-        * {
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        :root {
+            --bg: #0d0d0d;
+            --bg2: #141414;
+            --bg3: #1c1c1c;
+            --bg4: #242424;
+            --txt: #e8e4df;
+            --txt2: #a09488;
+            --txt3: #6e6058;
+            --brd: rgba(255, 255, 255, .07);
+            --brd2: rgba(255, 255, 255, .14);
+            --ac: #ff6b6b;
+            --ac2: #ffd166;
+            --ac3: #4ecdc4;
+            --grn: #51cf66;
+            --r: 12px;
+        }
+
+        html {
+            scroll-behavior: smooth
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
-            line-height: 1.6;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            overflow-x: hidden;
+            min-height: 100vh
         }
 
-        /* Header */
-        .restaurant-header {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 107, 53, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            padding: 15px 0;
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .back-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #ff6b35;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 8px 16px;
-            border-radius: 20px;
-            background: rgba(255, 107, 53, 0.1);
-            border: 1px solid rgba(255, 107, 53, 0.3);
-            transition: all 0.3s;
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 107, 53, 0.2);
-        }
-
-        .restaurant-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 24px;
-            font-weight: 700;
-            text-align: center;
-            flex: 1;
-            padding: 0 20px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .share-btn,
-        .favorite-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .share-btn:hover,
-        .favorite-btn:hover {
-            background: rgba(255, 107, 53, 0.2);
-            border-color: #ff6b35;
-        }
-
-
-        /* Favorite Button */
-        #favoriteBtn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        #favoriteBtn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
-
-        #favoriteBtn.liked {
-            background: rgba(255, 71, 87, 0.2);
-            border-color: #ff4757;
-        }
-
-        #favoriteBtn .heart-icon {
-            font-size: 20px;
-            transition: all 0.3s;
-        }
-
-        #favoriteBtn.liked .heart-icon {
-            color: #ff4757;
-        }
-
-        #favoriteBtn .like-count {
-            font-weight: 700;
-            font-size: 16px;
-        }
-
-        @keyframes heartBeat {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            25% {
-                transform: scale(1.3);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-        }
-
-        /* Hero Section */
-        .restaurant-hero {
-            height: 400px;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            display: flex;
-            align-items: flex-end;
-            padding: 30px;
-        }
-
-        .hero-overlay {
-            position: absolute;
+        nav {
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.75) 100%);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            width: 100%;
+            right: 0;
+            z-index: 900;
+            height: 56px;
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
+            padding: 0 1.2rem;
+            background: rgba(13, 13, 13, .9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--brd)
         }
 
-        .rating-badge {
-            background: linear-gradient(135deg, #ffd700, #ff9800);
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 25px;
+        .nav-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: .07em;
+            color: var(--txt);
+            text-decoration: none
+        }
+
+        .nav-logo span {
+            color: var(--ac)
+        }
+
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            color: var(--txt3);
+            font-size: .75rem;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 18px;
-        }
-
-        .rating-badge small {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-
-        .partner-badge {
-            background: linear-gradient(135deg, #9c27b0, #673ab7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Main Container */
-        .restaurant-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        /* Quick Info Bar */
-        .quick-info-bar {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 15px;
-        }
-
-        .info-item i {
-            color: #ff6b35;
-            width: 20px;
-        }
-
-        /* Action Buttons */
-        .action-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 40px;
-        }
-
-        .btn-primary,
-        .btn-secondary,
-        .btn-text,
-        .btn-outline,
-        .btn-load-more {
-            padding: 15px 25px;
-            border-radius: 12px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
+            letter-spacing: .05em;
+            text-transform: uppercase;
             text-decoration: none;
+            transition: color .2s;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif
         }
 
-        .btn-primary {
-            background: linear-gradient(45deg, #ff6b35, #ff8a50);
-            color: white;
+        .nav-back:hover {
+            color: var(--txt)
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-text {
-            background: transparent;
-            color: #ff6b35;
-            padding: 10px 20px;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: #ff6b35;
-            border: 1px solid #ff6b35;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-
-        .btn-outline:hover {
-            background: rgba(255, 107, 53, 0.1);
-        }
-
-        .btn-load-more {
-            width: 100%;
-            background: transparent;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-top: 20px;
-        }
-
-        .btn-load-more:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Menu Tabs */
-        .menu-tabs {
-            margin-bottom: 40px;
-            overflow-x: auto;
-        }
-
-        .tabs-container {
+        .nav-actions {
             display: flex;
-            gap: 10px;
-            padding-bottom: 10px;
+            align-items: center;
+            gap: .5rem
         }
 
-        .tab-btn {
-            padding: 15px 25px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: white;
+        .nb {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--brd2);
+            background: transparent;
+            color: var(--txt2);
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
-            white-space: nowrap;
-            transition: all 0.3s;
-            min-width: 120px;
             justify-content: center;
+            font-size: .9rem;
+            transition: all .2s
         }
 
-        .tab-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .nb:hover,
+        .nb.liked {
+            border-color: var(--ac);
+            color: var(--ac);
+            background: rgba(255, 107, 107, .1)
         }
 
-        .tab-btn.active {
-            background: rgba(255, 107, 53, 0.2);
-            border-color: #ff6b35;
-            color: #ff6b35;
-        }
-
-        .tab-btn i {
-            font-size: 18px;
-        }
-
-        /* Section Styles */
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 28px;
-            margin-bottom: 25px;
-            color: white;
+        .nsb {
+            background: transparent;
+            border: 1px solid var(--brd2);
+            color: var(--txt2);
+            padding: .32rem .9rem;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all .2s;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: .4rem
         }
 
-        .section-title i {
-            color: #ff6b35;
+        .nsb:hover {
+            border-color: var(--ac);
+            color: var(--ac)
         }
 
-        .menu-section,
-        .offers-section,
-        .map-section,
-        .reviews-section,
-        .similar-section {
-            margin-bottom: 50px;
-        }
-
-        /* Menu Items Grid */
-        .menu-items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-        }
-
-        .menu-item-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            overflow: hidden;
-            border: 3px solid rgba(18, 17, 17, 0.1);
-            transition: all 0.3s;
-        }
-
-        .menu-item-card:hover {
-            transform: translateY(-5px);
-            border-color: #ff6b35;
-            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.2);
-        }
-
-        .menu-item-image {
-            width: 100%;
-            height: 200px;
-            overflow: hidden;
+        .hero {
             position: relative;
-            border-radius: 10px;
+            height: 100svh;
+            min-height: 480px;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden
         }
 
-        .menu-item-image img {
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transform: scale(1.06);
+            transition: transform 14s ease-out;
+            filter: brightness(.45)
+        }
+
+        .hero-bg.loaded {
+            transform: scale(1)
+        }
+
+        .hgrad {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(13, 13, 13, 1) 0%, rgba(13, 13, 13, .6) 45%, rgba(13, 13, 13, .05) 100%)
+        }
+
+        .hc {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            padding: 0 1.3rem 2.8rem
+        }
+
+        .heyebrow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+            margin-bottom: .8rem;
+            opacity: 0;
+            animation: up .5s .15s forwards
+        }
+
+        .hb {
+            display: inline-flex;
+            align-items: center;
+            gap: .28rem;
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            padding: .22rem .68rem;
+            border-radius: 50px
+        }
+
+        .hb-p {
+            background: rgba(255, 209, 102, .14);
+            color: #ffd166;
+            border: 1px solid rgba(255, 209, 102, .3)
+        }
+
+        .hb-c {
+            background: rgba(255, 107, 107, .12);
+            color: rgba(255, 150, 150, .85);
+            border: 1px solid rgba(255, 107, 107, .25)
+        }
+
+        .hname {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.8rem, 10vw, 6rem);
+            font-weight: 700;
+            line-height: .92;
+            letter-spacing: .01em;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: up .65s .28s forwards
+        }
+
+        .hmeta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .8rem 1.3rem;
+            margin-top: .9rem;
+            font-size: .82rem;
+            color: rgba(255, 255, 255, .58);
+            opacity: 0;
+            animation: up .55s .45s forwards
+        }
+
+        .hmi {
+            display: flex;
+            align-items: center;
+            gap: .32rem
+        }
+
+        .hmi i {
+            color: var(--ac);
+            font-size: .78rem
+        }
+
+        .hmi strong {
+            color: #fff
+        }
+
+        /* rating inline — no absolute */
+        .hrat {
+            display: inline-flex;
+            align-items: center;
+            gap: .7rem;
+            margin-top: 1.1rem;
+            background: rgba(13, 13, 13, .55);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 12px;
+            padding: .7rem 1rem;
+            opacity: 0;
+            animation: up .55s .5s forwards
+        }
+
+        .hrn {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--ac2)
+        }
+
+        .hrat-right {
+            display: flex;
+            flex-direction: column;
+            gap: .12rem
+        }
+
+        .hrs {
+            color: var(--ac2);
+            font-size: .82rem
+        }
+
+        .hrc {
+            font-size: .63rem;
+            color: rgba(255, 255, 255, .38)
+        }
+
+        @keyframes up {
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .anav {
+            position: sticky;
+            top: 56px;
+            z-index: 800;
+            background: rgba(13, 13, 13, .92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--brd)
+        }
+
+        .ainner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding: 0 .8rem
+        }
+
+        .ainner::-webkit-scrollbar {
+            display: none
+        }
+
+        .atab {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--txt3);
+            font-family: 'Outfit', sans-serif;
+            font-size: .7rem;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            padding: .72rem 1rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .2s
+        }
+
+        .atab:hover {
+            color: var(--txt)
+        }
+
+        .atab.active {
+            color: var(--ac);
+            border-bottom-color: var(--ac)
+        }
+
+        .ibar {
+            background: var(--bg2);
+            border-bottom: 1px solid var(--brd)
+        }
+
+        .ibinner {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: .85rem 1.3rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: .45rem 1.2rem;
+            align-items: center
+        }
+
+        .qi {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .81rem;
+            color: var(--txt2)
+        }
+
+        .qi i {
+            font-size: .76rem;
+            width: 14px;
+            text-align: center
+        }
+
+        .qi i.fa-location-dot {
+            color: var(--ac)
+        }
+
+        .qi i.fa-phone {
+            color: var(--ac)
+        }
+
+        .qi i.fa-globe {
+            color: #64b5f6
+        }
+
+        .qi a {
+            text-decoration: none
+        }
+
+        .qi-ig {
+            display: inline-flex;
+            align-items: center;
+            gap: .38rem;
+            background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+            padding: .28rem .72rem;
+            border-radius: 50px;
+            font-size: .75rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            transition: opacity .2s
+        }
+
+        .qi-ig:hover {
+            opacity: .85
+        }
+
+        .qi-tg {
+            display: inline-flex;
+            align-items: center;
+            gap: .38rem;
+            background: #229ED9;
+            padding: .28rem .72rem;
+            border-radius: 50px;
+            font-size: .75rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            transition: opacity .2s
+        }
+
+        .qi-tg:hover {
+            opacity: .85
+        }
+
+        /* single scrollable row of action buttons */
+        .arow {
+            display: flex;
+            gap: .55rem;
+            margin-bottom: 2rem;
+            margin-top: 1rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: .2rem
+        }
+
+        .arow::-webkit-scrollbar {
+            display: none
+        }
+
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1.8rem 1.3rem 5rem
+        }
+
+        .section {
+            margin-bottom: 2.8rem
+        }
+
+        .shd {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            margin-bottom: 1.3rem
+        }
+
+        .stitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.55rem;
+            font-weight: 600;
+            color: var(--txt);
+            white-space: nowrap
+        }
+
+        .stitle i {
+            color: var(--ac);
+            margin-right: .4rem;
+            font-size: 1rem
+        }
+
+        .srule {
+            flex: 1;
+            height: 1px;
+            background: var(--brd)
+        }
+
+        .spill {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: var(--txt3);
+            background: var(--bg3);
+            border: 1px solid var(--brd);
+            padding: .16rem .6rem;
+            border-radius: 50px
+        }
+
+        .arow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6rem;
+            margin-bottom: 2rem;
+            margin-top: 1rem
+        }
+
+        .ab {
+            display: inline-flex;
+            align-items: center;
+            gap: .42rem;
+            padding: .6rem 1.15rem;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            border: none;
+            text-decoration: none;
+            white-space: nowrap
+        }
+
+        .ab-p {
+            background: var(--ac);
+            color: #fff
+        }
+
+        .ab-p:hover {
+            background: #e85555;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, .25)
+        }
+
+        .ab-s {
+            background: var(--bg3);
+            color: var(--txt);
+            border: 1px solid var(--brd2)
+        }
+
+        .ab-s:hover {
+            background: var(--bg4);
+            border-color: rgba(255, 255, 255, .22)
+        }
+
+        .ab-ig {
+            background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+            color: #fff
+        }
+
+        .ab-ig:hover {
+            opacity: .88;
+            transform: translateY(-2px)
+        }
+
+        .ab-tg {
+            background: #229ED9;
+            color: #fff
+        }
+
+        .ab-tg:hover {
+            background: #1a8bc2;
+            transform: translateY(-2px)
+        }
+
+        /* ── MENU TABS ── */
+        .mtabs {
+            overflow-x: auto;
+            scrollbar-width: none;
+            margin-bottom: 1.2rem
+        }
+
+        .mtabs::-webkit-scrollbar {
+            display: none
+        }
+
+        .mtr {
+            display: flex;
+            gap: .42rem;
+            padding-bottom: .25rem
+        }
+
+        .mtb {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            background: var(--bg3);
+            border: 1px solid var(--brd);
+            color: var(--txt2);
+            padding: .46rem .95rem;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .76rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .2s
+        }
+
+        .mtb:hover {
+            background: var(--bg4);
+            border-color: var(--brd2);
+            color: var(--txt)
+        }
+
+        .mtb.active {
+            background: rgba(255, 107, 107, .12);
+            border-color: var(--ac);
+            color: var(--ac)
+        }
+
+        /* ── MENU GRID — ALWAYS 2 COLUMNS ── */
+        .mgrid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem
+        }
+
+        .mc {
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: var(--r);
+            overflow: hidden;
+            transition: all .28s;
+            cursor: pointer
+        }
+
+        .mc:hover {
+            border-color: var(--brd2);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, .4)
+        }
+
+        .mc-img {
+            height: 160px;
+            overflow: hidden;
+            background: var(--bg3);
+            position: relative
+        }
+
+        .mc-img img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.5s ease;
+            transition: transform .5s;
+            display: block
         }
 
-        /* Gradient overlay */
-        .menu-item-image::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom,
-                    transparent 50%,
-                    rgba(0, 0, 0, 0.5));
-            pointer-events: none;
+        .mc:hover .mc-img img {
+            transform: scale(1.06)
         }
 
-        /* Hover zoom */
-        .menu-item-image:hover img {
-            transform: scale(1.08);
+        .mc-ph {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, var(--bg3), var(--bg4))
         }
 
-        .menu-item-content {
-            padding: 20px;
+        .mc-body {
+            padding: .9rem
         }
 
-        .menu-item-header {
+        .mc-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--txt);
+            margin-bottom: .2rem;
+            line-height: 1.2
+        }
+
+        .mc-desc {
+            font-size: .73rem;
+            color: var(--txt2);
+            line-height: 1.45;
+            margin-bottom: .55rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden
+        }
+
+        .mc-foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .3rem
+        }
+
+        .mc-price {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: var(--ac2)
+        }
+
+        .mc-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .28rem
+        }
+
+        .mc-tag {
+            background: rgba(255, 107, 107, .1);
+            color: var(--ac);
+            font-size: .63rem;
+            font-weight: 600;
+            padding: .13rem .48rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 107, 107, .2)
+        }
+
+        .abtxt {
+            font-size: .9rem;
+            line-height: 1.85;
+            color: var(--txt2)
+        }
+
+        #restaurantMap {
+            height: 310px;
+            border-radius: var(--r);
+            overflow: hidden;
+            border: 1px solid var(--brd)
+        }
+
+        .leaflet-tile {
+            filter: brightness(.65) saturate(.5) hue-rotate(185deg)
+        }
+
+        .leaflet-container {
+            background: var(--bg)
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: var(--bg2);
+            color: var(--txt);
+            border: 1px solid var(--brd2);
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .7)
+        }
+
+        .leaflet-popup-tip-container {
+            display: none
+        }
+
+        .leaflet-popup-content {
+            font-family: 'Outfit', sans-serif;
+            font-size: .82rem;
+            line-height: 1.5
+        }
+
+        .ngrid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .9rem
+        }
+
+        .nc {
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: var(--r);
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--txt);
+            transition: all .25s;
+            display: block
+        }
+
+        .nc:hover {
+            border-color: var(--brd2);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .35)
+        }
+
+        .nc-img {
+            height: 115px;
+            overflow: hidden;
+            background: var(--bg3)
+        }
+
+        .nc-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .4s;
+            display: block
+        }
+
+        .nc:hover .nc-img img {
+            transform: scale(1.06)
+        }
+
+        .nc-body {
+            padding: .82rem
+        }
+
+        .nc-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: .93rem;
+            font-weight: 600;
+            margin-bottom: .2rem;
+            line-height: 1.2
+        }
+
+        .nc-meta {
+            font-size: .71rem;
+            color: var(--txt3)
+        }
+
+        .nc-dist {
+            font-size: .68rem;
+            font-weight: 600;
+            color: var(--ac3);
+            margin-top: .16rem;
+            display: flex;
+            align-items: center;
+            gap: .25rem
+        }
+
+        .rvbar {
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: var(--r);
+            padding: 1.1rem 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.1rem
+        }
+
+        .rvn {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.7rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--ac)
+        }
+
+        .rvs {
+            color: var(--ac2);
+            font-size: .85rem
+        }
+
+        .rvc {
+            font-size: .67rem;
+            color: var(--txt3);
+            margin-top: .08rem
+        }
+
+        .rvsep {
+            width: 1px;
+            height: 42px;
+            background: var(--brd)
+        }
+
+        .rvbl {
+            font-size: .81rem;
+            color: var(--txt2);
+            line-height: 1.65;
+            max-width: 190px
+        }
+
+        .rvwrap {
+            position: relative;
+            max-height: 435px;
+            overflow: hidden;
+            transition: max-height .55s ease
+        }
+
+        .rvwrap.open {
+            max-height: 9999px
+        }
+
+        .rvlist {
+            display: flex;
+            flex-direction: column;
+            gap: .78rem
+        }
+
+        .rvc2 {
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: var(--r);
+            padding: 1.05rem;
+            transition: border-color .2s
+        }
+
+        .rvc2:hover {
+            border-color: var(--brd2)
+        }
+
+        .rvt {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: .42rem
         }
 
-        .menu-item-title {
-            font-size: 18px;
+        .rvnm {
             font-weight: 600;
-            color: white;
+            font-size: .87rem;
+            color: var(--txt)
         }
 
-        .menu-item-price {
-            color: #ff6b35;
-            font-weight: 700;
-            font-size: 20px;
+        .rvdt {
+            font-size: .69rem;
+            color: var(--txt3)
         }
 
-        .menu-item-desc {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 15px;
+        .rvst {
+            color: var(--ac2);
+            font-size: .78rem;
+            margin-top: .1rem
         }
 
-        .menu-item-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
+        .rvtx {
+            font-size: .83rem;
+            line-height: 1.7;
+            color: var(--txt2)
         }
 
-        .tag {
-            background: rgba(255, 107, 53, 0.2);
-            color: #ff6b35;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 500;
+        .rvfade {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: linear-gradient(transparent, var(--bg));
+            pointer-events: none
         }
 
-        .add-to-cart-btn {
-            width: 100%;
-            padding: 12px;
-            background: rgba(255, 107, 53, 0.2);
-            border: 1px solid #ff6b35;
-            color: #ff6b35;
-            border-radius: 8px;
+        .rvwrap.open .rvfade {
+            display: none
+        }
+
+        .rvmbtn {
+            display: block;
+            margin: .72rem auto 0;
+            background: none;
+            border: 1px solid var(--brd2);
+            color: var(--txt3);
+            font-family: 'Outfit', sans-serif;
+            font-size: .74rem;
             font-weight: 600;
+            padding: .48rem 1.5rem;
+            border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all .2s
+        }
+
+        .rvmbtn:hover {
+            border-color: var(--ac);
+            color: var(--ac)
+        }
+
+        .bwrv {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-        }
-
-        .add-to-cart-btn:hover {
-            background: #ff6b35;
-            color: white;
-        }
-
-        .add-to-cart-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Offers Grid */
-        .offers-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .offer-card {
-            background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(103, 58, 183, 0.1));
-            border: 1px solid rgba(156, 39, 176, 0.3);
-            border-radius: 15px;
-            padding: 25px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .offer-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
+            gap: .5rem;
             width: 100%;
-            height: 100%;
-            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C27B0' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
-            opacity: 0.3;
-        }
-
-        .offer-title {
-            color: #9c27b0;
-            font-size: 18px;
+            margin-top: .95rem;
+            background: var(--bg3);
+            border: 1px solid var(--brd2);
+            color: var(--txt2);
+            font-family: 'Outfit', sans-serif;
+            font-size: .82rem;
             font-weight: 600;
-            margin-bottom: 10px;
+            padding: .72rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .2s
         }
 
-        .offer-desc {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 15px;
+        .bwrv:hover {
+            border-color: var(--ac);
+            color: var(--ac);
+            background: rgba(255, 107, 107, .05)
         }
 
-        .offer-code {
-            background: rgba(156, 39, 176, 0.2);
-            color: #9c27b0;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-family: monospace;
-            font-weight: 600;
+        .wra {
+            transition: transform .3s;
             display: inline-block;
-            margin-bottom: 10px;
+            font-size: .66rem;
+            opacity: .5
         }
 
-        .offer-expiry {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 12px;
-        }
-
-        /* Map Section */
-        #restaurantMap {
-            width: 100%;
-            height: 380px;
-            border-radius: 15px;
+        .rfwrap {
+            max-height: 0;
             overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 15px;
+            transition: max-height .5s cubic-bezier(.4, 0, .2, 1)
         }
 
-        /* Toast notification */
-        .toast-msg {
+        .rfwrap.open {
+            max-height: 900px
+        }
+
+        .rfcard {
+            background: var(--bg2);
+            border: 1px solid var(--brd);
+            border-radius: var(--r);
+            padding: 1.35rem;
+            margin-top: .72rem
+        }
+
+        .rfcard h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.22rem;
+            font-style: italic;
+            color: var(--txt);
+            margin-bottom: .95rem
+        }
+
+        .frow {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .78rem
+        }
+
+        .fg {
+            margin-bottom: .82rem
+        }
+
+        .fg label {
+            display: block;
+            font-size: .61rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: var(--txt3);
+            margin-bottom: .33rem
+        }
+
+        .fg input,
+        .fg select,
+        .fg textarea {
+            width: 100%;
+            background: var(--bg3);
+            border: 1px solid var(--brd);
+            border-radius: 8px;
+            padding: .58rem .8rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: .83rem;
+            color: var(--txt);
+            transition: border-color .2s;
+            -webkit-appearance: none
+        }
+
+        .fg input:focus,
+        .fg select:focus,
+        .fg textarea:focus {
+            outline: none;
+            border-color: var(--ac);
+            background: var(--bg4)
+        }
+
+        .fg select option {
+            background: var(--bg3)
+        }
+
+        .fg textarea {
+            min-height: 88px;
+            resize: vertical
+        }
+
+        .brsub {
+            background: var(--ac);
+            color: #fff;
+            border: none;
+            padding: .75rem;
+            width: 100%;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: .85rem;
+            cursor: pointer;
+            transition: background .2s
+        }
+
+        .brsub:hover {
+            background: #e85555
+        }
+
+        .rvok {
+            display: none;
+            background: rgba(81, 207, 102, .08);
+            border: 1px solid rgba(81, 207, 102, .22);
+            border-radius: 8px;
+            padding: .68rem 1rem;
+            margin-top: .68rem;
+            color: var(--grn);
+            font-size: .81rem;
+            text-align: center
+        }
+
+        .toast {
             position: fixed;
-            bottom: 28px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%) translateY(80px);
-            background: rgba(16, 16, 16, 0.97);
-            color: white;
-            padding: 12px 26px;
+            background: rgba(13, 13, 13, .97);
+            color: var(--txt);
+            padding: 10px 22px;
             border-radius: 30px;
-            font-size: 14px;
-            border: 1px solid rgba(255, 107, 53, 0.35);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            font-size: .81rem;
+            font-family: 'Outfit', sans-serif;
+            border: 1px solid rgba(255, 107, 107, .22);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, .5);
             z-index: 9999;
-            transition: transform 0.35s cubic-bezier(.175, .885, .32, 1.275), opacity 0.3s;
+            transition: transform .35s cubic-bezier(.175, .885, .32, 1.275), opacity .3s;
             opacity: 0;
             pointer-events: none;
-            white-space: nowrap;
-            font-family: 'Poppins', sans-serif;
+            white-space: nowrap
         }
 
-        .toast-msg.show {
+        .toast.show {
             transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        .map-note {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-        }
-
-        /* Reviews Section */
-        .reviews-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .reviews-container {
-            display: grid;
-            gap: 20px;
-        }
-
-        .review-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .reviewer-name {
-            font-weight: 600;
-            color: white;
-        }
-
-        .review-date {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 14px;
-        }
-
-        .review-rating {
-            color: #ffd700;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-
-        .review-text {
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.6;
-        }
-
-        /* Similar Restaurants */
-        .similar-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .similar-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
-            text-decoration: none;
-            color: white;
-        }
-
-        .similar-card:hover {
-            transform: translateY(-3px);
-            border-color: #ff6b35;
-        }
-
-        .similar-image {
-            width: 100%;
-            height: 150px;
-            background: linear-gradient(135deg, #ff6b35, #ffa726);
-        }
-
-        .similar-content {
-            padding: 15px;
-        }
-
-        .similar-name {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .similar-cuisine {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .similar-rating {
-            color: #ffd700;
-            font-size: 14px;
-        }
-
-        /* Footer */
-        .restaurant-footer {
-            background: rgba(0, 0, 0, 0.9);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 50px;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 50px 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-        }
-
-        .footer-section h3 {
-            color: #ff6b35;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        .footer-section a {
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .footer-section a:hover {
-            color: #ff6b35;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding: 20px;
-            color: rgba(255, 255, 255, 0.5);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 14px;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1001;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #1a1a1a;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            color: white;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .modal-close:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .rating-input {
-            margin-bottom: 20px;
-        }
-
-        .rating-input p {
-            margin-bottom: 10px;
-            color: white;
-        }
-
-        .stars {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .stars i {
-            font-size: 24px;
-            color: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .stars i:hover,
-        .stars i.active {
-            color: #ffd700;
-        }
-
-        .rating-text {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .modal-body textarea,
-        .modal-body input {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
-            margin-bottom: 15px;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .modal-body textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* Loading State */
-        .loading-state {
-            text-align: center;
-            padding: 40px;
-            grid-column: 1 / -1;
+            opacity: 1
         }
 
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-left-color: #ff6b35;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            border: 2.5px solid var(--brd2);
+            border-top-color: var(--ac);
+            animation: spin .8s linear infinite;
+            margin: 0 auto .85rem
         }
 
         @keyframes spin {
             to {
-                transform: rotate(360deg);
+                transform: rotate(360deg)
             }
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .restaurant-title {
-                font-size: 18px;
-                padding: 0 10px;
-            }
-
-            .hero-content {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-
-            .quick-info-bar {
-                grid-template-columns: 1fr;
-            }
-
-            .action-buttons {
-                grid-template-columns: 1fr;
-            }
-
-            .tabs-container {
-                overflow-x: auto;
-                padding-bottom: 10px;
-            }
-
-            .menu-items-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .offers-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .similar-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .reviews-header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
+        .lc {
+            text-align: center;
+            padding: 2.5rem;
+            color: var(--txt3);
+            font-size: .86rem
         }
 
-        .user-location-marker .pulse {
-            width: 24px;
-            height: 24px;
-            background: #4285F4;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.4);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.7);
-            }
-
-            70% {
-                box-shadow: 0 0 0 12px rgba(66, 133, 244, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0);
-            }
-        }
-
-        .restaurant-card {
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-        }
-
-        .restaurant-card:hover {
-            transform: translateY(-4px);
-        }
-
-        .restaurant-card i {
-            margin-right: 4px;
-        }
-
-        .nearby-card {
-            transition: transform 0.2s;
-        }
-
-        .nearby-card:hover {
-            transform: translateY(-5px);
+        .gc {
+            grid-column: 1/-1
         }
     </style>
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="restaurant-header">
-        <div class="header-container">
-            <a href="location.html" class="back-btn">
-                <i class="fas fa-arrow-left"></i> Back to Map
-            </a>
-            <div class="restaurant-title" id="restaurantName">Loading...</div>
-            <div class="header-actions">
-                <button class="share-btn" id="shareBtn">
-                    <i class="fas fa-share-alt"></i>
-                </button>
-                <button class="favorite-btn" id="favoriteBtn">
-                    <i class="far fa-heart"></i>
-                </button>
-            </div>
+    <nav>
+        <button class="nav-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <a href="index.html" class="nav-logo">DISCOVER<span> UZ</span></a>
+        <div class="nav-actions">
+            <button class="nb" id="favBtn"><i class="fa-regular fa-heart"></i></button>
+            <button class="nsb" onclick="shareR()"><i class="fa-solid fa-share-nodes"></i> Share</button>
         </div>
-    </header>
-
-    <!-- Restaurant Hero Section -->
-    <section class="restaurant-hero" id="restaurantHero">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <div class="rating-badge">
-                <i class="fas fa-star"></i>
-                <span id="restaurantRating">4.8</span>
-                <small>(<span id="reviewCount">0</span> reviews)</small>
-            </div>
-            <div class="partner-badge" id="partnerBadge">
-                <i class="fas fa-crown"></i>
-                <span>Partner Restaurant</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <main class="restaurant-container">
-        <!-- Quick Info Bar -->
-        <div class="quick-info-bar">
-            <div class="info-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <span id="restaurantAddress">Loading...</span>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-phone"></i>
-                <span id="restaurantPhone">Loading...</span>
-            </div>
-            <div class="info-item" id="instagramItem" style="display: none;">
-                <i class="fab fa-instagram"></i>
-                <a href="#" id="restaurantInstagram" target="_blank"
-                    style="color: inherit; text-decoration: none;">@username</a>
-            </div>
-            <div class="info-item" id="telegramItem" style="display: none;">
-                <i class="fab fa-telegram-plane"></i>
-                <a href="#" id="restaurantTelegram" target="_blank"
-                    style="color: inherit; text-decoration: none;">@username</a>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-clock"></i>
-                <span id="restaurantHours">10:00 AM - 11:00 PM</span>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-            <button class="btn-primary" id="callBtn">
-                <i class="fas fa-phone-alt"></i> Call Now
-            </button>
-            <button class="btn-secondary" id="directionsBtn">
-                <i class="fas fa-directions"></i> Get Directions
-            </button>
-            <button class="btn-secondary" id="websiteBtn">
-                <i class="fas fa-globe"></i> Website
-            </button>
-            <button class="btn-secondary" id="instagramBtn" style="display: none;">
-                <i class="fab fa-instagram"></i> Instagram
-            </button>
-            <button class="btn-secondary" id="telegramBtn" style="display: none;">
-                <i class="fab fa-telegram-plane"></i> Telegram
-            </button>
-        </div>
-
-        <!-- Menu Categories Tabs -->
-        <nav class="menu-tabs" id="menuTabs">
-            <div class="tabs-container">
-                <button class="tab-btn active" data-category="solo">
-                    <i class="fas fa-user"></i>
-                    <span>Solo</span>
-                </button>
-                <button class="tab-btn" data-category="fortwo">
-                    <i class="fas fa-user-friends"></i>
-                    <span>For Two</span>
-                </button>
-                <button class="tab-btn" data-category="family">
-                    <i class="fas fa-users"></i>
-                    <span>Family</span>
-                </button>
-                <button class="tab-btn" data-category="drinks">
-                    <i class="fas fa-glass-cheers"></i>
-                    <span>Drinks</span>
-                </button>
-                <button class="tab-btn" data-category="desserts">
-                    <i class="fas fa-ice-cream"></i>
-                    <span>Desserts</span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Menu Items Section -->
-        <section class="menu-section">
-            <h2 class="section-title">
-                <i class="fas fa-utensils"></i>
-                <span id="categoryTitle">Solo Meals</span>
-            </h2>
-
-            <div class="menu-items-grid" id="menuItemsGrid">
-                <!-- Menu items will be loaded here -->
-                <div class="loading-state">
-                    <div class="spinner"></div>
-                    <p>Loading menu...</p>
+    </nav>
+    <div class="hero">
+        <div class="hero-bg" id="hbg"></div>
+        <div class="hgrad"></div>
+        <div class="hc">
+            <div class="heyebrow" id="hbadges"></div>
+            <h1 class="hname" id="hname">Loading…</h1>
+            <div class="hmeta" id="hmeta"></div>
+            <div class="hrat" id="hrat" style="display:none">
+                <div class="hrn" id="hrn">—</div>
+                <div class="hrat-right">
+                    <div class="hrs" id="hrs">☆☆☆☆☆</div>
+                    <div class="hrc" id="hrc">0 reviews</div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Special Offers -->
-        <section class="offers-section" id="offersSection">
-            <h2 class="section-title">
-                <i class="fas fa-gift"></i> Special Offers
-            </h2>
-            <div class="offers-grid" id="offersGrid">
-                <!-- Offers will be loaded here -->
-            </div>
-        </section>
-
-        <!-- Restaurant Map -->
-        <section class="map-section">
-            <h2 class="section-title">
-                <i class="fas fa-map-marked-alt"></i> Location
-            </h2>
-            <div id="restaurantMap"></div>
-            <p class="map-note">Click the map for directions from your location</p>
-        </section>
-
-        <!-- Similar Restaurants -->
-        <section class="similar-section" id="similarSection">
-            <h2 class="section-title">
-                <i class="fas fa-store"></i> Similar Restaurants
-            </h2>
-            <div class="similar-grid" id="similarGrid">
-                <!-- Similar restaurants will be loaded here -->
-            </div>
-        </section>
-
-        <!-- Reviews Section -->
-        <section class="reviews-section">
-            <div class="reviews-header">
-                <h2 class="section-title">
-                    <i class="fas fa-comment-alt"></i> Customer Reviews
-                </h2>
-                <button class="btn-text" id="addReviewBtn">
-                    <i class="fas fa-plus"></i> Add Review
-                </button>
-            </div>
-
-            <div class="reviews-container" id="reviewsContainer">
-                <!-- Reviews will be loaded here -->
-            </div>
-
-            <button class="btn-load-more" id="loadMoreReviews">
-                <i class="fas fa-comment-alt"></i> Show Reviews <i class="fas fa-chevron-down"></i>
-            </button>
-
-            <div id="reviewsSection" style="display: none;">
-                <div id="reviewsList"></div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="restaurant-footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Discover Uzbekistan</h3>
-                <p>Your guide to authentic Uzbek cuisine</p>
-            </div>
-            <div class="footer-section">
-                <h3>Need Help?</h3>
-                <a href="#"><i class="fas fa-question-circle"></i> FAQ</a>
-                <a href="#"><i class="fas fa-headset"></i> Contact Support</a>
-            </div>
-            <div class="footer-section">
-                <h3>Partner With Us</h3>
-                <p>Want to list your restaurant?</p>
-                <a href="#" class="btn-outline">Join as Partner</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 Discover Uzbekistan Tourism Platform. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- Add Review Modal (Hidden by default) -->
-    <div class="modal" id="reviewModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add Your Review</h3>
-                <button class="modal-close" id="closeModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="rating-input">
-                    <p>Your Rating:</p>
-                    <div class="stars">
-                        <i class="far fa-star" data-rating="1"></i>
-                        <i class="far fa-star" data-rating="2"></i>
-                        <i class="far fa-star" data-rating="3"></i>
-                        <i class="far fa-star" data-rating="4"></i>
-                        <i class="far fa-star" data-rating="5"></i>
-                    </div>
-                    <p class="rating-text">Select a rating</p>
-                </div>
-                <textarea id="reviewText" placeholder="Share your experience with this restaurant..."></textarea>
-                <input type="text" id="reviewerName" placeholder="Your name (optional)">
-                <button class="btn-primary" id="submitReview">Submit Review</button>
             </div>
         </div>
     </div>
+    <div class="anav">
+        <div class="ainner">
+            <button class="atab active" onclick="jt('sm');st(this)">Menu</button>
+            <button class="atab" onclick="jt('sa');st(this)">About</button>
+            <button class="atab" onclick="jt('srev');st(this)">Reviews</button>
+            <button class="atab" onclick="jt('sn');st(this)">Nearby</button>
+            <button class="atab" onclick="jt('sl');st(this)">Location</button>
+        </div>
+    </div>
+    <div class="ibar">
+        <div class="ibinner" id="ibar"></div>
+    </div>
+    <div class="main">
+        <div class="arow" id="arow"></div>
 
-    <!-- Toast notification -->
-    <div class="toast-msg" id="toastMsg"></div>
-
-    <!-- JavaScript -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://127.0.0.1:8000' : '';
-
-        // ── XSS ESCAPE ──────────────────────────────────────────────────
-        function escHtml(s) {
-            if (s == null) return '';
-            return String(s)
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-
-        // ── TOAST ────────────────────────────────────────────────────────
-        function showToast(msg, ms = 3500) {
-            const el = document.getElementById('toastMsg');
-            if (!el) return;
-            el.textContent = msg;
-            el.classList.add('show');
-            clearTimeout(el._t);
-            el._t = setTimeout(() => el.classList.remove('show'), ms);
-        }
-
-        let currentRestaurant = null;
-        let currentMenuCategory = 'solo';
-        let selectedRating = 0;
-        let reviewsLoaded = false;
-        let reviewsVisible = false;
-        let userPosition = null;
-        let restaurantId = null;
-
-        // DOM Elements — populated after DOM is ready (see DOMContentLoaded below)
-        let elements = {};
-
-        // ==================== INITIALIZATION ====================
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Build element refs NOW that DOM exists
-            elements = {
-                restaurantName: document.getElementById('restaurantName'),
-                restaurantHero: document.getElementById('restaurantHero'),
-                restaurantRating: document.getElementById('restaurantRating'),
-                reviewCount: document.getElementById('reviewCount'),
-                partnerBadge: document.getElementById('partnerBadge'),
-                restaurantAddress: document.getElementById('restaurantAddress'),
-                restaurantPhone: document.getElementById('restaurantPhone'),
-                restaurantHours: document.getElementById('restaurantHours'),
-                categoryTitle: document.getElementById('categoryTitle'),
-                menuItemsGrid: document.getElementById('menuItemsGrid'),
-                offersGrid: document.getElementById('offersGrid'),
-                reviewsContainer: document.getElementById('reviewsContainer'),
-                similarGrid: document.getElementById('similarGrid'),
-                favoriteBtn: document.getElementById('favoriteBtn'),
-                callBtn: document.getElementById('callBtn'),
-                directionsBtn: document.getElementById('directionsBtn'),
-                websiteBtn: document.getElementById('websiteBtn'),
-                shareBtn: document.getElementById('shareBtn'),
-                addReviewBtn: document.getElementById('addReviewBtn'),
-                reviewModal: document.getElementById('reviewModal'),
-                closeModal: document.getElementById('closeModal'),
-                submitReview: document.getElementById('submitReview'),
-                reviewText: document.getElementById('reviewText'),
-                reviewerName: document.getElementById('reviewerName')
-            };
-
-            setupEventListeners();
-            getUserLocation(); // non-blocking, runs in background
-            await initializePage(); // wait for page data before initializing likes
-            initializeLikes(); // now restaurantId is set
-        });
-
-        async function getUserLocation() {
-            if (navigator.geolocation) {
-                try {
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                            maximumAge: 60000
-                        });
-                    });
-
-                    userPosition = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-
-                } catch (err) {
-                    console.warn('User location not obtained:', err);
-                    userPosition = null;
-                }
-            }
-        }
-
-        async function initializePage() {
-            const urlParams = new URLSearchParams(window.location.search);
-            restaurantId = urlParams.get('id');
-
-            if (!restaurantId) {
-                elements.menuItemsGrid.innerHTML = '<p style="color:red; text-align:center;">Error: Add ?id=1 to URL (example: restaurants.html?id=1)</p>';
-                return;
-            }
-
-            elements.menuItemsGrid.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading restaurant...</p></div>';
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/restaurants/${restaurantId}`);
-                if (!res.ok) {
-                    throw new Error(res.status === 404 ? 'Restaurant not found' : 'Failed to load restaurant');
-                }
-                currentRestaurant = await res.json();
-
-                updateRestaurantInfo();
-                await loadMenuItems(currentMenuCategory);
-                await initializeMap();
-                await loadSimilarRestaurants();
-
-            } catch (err) {
-                console.error('Load error:', err);
-                elements.menuItemsGrid.innerHTML = `<p style="color:red; text-align:center;">${err.message}</p>`;
-            }
-        }
-
-        function updateRestaurantInfo() {
-            if (!currentRestaurant) return;
-
-            elements.restaurantName.textContent = currentRestaurant.name || 'Unknown Restaurant';
-            elements.restaurantRating.textContent = currentRestaurant.rating?.toFixed(1) || 'N/A';
-            elements.reviewCount.textContent = currentRestaurant.review_count ?? "0";
-            elements.restaurantAddress.textContent = currentRestaurant.address || 'No address';
-
-            elements.restaurantPhone.textContent = currentRestaurant.phone || 'No phone';
-            elements.restaurantHours.textContent = currentRestaurant.opening_hours || 'N/A';
-
-            if (currentRestaurant.image_url) {
-                elements.restaurantHero.style.backgroundImage =
-                    `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('${currentRestaurant.image_url}')`;
-            }
-
-            if (elements.partnerBadge) {
-                elements.partnerBadge.style.display = currentRestaurant.is_partner ? 'flex' : 'none';
-            }
-
-            if (elements.websiteBtn) {
-                elements.websiteBtn.style.display = currentRestaurant.website ? 'flex' : 'none';
-            }
-            // === NEW: Instagram & Telegram ===
-            const instagramBtn = document.getElementById('instagramBtn');
-            const telegramBtn = document.getElementById('telegramBtn');
-            const instagramItem = document.getElementById('instagramItem');
-            const telegramItem = document.getElementById('telegramItem');
-
-            // Instagram
-            if (currentRestaurant.instagram && instagramBtn && instagramItem) {
-                const instaLink = currentRestaurant.instagram.startsWith('http')
-                    ? currentRestaurant.instagram
-                    : `https://instagram.com/${currentRestaurant.instagram.replace('@', '')}`;
-
-                instagramBtn.style.display = 'flex';
-                instagramBtn.onclick = () => window.open(instaLink, '_blank');
-
-                // Also show in quick info
-                document.getElementById('restaurantInstagram').href = instaLink;
-                document.getElementById('restaurantInstagram').textContent =
-                    currentRestaurant.instagram.startsWith('@') ? currentRestaurant.instagram : '@' + currentRestaurant.instagram;
-                instagramItem.style.display = 'flex';
-            }
-
-            // Telegram
-            if (currentRestaurant.telegram && telegramBtn && telegramItem) {
-                let tgLink = currentRestaurant.telegram;
-                if (!tgLink.startsWith('http')) {
-                    tgLink = tgLink.startsWith('@')
-                        ? `https://t.me/${tgLink.replace('@', '')}`
-                        : `https://t.me/${tgLink}`;
-                }
-
-                telegramBtn.style.display = 'flex';
-                telegramBtn.onclick = () => window.open(tgLink, '_blank');
-
-                // Quick info
-                document.getElementById('restaurantTelegram').href = tgLink;
-                document.getElementById('restaurantTelegram').textContent =
-                    currentRestaurant.telegram.startsWith('@') ? currentRestaurant.telegram : '@' + currentRestaurant.telegram;
-                telegramItem.style.display = 'flex';
-            }
-        }
-
-        // ==================== LIKE SYSTEM ====================
-
-        async function initializeLikes() {
-            if (!restaurantId) return;
-            await loadLikes(`restaurant_${restaurantId}`);
-        }
-
-        async function loadLikes(placeId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/likes/${placeId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    const likeBtn = elements.favoriteBtn;
-
-                    if (likeBtn) {
-                        likeBtn.innerHTML = `
-                    <span class="heart-icon">♡</span> 
-                    <span class="like-count">${data.like_count}</span>
-                `;
-
-                        // Check if user already liked
-                        const userId = getUserId();
-                        const userLikes = JSON.parse(localStorage.getItem(`user_likes_${userId}`) || '[]');
-                        if (userLikes.includes(placeId)) {
-                            likeBtn.classList.add('liked');
-                            likeBtn.querySelector('.heart-icon').textContent = '♥';
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading likes:', error);
-            }
-        }
-
-        async function toggleLike(event) {
-            event.stopPropagation();
-
-            if (!restaurantId) return;
-
-            const placeId = `restaurant_${restaurantId}`;
-            const button = elements.favoriteBtn;
-            const heartIcon = button.querySelector('.heart-icon');
-            const countSpan = button.querySelector('.like-count');
-
-            let currentCount = parseInt(countSpan.textContent) || 0;
-            const isLiked = button.classList.contains('liked');
-
-            // Optimistic UI update
-            if (isLiked) {
-                button.classList.remove('liked');
-                heartIcon.textContent = '♡';
-                currentCount = Math.max(0, currentCount - 1);
-                countSpan.textContent = currentCount;
-            } else {
-                button.classList.add('liked');
-                heartIcon.textContent = '♥';
-                currentCount++;
-                countSpan.textContent = currentCount;
-
-                // Heart animation
-                heartIcon.style.animation = 'heartBeat 0.6s ease';
-                setTimeout(() => heartIcon.style.animation = '', 600);
-            }
-
-            // Send to backend
-            try {
-                const userId = getUserId();
-                const response = await fetch(`${API_BASE_URL}/api/likes/${placeId}/${isLiked ? 'remove' : 'add'}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ page_id: placeId, user_id: userId })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    countSpan.textContent = data.like_count;
-
-                    // Update localStorage
-                    let userLikes = JSON.parse(localStorage.getItem(`user_likes_${userId}`) || '[]');
-                    if (!isLiked && !userLikes.includes(placeId)) {
-                        userLikes.push(placeId);
-                    } else if (isLiked) {
-                        userLikes = userLikes.filter(id => id !== placeId);
-                    }
-                    localStorage.setItem(`user_likes_${userId}`, JSON.stringify(userLikes));
-                } else {
-                    // Revert on error
-                    if (isLiked) {
-                        button.classList.add('liked');
-                        heartIcon.textContent = '♥';
-                    } else {
-                        button.classList.remove('liked');
-                        heartIcon.textContent = '♡';
-                    }
-                    countSpan.textContent = currentCount - (isLiked ? -1 : 1);
-                }
-            } catch (error) {
-                console.error('Error toggling like:', error);
-                // Revert on error
-                if (isLiked) {
-                    button.classList.add('liked');
-                    heartIcon.textContent = '♥';
-                } else {
-                    button.classList.remove('liked');
-                    heartIcon.textContent = '♡';
-                }
-                countSpan.textContent = currentCount - (isLiked ? -1 : 1);
-            }
-        }
-
-        function getUserId() {
-            let userId = localStorage.getItem('uzbekistan_user_id');
-            if (!userId) {
-                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('uzbekistan_user_id', userId);
-            }
-            return userId;
-        }
-
-        // ==================== MENU ====================
-
-        async function loadMenuItems(category) {
-            if (!currentRestaurant?.id) return;
-
-            elements.menuItemsGrid.innerHTML =
-                '<div class="loading-state"><div class="spinner"></div><p>Loading menu...</p></div>';
-
-            try {
-                const res = await fetch(
-                    `${API_BASE_URL}/restaurants/${currentRestaurant.id}/menu?category=${category}`
-                );
-                if (!res.ok) throw new Error('Failed to load menu');
-
-                const items = await res.json();
-
-                elements.categoryTitle.textContent =
-                    category.charAt(0).toUpperCase() + category.slice(1) + ' Meals';
-
-                if (items.length === 0) {
-                    elements.menuItemsGrid.innerHTML =
-                        '<p style="text-align:center;color:#aaa;">No items in this category</p>';
-                    return;
-                }
-
-                elements.menuItemsGrid.innerHTML = items.map(item => `
-            <div class="menu-item-card">
-                <div class="menu-item-image">
-                    <img src="${escHtml(item.image_url || '')}"
-                         alt="${escHtml(item.item_name)}"
-                         onerror="this.parentElement.style.background='linear-gradient(135deg,#1a0800,#2d1000)'; this.style.display='none'">
+        <div class="section" id="sm">
+            <div class="shd">
+                <h2 class="stitle"><i class="fa-solid fa-utensils"></i>Menu</h2>
+                <div class="srule"></div><span class="spill" id="catpill">Solo</span>
+            </div>
+            <div class="mtabs">
+                <div class="mtr">
+                    <button class="mtb active" data-cat="solo"><i class="fa-solid fa-person"></i> Solo</button>
+                    <button class="mtb" data-cat="fortwo"><i class="fa-solid fa-heart"></i> For Two</button>
+                    <button class="mtb" data-cat="family"><i class="fa-solid fa-people-roof"></i> Family</button>
+                    <button class="mtb" data-cat="drinks"><i class="fa-solid fa-wine-glass"></i> Drinks</button>
+                    <button class="mtb" data-cat="desserts"><i class="fa-solid fa-ice-cream"></i> Desserts</button>
                 </div>
-                <div class="menu-item-content">
-                    <div class="menu-item-header">
-                        <div class="menu-item-title">${escHtml(item.item_name)}</div>
-                        <div class="menu-item-price">$${Number(item.price).toFixed(2)}</div>
+            </div>
+            <div class="mgrid" id="mgrid">
+                <div class="gc lc">
+                    <div class="spinner"></div>Loading menu…
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="sa">
+            <div class="shd">
+                <h2 class="stitle"><i class="fa-solid fa-circle-info"></i>About</h2>
+                <div class="srule"></div>
+            </div>
+            <p class="abtxt" id="abtxt">Loading…</p>
+        </div>
+
+        <div class="section" id="sl">
+            <div class="shd">
+                <h2 class="stitle"><i class="fa-solid fa-map-location-dot"></i>Location</h2>
+                <div class="srule"></div>
+            </div>
+            <div id="restaurantMap"></div>
+        </div>
+
+        <div class="section" id="sn">
+            <div class="shd">
+                <h2 class="stitle"><i class="fa-solid fa-store"></i>Nearby Restaurants</h2>
+                <div class="srule"></div>
+            </div>
+            <div class="ngrid" id="ngrid">
+                <div class="gc lc" style="color:var(--txt3)">Enable location to see nearby restaurants</div>
+            </div>
+        </div>
+
+        <div class="section" id="srev">
+            <div class="shd">
+                <h2 class="stitle"><i class="fa-solid fa-comments"></i>Reviews</h2>
+                <div class="srule"></div><span class="spill" id="rvp">0</span>
+            </div>
+            <div class="rvbar">
+                <div>
+                    <div class="rvn" id="rvavg">—</div>
+                    <div class="rvs" id="rvsts">☆☆☆☆☆</div>
+                    <div class="rvc" id="rvcnt">0 reviews</div>
+                </div>
+                <div class="rvsep"></div>
+                <div class="rvbl" id="rvbl">No reviews yet. Be the first!</div>
+            </div>
+            <div class="rvwrap" id="rvwrap">
+                <div class="rvlist" id="rvlist">
+                    <div class="lc">
+                        <div class="spinner"></div>Loading reviews…
                     </div>
-                    ${item.description ? `<div class="menu-item-desc">${escHtml(item.description)}</div>` : ''}
-                    ${item.tags ? `<div class="menu-item-tags">${item.tags.split(',').map(t => `<span class="tag">${escHtml(t.trim())}</span>`).join('')}</div>` : ''}
-                    <button class="add-to-cart-btn">
-                        <i class="fas fa-plus"></i> Add to Order
-                    </button>
                 </div>
+                <div class="rvfade" id="rvfade"></div>
             </div>
-        `).join('');
-
-            } catch (err) {
-                console.error(err);
-                elements.menuItemsGrid.innerHTML =
-                    '<p style="color:red;text-align:center;">Could not load menu</p>';
-            }
-        }
-
-        // ==================== EVENT LISTENERS ====================
-
-        function setupEventListeners() {
-            // Menu category tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentMenuCategory = this.dataset.category;
-                    loadMenuItems(currentMenuCategory);
-                });
-            });
-
-            // Action buttons
-            if (elements.favoriteBtn) elements.favoriteBtn.addEventListener('click', toggleLike);
-            if (elements.callBtn) elements.callBtn.addEventListener('click', callRestaurant);
-            if (elements.directionsBtn) elements.directionsBtn.addEventListener('click', getDirections);
-            if (elements.websiteBtn) elements.websiteBtn.addEventListener('click', visitWebsite);
-            if (elements.shareBtn) elements.shareBtn.addEventListener('click', shareRestaurant);
-            if (elements.addReviewBtn) elements.addReviewBtn.addEventListener('click', showReviewModal);
-            if (elements.closeModal) elements.closeModal.addEventListener('click', hideReviewModal);
-            if (elements.submitReview) elements.submitReview.addEventListener('click', submitReview);
-
-            // Star rating
-            const starElements = document.querySelectorAll('.stars i');
-            if (starElements.length > 0) {
-                starElements.forEach(star => {
-                    star.addEventListener('click', function () {
-                        selectedRating = parseInt(this.dataset.rating);
-                        updateStarRating();
-                    });
-                    star.addEventListener('mouseover', function () {
-                        highlightStars(parseInt(this.dataset.rating));
-                    });
-                });
-
-                const starsContainer = document.querySelector('.stars');
-                if (starsContainer) {
-                    starsContainer.addEventListener('mouseleave', resetStarHighlight);
-                }
-            }
-
-            // Modal close on background click
-            if (elements.reviewModal) {
-                elements.reviewModal.addEventListener('click', function (e) {
-                    if (e.target === this) hideReviewModal();
-                });
-            }
-
-            // Reviews toggle button
-            const reviewsBtn = document.getElementById("loadMoreReviews");
-            if (reviewsBtn) {
-                reviewsBtn.addEventListener("click", toggleReviews);
-            }
-        }
-
-        // ==================== REVIEWS ====================
-
-        async function toggleReviews() {
-            const reviewsSection = document.getElementById("reviewsSection");
-            const reviewsBtn = document.getElementById("loadMoreReviews");
-
-            if (!reviewsVisible) {
-                reviewsSection.style.display = "block";
-                reviewsBtn.innerHTML = '<i class="fas fa-comment-alt"></i> Hide Reviews <i class="fas fa-chevron-up"></i>';
-                reviewsVisible = true;
-
-                if (!reviewsLoaded) {
-                    await loadReviews();
-                    reviewsLoaded = true;
-                }
-            } else {
-                reviewsSection.style.display = "none";
-                reviewsBtn.innerHTML = '<i class="fas fa-comment-alt"></i> Show Reviews <i class="fas fa-chevron-down"></i>';
-                reviewsVisible = false;
-            }
-        }
-
-        function showReviewModal() {
-            if (elements.reviewModal) {
-                elements.reviewModal.classList.add('active');
-            }
-        }
-
-        function hideReviewModal() {
-            if (elements.reviewModal) {
-                elements.reviewModal.classList.remove('active');
-            }
-            resetReviewForm();
-        }
-
-        function updateStarRating() {
-            document.querySelectorAll('.stars i').forEach(star => {
-                const rating = parseInt(star.dataset.rating);
-                star.classList.toggle('active', rating <= selectedRating);
-                star.classList.toggle('fas', rating <= selectedRating);
-                star.classList.toggle('far', rating > selectedRating);
-            });
-
-            const ratingText = document.querySelector('.rating-text');
-            if (ratingText) {
-                const texts = ['Select rating', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
-                ratingText.textContent = texts[selectedRating];
-            }
-        }
-
-        function highlightStars(rating) {
-            document.querySelectorAll('.stars i').forEach(s => {
-                s.style.color = parseInt(s.dataset.rating) <= rating ? '#ffd700' : 'rgba(255,255,255,0.3)';
-            });
-        }
-
-        function resetStarHighlight() {
-            document.querySelectorAll('.stars i').forEach(s => s.style.color = '');
-        }
-
-        function resetReviewForm() {
-            selectedRating = 0;
-            if (elements.reviewText) elements.reviewText.value = '';
-            if (elements.reviewerName) elements.reviewerName.value = '';
-            updateStarRating();
-        }
-
-        async function submitReview() {
-            if (selectedRating === 0) {
-                showToast('⭐ Please select a star rating first');
-                return;
-            }
-            if (!elements.reviewText.value.trim()) {
-                showToast('✏️ Please write your review');
-                return;
-            }
-            if (!elements.reviewerName.value.trim()) {
-                showToast('👤 Please enter your name');
-                return;
-            }
-
-            const reviewData = {
-                restaurant_id: currentRestaurant.id,
-                reviewer_name: elements.reviewerName.value.trim(),
-                rating: selectedRating,
-                comment: elements.reviewText.value.trim()
-            };
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/restaurants/reviews`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(reviewData)
-                });
-
-                if (!response.ok) {
-                    const err = await response.json();
-                    throw new Error(err.detail || 'Failed to submit review');
-                }
-
-                showToast('✅ Thank you! Your review has been submitted.');
-                hideReviewModal();
-                resetReviewForm();
-
-                reviewsLoaded = false;
-                await refreshRestaurantData();
-
-                if (reviewsVisible) {
-                    await loadReviews();
-                }
-
-            } catch (err) {
-                console.error('Review submit error:', err);
-                showToast('⚠️ Could not submit review: ' + err.message);
-            }
-        }
-
-        async function loadReviews() {
-            if (!elements.reviewsContainer) return;
-
-            elements.reviewsContainer.innerHTML = '<p>Loading reviews...</p>';
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/restaurants/${currentRestaurant.id}/reviews`);
-                if (!res.ok) throw new Error('Failed to load reviews');
-
-                const reviews = await res.json();
-
-                if (reviews.length === 0) {
-                    elements.reviewsContainer.innerHTML = '<p style="text-align:center;opacity:0.6;">No reviews yet. Be the first to review!</p>';
-                    return;
-                }
-
-                elements.reviewsContainer.innerHTML = reviews.map(r => `
-            <div class="review-card">
-                <div class="review-header">
-                    <span class="reviewer-name">${escHtml(r.reviewer_name || 'Anonymous')}</span>
-                    <span class="review-date">${formatDate(r.created_at)}</span>
-                </div>
-                <div class="review-rating">
-                    ${'★'.repeat(Math.max(0, Math.min(5, parseInt(r.rating) || 0)))}${'☆'.repeat(5 - Math.max(0, Math.min(5, parseInt(r.rating) || 0)))}
-                </div>
-                <p class="review-text">${escHtml(r.comment)}</p>
-            </div>
-        `).join('');
-
-            } catch (err) {
-                console.error(err);
-                elements.reviewsContainer.innerHTML =
-                    '<p style="color:red;text-align:center;">Could not load reviews</p>';
-            }
-        }
-
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        }
-
-        async function refreshRestaurantData() {
-            try {
-                const res = await fetch(`${API_BASE_URL}/restaurants/${currentRestaurant.id}`);
-                if (!res.ok) throw new Error();
-                currentRestaurant = await res.json();
-                updateRestaurantInfo();
-            } catch (err) {
-                console.error('Failed to refresh restaurant:', err);
-            }
-        }
-
-        // ==================== MAP & LOCATION ====================
-
-        let map = null;
-        let routingControl = null;
-        let userMarker = null;
-        let restaurantMarker = null;
-
-        async function initializeMap() {
-            if (!currentRestaurant?.latitude || !currentRestaurant?.longitude) {
-                const mapContainer = document.getElementById('restaurantMap');
-                if (mapContainer) {
-                    mapContainer.innerHTML =
-                        '<p style="text-align:center; color:#aaa; padding:40px 0;">No location data available</p>';
-                }
-                return;
-            }
-
-            map = L.map('restaurantMap', {
-                zoomControl: true,
-                zoomAnimation: true
-            }).setView([currentRestaurant.latitude, currentRestaurant.longitude], 15);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(map);
-
-            restaurantMarker = L.marker([currentRestaurant.latitude, currentRestaurant.longitude])
-                .addTo(map)
-                .bindPopup(`
-            <b>${escHtml(currentRestaurant.name)}</b><br>
-            ${escHtml(currentRestaurant.address || 'No address')}<br>
-            <span id="popup-distance" style="color:#e67e22; font-weight:500;">
-                calculating distance...
-            </span>
-        `)
-                .openPopup();
-
-            await updatePopupWithDistance();
-            addUserLocationToMap();
-        }
-
-        async function updatePopupWithDistance() {
-            if (!userPosition) {
-                const distanceEl = document.getElementById('popup-distance');
-                if (distanceEl) {
-                    distanceEl.innerHTML = '(enable location to see distance)';
-                }
-                return;
-            }
-
-            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/` +
-                `${userPosition.lng},${userPosition.lat};${currentRestaurant.longitude},${currentRestaurant.latitude}?overview=false`;
-
-            try {
-                const response = await fetch(osrmUrl);
-                const data = await response.json();
-
-                if (data.code === 'Ok' && data.routes?.length > 0) {
-                    const route = data.routes[0];
-                    const distKm = (route.distance / 1000).toFixed(1);
-                    const timeMin = Math.round(route.duration / 60);
-
-                    const distanceEl = document.getElementById('popup-distance');
-                    if (distanceEl) {
-                        distanceEl.innerHTML = `≈ ${distKm} km • ${timeMin} min by car`;
-                    }
-                }
-            } catch (err) {
-                console.error("OSRM failed:", err);
-                const distanceEl = document.getElementById('popup-distance');
-                if (distanceEl) {
-                    distanceEl.innerHTML = '(distance unavailable)';
-                }
-            }
-        }
-
-        function addUserLocationToMap() {
-            if (!map || !userPosition) return;
-
-            const userIcon = L.divIcon({
-                className: 'user-location-marker',
-                html: '<div style="background: #00ff88; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 15px #00ff88; animation: pulse 2s infinite;"></div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            });
-
-            userMarker = L.marker([userPosition.lat, userPosition.lng], { icon: userIcon })
-                .addTo(map)
-                .bindPopup('📍 You are here');
-
-            L.polyline(
-                [[userPosition.lat, userPosition.lng], [currentRestaurant.latitude, currentRestaurant.longitude]],
-                { color: '#1E90FF', weight: 4, opacity: 0.6, dashArray: '8 6' }
-            ).addTo(map);
-
-            const group = L.latLngBounds([
-                [userPosition.lat, userPosition.lng],
-                [currentRestaurant.latitude, currentRestaurant.longitude]
-            ]);
-            map.fitBounds(group, { padding: [60, 60] });
-        }
-
-        function getDirections() {
-            if (!map) {
-                showToast('⏳ Map is still loading, please wait');
-                return;
-            }
-            if (!userPosition) {
-                showToast('📍 Please enable location access to get directions');
-                return;
-            }
-            showRouteOnMap(userPosition.lat, userPosition.lng, currentRestaurant.latitude, currentRestaurant.longitude);
-        }
-
-        function showRouteOnMap(startLat, startLng, endLat, endLng) {
-            if (routingControl) {
-                map.removeControl(routingControl);
-                routingControl = null;
-            }
-
-            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
-
-            fetch(osrmUrl)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.code !== 'Ok' || !data.routes?.length) {
-                        throw new Error(data.message || 'No route found');
-                    }
-
-                    const route = data.routes[0];
-                    const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
-
-                    const routeLine = L.polyline(coords, {
-                        color: '#e74c3c',
-                        weight: 7,
-                        opacity: 0.85,
-                        lineCap: 'round'
-                    });
-
-                    routeLine.addTo(map);
-                    map.fitBounds(routeLine.getBounds(), { padding: [60, 60] });
-
-                    const distKm = (route.distance / 1000).toFixed(1);
-                    const timeMin = Math.round(route.duration / 60);
-
-                    showToast(`🗺️ ${distKm} km · ~${timeMin} min by car`);
-
-                    routingControl = { remove: () => map.removeLayer(routeLine) };
-                })
-                .catch(err => {
-                    console.error('Routing failed:', err);
-                    showToast('⚠️ Could not calculate route. Try opening in Google Maps.');
-                });
-        }
-
-        // ==================== OTHER ACTIONS ====================
-
-        function callRestaurant() {
-            if (currentRestaurant?.phone) {
-                window.location.href = `tel:${currentRestaurant.phone.replace(/\D/g, '')}`;
-            }
-        }
-
-        function visitWebsite() {
-            if (currentRestaurant?.website) {
-                window.open(currentRestaurant.website, '_blank');
-            } else {
-                showToast('ℹ️ No website available for this restaurant');
-            }
-        }
-
-        function shareRestaurant() {
-            if (!currentRestaurant) return;
-            const shareData = {
-                title: currentRestaurant.name,
-                text: `Check out ${currentRestaurant.name} on Discover Uzbekistan!`,
-                url: window.location.href
-            };
-            if (navigator.share) {
-                navigator.share(shareData).catch(console.error);
-            } else {
-                navigator.clipboard.writeText(window.location.href)
-                    .then(() => showToast('🔗 Link copied to clipboard!'))
-                    .catch(() => showToast('⚠️ Could not copy link'));
-            }
-        }
-
-        // ==================== SIMILAR RESTAURANTS ====================
-
-        async function loadSimilarRestaurants() {
-            if (!elements.similarGrid || !currentRestaurant) {
-                if (elements.similarGrid) {
-                    elements.similarGrid.innerHTML = '<p style="text-align:center;opacity:0.6;">No similar restaurants available</p>';
-                }
-                return;
-            }
-
-            elements.similarGrid.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading nearby restaurants...</p></div>';
-
-            if (!userPosition) {
-                await getUserLocation();
-
-                if (!userPosition) {
-                    elements.similarGrid.innerHTML = '<p style="text-align:center;opacity:0.6;">Enable location to see nearby restaurants</p>';
-                    return;
-                }
-            }
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/restaurants`);
-                if (!res.ok) throw new Error('Failed to fetch restaurants');
-
-                const allRestaurants = await res.json();
-
-                const nearby = allRestaurants
-                    .filter(r => {
-                        if (r.id === currentRestaurant.id) return false;
-
-                        const dist = calculateDistance(
-                            userPosition.lat,
-                            userPosition.lng,
-                            r.latitude,
-                            r.longitude
-                        );
-
-                        r.distance = dist;
-                        return dist <= 20; // expanded from 5 km → 20 km
-                    })
-                    .sort((a, b) => a.distance - b.distance)
-                    .slice(0, 6);
-
-                if (nearby.length === 0) {
-                    elements.similarGrid.innerHTML = '<p style="text-align:center;opacity:0.6;">No nearby restaurants found within 20 km</p>';
-                    return;
-                }
-
-                const gradients = [
-                    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-                    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-                    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-                    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
-                ];
-
-                elements.similarGrid.innerHTML = nearby.map((r, index) => {
-                    const bgStyle = r.image_url
-                        ? `url('${escHtml(r.image_url)}')`
-                        : gradients[index % gradients.length];
-
-                    return `
-                <div class="similar-card" onclick="window.location.href='restaurants.html?id=${parseInt(r.id)}'">
-                    <div class="similar-image" style="background: ${bgStyle}; background-size: cover; background-position: center;"></div>
-                    <div class="similar-content">
-                        <div class="similar-name">${escHtml(r.name)}</div>
-                        <div class="similar-cuisine">${escHtml(r.cuisine_type || 'Restaurant')}</div>
-                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
-                            ${r.rating ? `<div class="similar-rating"><i class="fas fa-star"></i> ${parseFloat(r.rating).toFixed(1)}</div>` : ''}
-                            <div style="font-size:12px; color:#00e676;"><i class="fas fa-map-marker-alt"></i> ${r.distance.toFixed(1)} km</div>
+            <button class="rvmbtn" id="rvmbtn" style="display:none" onclick="tRv()">Show More Reviews</button>
+            <button class="bwrv" onclick="tRvF()"><i class="fa-solid fa-pen-to-square"></i> Write a Review <span
+                    class="wra" id="wra">▼</span></button>
+            <div class="rfwrap" id="rfwrap">
+                <div class="rfcard">
+                    <h3>Share your experience</h3>
+                    <div class="frow">
+                        <div class="fg"><label>Your Name *</label><input type="text" id="rvname"
+                                placeholder="e.g. Jasur T." /></div>
+                        <div class="fg"><label>Rating *</label>
+                            <select id="rvrat">
+                                <option value="">Select…</option>
+                                <option value="5">★★★★★ Excellent</option>
+                                <option value="4">★★★★☆ Very Good</option>
+                                <option value="3">★★★☆☆ Good</option>
+                                <option value="2">★★☆☆☆ Fair</option>
+                                <option value="1">★☆☆☆☆ Poor</option>
+                            </select>
                         </div>
                     </div>
-                </div>`;
-                }).join('');
-
-            } catch (err) {
-                console.error('Similar restaurants error:', err);
-                elements.similarGrid.innerHTML = '<p style="color:red;text-align:center;">Could not load nearby restaurants</p>';
-            }
+                    <div class="fg"><label>Your Review *</label><textarea id="rvcom"
+                            placeholder="What did you order? How was the service?"></textarea></div>
+                    <button class="brsub" onclick="subRv()"><i class="fa-solid fa-paper-plane"></i> Submit
+                        Review</button>
+                    <div class="rvok" id="rvok"><i class="fa-solid fa-circle-check"></i> Thank you! Review submitted.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://127.0.0.1:8000' : '';
+        let R = null, rid = null, upos = null, map = null, rl = null, rvLoaded = false;
+        const esc = s => { if (s == null) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); };
+        const sOf = n => { const c = Math.max(0, Math.min(5, Math.round(n))); return '★'.repeat(c) + '☆'.repeat(5 - c); };
+        const fd = d => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        function t(m, ms = 3400) { const e = document.getElementById('toast'); e.textContent = m; e.classList.add('show'); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove('show'), ms); }
+        function jt(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        function st(el) { document.querySelectorAll('.atab').forEach(x => x.classList.remove('active')); el.classList.add('active'); }
+        async function gLoc() { if (!navigator.geolocation) return; try { const p = await new Promise((r, j) => navigator.geolocation.getCurrentPosition(r, j, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 })); upos = { lat: p.coords.latitude, lng: p.coords.longitude }; } catch (e) { upos = null; } }
+        document.addEventListener('DOMContentLoaded', async () => {
+            rid = new URLSearchParams(location.search).get('id');
+            if (!rid) { document.getElementById('mgrid').innerHTML = '<div class="gc lc" style="color:var(--ac)">Missing ?id= in URL</div>'; return; }
+            gLoc(); await init(); await loadRvs(); setupMTabs(); setupFav(); loadNearby();
+        });
+        async function init() {
+            try {
+                const r = await fetch(`${API}/restaurants/${rid}`); if (!r.ok) throw new Error(r.status === 404 ? 'Not found' : 'Error');
+                R = await r.json(); buildHero(); buildIBar(); document.getElementById('abtxt').textContent = R.description || 'No description.'; buildActions();
+                await loadMenu('solo'); initMap();
+            } catch (e) { document.getElementById('mgrid').innerHTML = `<div class="gc lc" style="color:var(--ac)">${esc(e.message)}</div>`; }
         }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
+        function buildHero() {
+            const bg = document.getElementById('hbg'); bg.style.backgroundImage = `url('${esc(R.image_url || '')}')`; setTimeout(() => bg.classList.add('loaded'), 100);
+            const bd = []; if (R.is_partner) bd.push(`<span class="hb hb-p"><i class="fa-solid fa-crown"></i> Partner</span>`); if (R.cuisine_type) bd.push(`<span class="hb hb-c">${esc(R.cuisine_type)}</span>`);
+            document.getElementById('hbadges').innerHTML = bd.join(''); document.getElementById('hname').textContent = R.name || 'Restaurant';
+            const m = []; if (R.address) m.push(`<div class="hmi"><i class="fa-solid fa-location-dot"></i><strong>${esc(R.address)}</strong></div>`); if (R.opening_hours) m.push(`<div class="hmi"><i class="fa-regular fa-clock"></i>${esc(R.opening_hours)}</div>`); if (R.phone) m.push(`<div class="hmi"><i class="fa-solid fa-phone"></i>${esc(R.phone)}</div>`);
+            document.getElementById('hmeta').innerHTML = m.join('');
+            if (R.rating > 0) { document.getElementById('hrat').style.display = 'inline-flex'; document.getElementById('hrn').textContent = parseFloat(R.rating).toFixed(1); document.getElementById('hrs').textContent = sOf(R.rating); document.getElementById('hrc').textContent = `${R.review_count || 0} reviews`; }
+            document.title = `${R.name} — Discover Uzbekistan`;
         }
-
-        // analytics-tracker.js
-        // Add this script to all public pages (restaurants, hotels, attractions)
-
-        (function () {
-            const API_BASE = API_BASE_URL;
-
-            // Generate or get session ID
-            function getSessionId() {
-                let sessionId = sessionStorage.getItem('analytics_session');
-                if (!sessionId) {
-                    sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    sessionStorage.setItem('analytics_session', sessionId);
-                }
-                return sessionId;
-            }
-
-            // Track page view
-            function trackPageView(pageType, pageId, partnerId) {
-                const sessionId = getSessionId();
-                const startTime = Date.now();
-
-                // Track when user leaves or switches tab
-                let isTracked = false;
-
-                function sendTracking() {
-                    if (isTracked) return;
-                    isTracked = true;
-
-                    const timeSpent = Math.floor((Date.now() - startTime) / 1000); // seconds
-
-                    const data = {
-                        page_type: pageType,
-                        page_id: pageId,
-                        partner_id: partnerId,
-                        time_spent: timeSpent,
-                        session_id: sessionId
-                    };
-
-                    // Use sendBeacon for reliable tracking even when user leaves
-                    if (navigator.sendBeacon) {
-                        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-                        navigator.sendBeacon(`${API_BASE}/api/analytics/track`, blob);
-                    } else {
-                        // Fallback to fetch
-                        fetch(`${API_BASE}/api/analytics/track`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(data),
-                            keepalive: true
-                        }).catch(console.error);
-                    }
-                }
-
-                // Track on page unload
-                window.addEventListener('beforeunload', sendTracking);
-
-                // Track on visibility change (tab switch)
-                document.addEventListener('visibilitychange', () => {
-                    if (document.hidden) {
-                        sendTracking();
-                    }
-                });
-
-                // Also send tracking every 30 seconds for long sessions
-                setInterval(() => {
-                    if (!document.hidden) {
-                        isTracked = false; // Reset to allow next update
-                        sendTracking();
-                    }
-                }, 30000);
-            }
-
-            // Auto-detect page type and ID from URL
-            function autoTrack() {
-                const params = new URLSearchParams(window.location.search);
-                const pageId = params.get('id');
-
-                if (!pageId) return; // No ID in URL, skip tracking
-
-                // Detect page type from URL
-                let pageType = null;
-                let partnerId = null;
-
-                if (window.location.pathname.includes('restaurant')) {
-                    pageType = 'restaurant';
-                    partnerId = pageId; // For restaurants, page_id = partner_id
-                } else if (window.location.pathname.includes('hotel')) {
-                    pageType = 'hotel';
-                    partnerId = pageId; // For hotels, page_id = partner_id
-                } else if (window.location.pathname.includes('attraction')) {
-                    pageType = 'attraction';
-                    partnerId = pageId; // For attractions, page_id = partner_id
-                }
-
-                if (pageType && pageId) {
-                    trackPageView(pageType, parseInt(pageId), parseInt(partnerId));
-                }
-            }
-
-            // Initialize tracking when DOM is ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', autoTrack);
-            } else {
-                autoTrack();
-            }
-
-            // Expose tracking function globally for manual tracking
-            window.trackAnalytics = trackPageView;
-        })();
+        function buildIBar() {
+            const items = [];
+            if (R.address) items.push(`<div class="qi"><i class="fa-solid fa-location-dot"></i>${esc(R.address)}</div>`);
+            if (R.phone) items.push(`<div class="qi"><i class="fa-solid fa-phone"></i><a href="tel:${esc(R.phone.replace(/\D/g, ''))}" style="color:var(--ac)">${esc(R.phone)}</a></div>`);
+            if (R.opening_hours) items.push(`<div class="qi"><i class="fa-regular fa-clock" style="color:var(--ac)"></i>${esc(R.opening_hours)}</div>`);
+            if (R.website) items.push(`<div class="qi"><i class="fa-solid fa-globe" style="color:#64b5f6"></i><a href="${esc(R.website)}" target="_blank" style="color:#64b5f6">${esc(R.website.replace(/^https?:\/\//, ''))}</a></div>`);
+            if (R.instagram) { const l = R.instagram.startsWith('http') ? R.instagram : `https://instagram.com/${R.instagram.replace('@', '')}`; items.push(`<a href="${esc(l)}" target="_blank" class="qi-ig"><i class="fa-brands fa-instagram"></i>${esc(R.instagram.startsWith('@') ? R.instagram : '@' + R.instagram)}</a>`); }
+            if (R.telegram) { let tl = R.telegram; if (!tl.startsWith('http')) tl = tl.startsWith('@') ? `https://t.me/${tl.replace('@', '')}` : `https://t.me/${tl}`; items.push(`<a href="${esc(tl)}" target="_blank" class="qi-tg"><i class="fa-brands fa-telegram"></i>${esc(R.telegram.startsWith('@') ? R.telegram : '@' + R.telegram)}</a>`); }
+            document.getElementById('ibar').innerHTML = items.join('');
+        }
+        function buildActions() {
+            const ar = document.getElementById('arow');
+            let html = `<button class="ab ab-p" onclick="callR()"><i class="fa-solid fa-phone"></i> Call Now</button><button class="ab ab-s" onclick="getDir()"><i class="fa-solid fa-diamond-turn-right"></i> Directions</button>`;
+            if (R?.website) html += `<button class="ab ab-s" onclick="window.open('${esc(R.website)}','_blank')"><i class="fa-solid fa-globe"></i> Website</button>`;
+            if (R?.instagram) { const l = R.instagram.startsWith('http') ? R.instagram : `https://instagram.com/${R.instagram.replace('@', '')}`; html += `<button class="ab ab-ig" onclick="window.open('${esc(l)}','_blank')"><i class="fa-brands fa-instagram"></i> Instagram</button>`; }
+            if (R?.telegram) { let tl = R.telegram; if (!tl.startsWith('http')) tl = tl.startsWith('@') ? `https://t.me/${tl.replace('@', '')}` : `https://t.me/${tl}`; html += `<button class="ab ab-tg" onclick="window.open('${esc(tl)}','_blank')"><i class="fa-brands fa-telegram"></i> Telegram</button>`; }
+            ar.innerHTML = html;
+        }
+        function setupFav() { const btn = document.getElementById('favBtn'), k = `fav_r_${rid}`; if (localStorage.getItem(k) === '1') { btn.classList.add('liked'); btn.innerHTML = '<i class="fa-solid fa-heart"></i>'; } btn.onclick = () => { const s = btn.classList.toggle('liked'); btn.innerHTML = s ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>'; if (s) localStorage.setItem(k, '1'); else localStorage.removeItem(k); }; }
+        function callR() { if (R?.phone) window.location.href = `tel:${R.phone.replace(/\D/g, '')}`; }
+        async function loadMenu(cat) {
+            const gr = document.getElementById('mgrid'); gr.innerHTML = '<div class="gc lc"><div class="spinner"></div>Loading…</div>';
+            document.getElementById('catpill').textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+            try {
+                const r = await fetch(`${API}/restaurants/${R.id}/menu?category=${cat}`); const items = await r.json();
+                if (!items.length) { gr.innerHTML = '<div class="gc lc" style="color:var(--txt3)">No items in this category</div>'; return; }
+                gr.innerHTML = items.map(i => `<div class="mc">
+      <div class="mc-img">${i.image_url ? `<img src="${esc(i.image_url)}" alt="${esc(i.item_name)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=mc-ph>🍽</div>'"/>` : `<div class="mc-ph">🍽</div>`}</div>
+      <div class="mc-body">
+        <div class="mc-name">${esc(i.item_name)}</div>
+        ${i.description ? `<div class="mc-desc">${esc(i.description)}</div>` : ''}
+        <div class="mc-foot">
+          <div class="mc-price">$${Number(i.price).toFixed(2)}</div>
+          ${i.tags ? `<div class="mc-tags">${i.tags.split(',').map(x => `<span class="mc-tag">${esc(x.trim())}</span>`).join('')}</div>` : ''}
+        </div>
+      </div></div>`).join('');
+            } catch (e) { gr.innerHTML = '<div class="gc lc" style="color:var(--ac)">Could not load menu</div>'; }
+        }
+        function setupMTabs() { document.querySelectorAll('.mtb').forEach(b => { b.addEventListener('click', function () { document.querySelectorAll('.mtb').forEach(x => x.classList.remove('active')); this.classList.add('active'); loadMenu(this.dataset.cat); }); }); }
+        function initMap() {
+            if (!R?.latitude || !R?.longitude) { document.getElementById('restaurantMap').innerHTML = '<div class="lc" style="color:var(--txt3)">No location data</div>'; return; }
+            map = L.map('restaurantMap', { zoomControl: true }).setView([R.latitude, R.longitude], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
+            const ic = L.divIcon({ className: '', html: `<div style="width:14px;height:14px;border-radius:50%;background:var(--ac);border:3px solid #fff;box-shadow:0 2px 10px rgba(255,107,107,.5)"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] });
+            L.marker([R.latitude, R.longitude], { icon: ic }).addTo(map).bindPopup(`<b>${esc(R.name)}</b>${R.address ? `<br>${esc(R.address)}` : ''}`, { maxWidth: 180 }).openPopup();
+        }
+        function addUsr() {
+            if (!map || !upos) return;
+            const ui = L.divIcon({ className: '', html: '<div style="width:12px;height:12px;border-radius:50%;background:#4ecdc4;border:2.5px solid #fff;box-shadow:0 0 10px #4ecdc4"></div>', iconSize: [12, 12], iconAnchor: [6, 6] });
+            L.marker([upos.lat, upos.lng], { icon: ui }).addTo(map).bindPopup('📍 You are here');
+            L.polyline([[upos.lat, upos.lng], [R.latitude, R.longitude]], { color: '#ff6b6b', weight: 2.5, opacity: .4, dashArray: '7 5' }).addTo(map);
+            map.fitBounds([[upos.lat, upos.lng], [R.latitude, R.longitude]], { padding: [45, 45] });
+        }
+        function getDir() {
+            if (!map) { t('⏳ Map loading…'); return; } if (!upos) { t('📍 Enable location access first'); return; }
+            fetch(`https://router.project-osrm.org/route/v1/driving/${upos.lng},${upos.lat};${R.longitude},${R.latitude}?overview=full&geometries=geojson`)
+                .then(r => r.json()).then(d => { if (d.code !== 'Ok' || !d.routes?.length) throw new Error(); if (rl) map.removeLayer(rl); const c = d.routes[0].geometry.coordinates.map(x => [x[1], x[0]]); rl = L.polyline(c, { color: '#ff6b6b', weight: 5, opacity: .85, lineCap: 'round' }); rl.addTo(map); map.fitBounds(rl.getBounds(), { padding: [55, 55] }); t(`🗺 ${(d.routes[0].distance / 1000).toFixed(1)} km · ~${Math.round(d.routes[0].duration / 60)} min`); })
+                .catch(() => t('⚠️ Could not calculate route'));
+        }
+        async function loadNearby() {
+            await gLoc(); const gr = document.getElementById('ngrid');
+            if (!upos) { gr.innerHTML = '<div class="gc lc" style="color:var(--txt3)">Enable location to see nearby restaurants</div>'; if (map) addUsr(); return; }
+            if (map) addUsr();
+            try {
+                const r = await fetch(`${API}/restaurants`); const all = await r.json();
+                const nb = all.filter(x => { if (x.id === R?.id) return false; x._d = dd(upos.lat, upos.lng, x.latitude, x.longitude); return x._d <= 20; }).sort((a, b) => a._d - b._d).slice(0, 6);
+                if (!nb.length) { gr.innerHTML = '<div class="gc lc" style="color:var(--txt3)">No restaurants within 20 km</div>'; return; }
+                gr.innerHTML = nb.map(x => `<a href="restaurants.html?id=${parseInt(x.id)}" class="nc">
+      <div class="nc-img"><img src="${esc(x.image_url || '')}" alt="${esc(x.name)}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=height:100%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;background:var(--bg3)>🍽</div>'"/></div>
+      <div class="nc-body"><div class="nc-name">${esc(x.name)}</div><div class="nc-meta">${esc(x.cuisine_type || 'Restaurant')}</div><div class="nc-dist"><i class="fa-solid fa-location-dot"></i>${x._d.toFixed(1)} km${x.rating ? ` · ★ ${parseFloat(x.rating).toFixed(1)}` : ''}</div></div>
+    </a>`).join('');
+            } catch (e) { gr.innerHTML = '<div class="gc lc" style="color:var(--ac)">Could not load nearby</div>'; }
+        }
+        async function loadRvs() {
+            if (rvLoaded) return;
+            try {
+                const r = await fetch(`${API}/restaurants/${rid}/reviews`); const rv = await r.json(); rvLoaded = true;
+                const avg = rv.length ? rv.reduce((s, x) => s + x.rating, 0) / rv.length : 0;
+                document.getElementById('rvp').textContent = rv.length;
+                document.getElementById('rvavg').textContent = avg > 0 ? avg.toFixed(1) : '—';
+                document.getElementById('rvsts').textContent = avg > 0 ? sOf(avg) : '☆☆☆☆☆';
+                document.getElementById('rvcnt').textContent = `${rv.length} review${rv.length !== 1 ? 's' : ''}`;
+                document.getElementById('rvbl').textContent = avg >= 4.5 ? '🏆 Exceptional — highly recommended!' : avg >= 4 ? '👍 Well rated by diners.' : avg > 0 ? 'Rated by guests.' : 'No reviews yet — be the first!';
+                if (!rv.length) { document.getElementById('rvlist').innerHTML = '<div class="lc" style="color:var(--txt3)">No reviews yet.</div>'; document.getElementById('rvfade').style.display = 'none'; return; }
+                document.getElementById('rvlist').innerHTML = rv.map(x => `<div class="rvc2"><div class="rvt"><div><div class="rvnm">${esc(x.reviewer_name || 'Anonymous')}</div><div class="rvst">${sOf(x.rating)}</div></div><div class="rvdt">${fd(x.created_at)}</div></div><div class="rvtx">${esc(x.comment || '')}</div></div>`).join('');
+                if (rv.length > 3) document.getElementById('rvmbtn').style.display = 'block'; else document.getElementById('rvfade').style.display = 'none';
+            } catch (e) { document.getElementById('rvlist').innerHTML = '<div class="lc" style="color:var(--ac)">Could not load reviews</div>'; }
+        }
+        function tRv() { const w = document.getElementById('rvwrap'), b = document.getElementById('rvmbtn'); w.classList.toggle('open'); b.textContent = w.classList.contains('open') ? 'Show Less Reviews' : 'Show More Reviews'; }
+        function tRvF() { const w = document.getElementById('rfwrap'), a = document.getElementById('wra'); w.classList.toggle('open'); if (a) a.style.transform = w.classList.contains('open') ? 'rotate(180deg)' : ''; if (w.classList.contains('open')) setTimeout(() => w.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80); }
+        async function subRv() {
+            const nm = document.getElementById('rvname').value.trim(), rt = parseInt(document.getElementById('rvrat').value), cm = document.getElementById('rvcom').value.trim();
+            if (!nm || !rt || !cm) { t('⚠️ Fill in name, rating and review'); return; }
+            try { const r = await fetch(`${API}/restaurants/reviews`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ restaurant_id: parseInt(rid), reviewer_name: nm, rating: rt, comment: cm }) }); if (!r.ok) throw new Error();['rvname', 'rvcom'].forEach(id => document.getElementById(id).value = ''); document.getElementById('rvrat').value = ''; const ok = document.getElementById('rvok'); ok.style.display = 'block'; setTimeout(() => ok.style.display = 'none', 5000); rvLoaded = false; await loadRvs(); }
+            catch (e) { t('⚠️ Could not submit: ' + e.message); }
+        }
+        function shareR() { if (!R) return; const d = { title: R.name, text: `Check out ${R.name} on Discover Uzbekistan!`, url: location.href }; if (navigator.share) navigator.share(d).catch(() => { }); else navigator.clipboard?.writeText(location.href).then(() => t('🔗 Link copied!')).catch(() => t('⚠️ Could not copy')); }
+        function dd(a, b, c, d) { const R = 6371, dL = (c - a) * Math.PI / 180, dN = (d - b) * Math.PI / 180; const x = Math.sin(dL / 2) ** 2 + Math.cos(a * Math.PI / 180) * Math.cos(c * Math.PI / 180) * Math.sin(dN / 2) ** 2; return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)); }
+        (function () { const id = new URLSearchParams(location.search).get('id'); if (!id) return; const sid = sessionStorage.getItem('_as') || ('s' + Date.now() + Math.random().toString(36).substr(2, 8)); sessionStorage.setItem('_as', sid); const t0 = Date.now(); let sent = false; function send() { if (sent) return; sent = true; const d = { page_type: 'restaurant', page_id: parseInt(id), partner_id: parseInt(id), time_spent: Math.floor((Date.now() - t0) / 1000), session_id: sid }; navigator.sendBeacon ? navigator.sendBeacon(`${API}/api/analytics/track`, new Blob([JSON.stringify(d)], { type: 'application/json' })) : fetch(`${API}/api/analytics/track`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d), keepalive: true }).catch(() => { }); } window.addEventListener('beforeunload', send); document.addEventListener('visibilitychange', () => { if (document.hidden) send(); }); })();
     </script>
 </body>
 

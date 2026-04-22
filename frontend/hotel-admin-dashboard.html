@@ -1175,7 +1175,7 @@
         document.getElementById('statReviews').textContent = hotel.review_count ?? '0';
         document.getElementById('statRooms').textContent = hotel.rooms?.length ?? '0';
 
-        const reviews = await api('GET', `/hotels/${hotelId}/reviews`);
+        const reviews = await api('GET', `/hotels/${hotelId}/partner-reviews`);
         const pending = reviews.filter(r => (r.status || 'approved') === 'pending').length;
         document.getElementById('dashContent').innerHTML = pending > 0
           ? `<div style="background:var(--warning-light);border-left:4px solid #fcd34d;border-radius:8px;padding:1rem;font-weight:600;color:var(--warning);">

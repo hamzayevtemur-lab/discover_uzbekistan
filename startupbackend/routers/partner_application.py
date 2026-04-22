@@ -35,6 +35,9 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import Session
 
+from models.hotel import Hotel, HotelRoom, HotelReview
+from models.restaurant import Restaurant, RestaurantMenu, Review
+
 from database import Base, get_db
 
 
@@ -893,3 +896,162 @@ async def change_password(
     db.commit()
 
     return {"success": True, "message": "Password changed successfully."}
+
+
+
+
+# ══════════════════════════════════════════════════════════════
+#  BLOCK / UNBLOCK  (keeps all data, just hides from public)
+# ══════════════════════════════════════════════════════════════
+
+@router.post("/admin/{app_id}/block", summary="Block a partner account")
+async def block_partner(
+    app_id: int,
+    db:     Session = Depends(get_db),
+):
+    """
+    Suspend a partner without deleting their data.
+    Their listing disappears from the public site.
+    They can be unblocked later and everything comes back.
+    """
+    application = _get_or_404(app_id, db)
+
+    if application.status == "blocked":
+        raise HTTPException(400, "Partner is already blocked.")
+
+    # Save previous status so we can restore it on unblock
+    application.plan_status       = "blocked"
+    application.rejection_reason  = application.rejection_reason or "Blocked by admin."
+
+    # Hide from public by setting business record status to blocked
+    _set_business_status(application, "blocked", db)
+
+    db.commit()
+    return {"success": True, "message": f"{application.business_name} has been blocked."}
+
+
+@router.post("/admin/{app_id}/unblock", summary="Unblock a partner account")
+async def unblock_partner(
+    app_id: int,
+    db:     Session = Depends(get_db),
+):
+    """
+    Restore a previously blocked partner.
+    Their listing reappears on the public site.
+    """
+    application = _get_or_404(app_id, db)
+
+    if application.plan_status != "blocked":
+        raise HTTPException(400, "Partner is not blocked.")
+
+    application.plan_status      = "active"
+    application.rejection_reason = None
+
+    # Restore business record to approved
+    _set_business_status(application, "approved", db)
+
+    db.commit()
+    return {"success": True, "message": f"{application.business_name} has been unblocked."}
+
+
+# ══════════════════════════════════════════════════════════════
+#  FULL DELETE  (removes everything — cannot be undone)
+# ══════════════════════════════════════════════════════════════
+
+@router.delete("/admin/{app_id}/delete", summary="Permanently delete a partner and all their data")
+async def delete_partner(
+    app_id: int,
+    db:     Session = Depends(get_db),
+):
+    """
+    Completely removes:
+      - The partner_application row
+      - The business record (restaurant / hotel / travel_agency)
+      - All related data (rooms, menu items, tours, reviews)
+
+    After this the email is free to register again as a new partner.
+    """
+    application = _get_or_404(app_id, db)
+    bt = application.business_type
+
+    try:
+        if bt == "restaurant":
+            rid = application.linked_record_id
+            if rid:
+                db.query(Review).filter(
+                    Review.restaurant_id == rid).delete(synchronize_session=False)
+                db.query(RestaurantMenu).filter(
+                    RestaurantMenu.restaurant_id == rid).delete(synchronize_session=False)
+                db.query(Restaurant).filter(
+                    Restaurant.id == rid).delete(synchronize_session=False)
+
+        elif bt == "hotel":
+            hid = application.linked_record_id
+            if hid:
+                db.query(HotelReview).filter(
+                    HotelReview.hotel_id == hid).delete(synchronize_session=False)
+                db.query(HotelRoom).filter(
+                    HotelRoom.hotel_id == hid).delete(synchronize_session=False)
+                db.query(Hotel).filter(
+                    Hotel.id == hid).delete(synchronize_session=False)
+
+        elif bt == "travel_agency":
+            from models.travel_agency import (
+                TravelAgency, Tour, AgencyReview,
+                TourItinerary, TourDestination
+            )
+            aid = application.linked_record_id
+            if aid:
+                # Get all tour ids first
+                tour_ids = [
+                    t.id for t in db.query(Tour.id).filter(Tour.agency_id == aid).all()
+                ]
+                for tid in tour_ids:
+                    db.query(TourItinerary).filter(
+                        TourItinerary.tour_id == tid).delete(synchronize_session=False)
+                    db.query(TourDestination).filter(
+                        TourDestination.tour_id == tid).delete(synchronize_session=False)
+                db.query(Tour).filter(
+                    Tour.agency_id == aid).delete(synchronize_session=False)
+                db.query(AgencyReview).filter(
+                    AgencyReview.agency_id == aid).delete(synchronize_session=False)
+                db.query(TravelAgency).filter(
+                    TravelAgency.id == aid).delete(synchronize_session=False)
+
+        # Finally delete the application row itself
+        # This frees the email for re-registration
+        db.delete(application)
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(500, f"Delete failed: {str(e)}")
+
+    return {
+        "success": True,
+        "message": f"Partner and all associated data permanently deleted. Email is now free to re-register."
+    }
+
+
+# ══════════════════════════════════════════════════════════════
+#  HELPER
+# ══════════════════════════════════════════════════════════════
+
+def _set_business_status(application: PartnerApplication, status: str, db: Session) -> None:
+    """Set status on the actual business record."""
+    from models.hotel import Hotel
+    from models.restaurant import Restaurant
+    from models.travel_agency import TravelAgency
+
+    model_map = {
+        "hotel":         Hotel,
+        "restaurant":    Restaurant,
+        "travel_agency": TravelAgency,
+    }
+    model = model_map.get(application.business_type)
+    if not model or not application.linked_record_id:
+        return
+    rec = db.query(model).filter(model.id == application.linked_record_id).first()
+    if rec:
+        rec.status = status
+        db.flush()

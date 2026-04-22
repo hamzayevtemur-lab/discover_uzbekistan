@@ -885,6 +885,7 @@
 
             <!-- ── DASHBOARD ── -->
             <div id="section-dashboard" class="section active">
+                <div id="dashPendingAlert"></div> 
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">📊 Dashboard Overview</h2>
@@ -1328,6 +1329,27 @@
                 document.getElementById('statApproved').textContent = stats.approved_tours ?? '—';
                 document.getElementById('statReviews').textContent = stats.total_reviews ?? '—';
                 document.getElementById('agencyNameHeader').textContent = stats.agency_name || 'Agency Partner Portal';
+
+                // ── Pending reviews alert ──────────────────────────
+                try {
+                    const reviews = await api('GET', `/agency-partner/reviews`);
+                    const pending = reviews.filter(r => (r.status || 'pending') === 'pending').length;
+                    const alertDiv = document.getElementById('dashPendingAlert');
+                    if (alertDiv) {
+                        alertDiv.style.display = pending > 0 ? 'block' : 'none';
+                        alertDiv.innerHTML = pending > 0
+                            ? `<div style="background:#fef3c7;border-left:4px solid #fcd34d;border-radius:8px;
+                                   padding:1rem;font-weight:600;color:#d97706;margin-bottom:1rem;">
+                           ⚠️ You have <strong>${pending}</strong> pending review${pending > 1 ? 's' : ''} waiting for your approval.
+                           <button class="btn btn-secondary btn-sm" style="margin-left:1rem;"
+                               onclick="showSection('reviews',document.querySelector('[onclick*=reviews]'))">
+                               Review them →
+                           </button>
+                       </div>`
+                            : '';
+                    }
+                } catch (e) { }
+
 
                 const tours = await api('GET', `/agency-partner/tours`);
                 const tbody = document.getElementById('dashToursTbody');
