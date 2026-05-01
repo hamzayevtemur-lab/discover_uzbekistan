@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Partner Login - Discover Uzbekistan</title>
 
+  <script src="/config.js"></script>
+
   <style>
     * {
       margin: 0;
@@ -178,7 +180,8 @@
   </div>
 
   <script>
-    const API = 'http://localhost:8000';
+    // API defined in config.js
+
 
     document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();

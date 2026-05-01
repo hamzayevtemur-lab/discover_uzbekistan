@@ -7,6 +7,10 @@
     <title>Hotels - Discover Uzbekistan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <script src="/config.js"></script>
+
+
     <style>
         :root {
             --accent: #ff6b35;
@@ -925,8 +929,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // ── CONFIG ──────────────────────────────────────────────────────────
-        const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://127.0.0.1:8000' : '';
+        // API defined in config.js
+
 
         // ── STATE ────────────────────────────────────────────────────────────
         let allHotels = [];

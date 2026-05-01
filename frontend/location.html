@@ -28,6 +28,8 @@
       gtag("config", "G-KJHCVBY91E");
     </script>
 
+    <script src="/config.js"></script>
+
     <style>
       /* Reset & Base Styles */
       * {
@@ -751,11 +753,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Your JavaScript -->
     <script>
-      const API_BASE_URL =
-        window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1"
-          ? "http://127.0.0.1:8000"
-          : "";
+      // API defined in config.js
+
 
       const cityCoordinates = {
         tashkent: { lat: 41.2995, lng: 69.2401, name: "Tashkent" },

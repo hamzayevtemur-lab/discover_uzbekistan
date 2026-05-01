@@ -11,6 +11,7 @@
     rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="/config.js"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJHCVBY91E"></script>
   <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-KJHCVBY91E');</script>
   <style>
@@ -1417,7 +1418,11 @@
   <div class="toast" id="toast"></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://127.0.0.1:8000' : '';
+
+
+    // API defined in config.js
+
+
     let H = null, hid = null, upos = null, map = null, rl = null, rooms = [], rf = 'all', rvLoaded = false;
     const esc = s => { if (s == null) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); };
     const sOf = n => { const c = Math.max(0, Math.min(5, Math.round(n))); return '★'.repeat(c) + '☆'.repeat(5 - c); };

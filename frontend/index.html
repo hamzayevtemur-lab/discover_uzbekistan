@@ -17,6 +17,8 @@
       gtag("config", "G-KJHCVBY91E");
     </script>
 
+    <script src="/config.js"></script>
+
     <title>Discover Uzbekistan - Your Complete Travel Guide</title>
     
     <style>
@@ -1714,11 +1716,9 @@
 
     <script>
       // Use relative URL in production, localhost for development
-      const API_BASE_URL =
-        window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1"
-          ? "http://127.0.0.1:8000"
-          : "";
+      // API defined in config.js
+
+
       let currentLang = "en";
       let userPosition = null;
 

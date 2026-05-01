@@ -1,16 +1,19 @@
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles  
-from routers import(restaurants, hotels, attractions, likes, admin,
-            partner_restaurants, partner_auth, admin_approval, partner_hotels, 
-            travel_agency,partner_agency, partner_application, admin,subscription)  # Import all routers
+from fastapi.staticfiles import StaticFiles
+from routers import (
+    restaurants, hotels, attractions, likes, admin,
+    partner_restaurants, partner_auth, admin_approval, partner_hotels,
+    travel_agency, partner_agency, partner_application, subscription
+)
 
-app = FastAPI()
+app = FastAPI(title="Discover Uzbekistan API")
 
-# CORS
+# ── CORS ──────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# ── ROUTERS ───────────────────────────────────────────────────
 app.include_router(restaurants.router)
 app.include_router(hotels.router)
 app.include_router(attractions.router)
@@ -34,12 +37,11 @@ app.include_router(partner_agency.router)
 app.include_router(partner_application.router)
 app.include_router(subscription.router)
 
+# ── STATIC FILES ──────────────────────────────────────────────
+# Absolute paths so it works both locally and on Railway
+BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
+STATIC_DIR   = os.path.join(BASE_DIR, "static")
 
-app.mount("/static", StaticFiles(directory="static"), name="static_assets")
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
-
-
-
-@app.get("/")
-def read_root():
-    return {"message": "Discover Uzbekistan API"}
+app.mount("/static", StaticFiles(directory=STATIC_DIR),   name="static_assets")
+app.mount("/",       StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

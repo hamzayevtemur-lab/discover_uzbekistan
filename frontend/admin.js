@@ -49,8 +49,8 @@ async function checkAdminLogin() {
 
 
 
-const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-    ? 'http://127.0.0.1:8000' : '';
+// API defined in config.js
+
 function adminToast(msg, type = 'info') {
     const c = document.getElementById('toastContainer');
     if (!c) { console.log(msg); return; }
