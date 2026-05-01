@@ -1,8 +1,81 @@
-const API_BASE = 'http://localhost:8000';
+// ── ADMIN LOGIN GATE ──────────────────────────────────────────
+const SESSION_KEY = 'ceo_admin_auth';
+
+(function checkExistingSession() {
+    // If already authenticated this session, hide the gate immediately
+    if (sessionStorage.getItem(SESSION_KEY)) {
+        document.getElementById('loginGate').style.display = 'none';
+    }
+})();
+
+async function checkAdminLogin() {
+    const input   = document.getElementById('adminPasswordInput').value;
+    const errorEl = document.getElementById('loginError');
+    const btn     = document.getElementById('loginBtn');
+
+    if (!input) return;
+
+    errorEl.style.display = 'none';
+    btn.textContent = '⏳ Checking…';
+    btn.disabled    = true;
+
+    try {
+        const resp = await fetch(`${API_BASE}/admin/verify-login`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ password: input })
+        });
+
+        if (resp.ok) {
+            const data = await resp.json();
+            // Store token — it auto-expires every hour server-side
+            sessionStorage.setItem(SESSION_KEY, data.token);
+            document.getElementById('loginGate').style.display = 'none';
+        } else {
+            errorEl.style.display = 'block';
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('adminPasswordInput').focus();
+        }
+
+    } catch(e) {
+        errorEl.textContent = '❌ Could not connect to server. Is it running?';
+        errorEl.style.display = 'block';
+    } finally {
+        btn.textContent = 'Sign In →';
+        btn.disabled    = false;
+    }
+}
+// ── END LOGIN GATE ────────────────────────────────────────────
+
+
+
+const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8000' : '';
+function adminToast(msg, type = 'info') {
+    const c = document.getElementById('toastContainer');
+    if (!c) { console.log(msg); return; }
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    const icon = document.createElement('span');
+    icon.textContent = icons[type] || 'ℹ️';
+    const text = document.createElement('span');
+    text.textContent = msg;
+    el.appendChild(icon);
+    el.appendChild(text);
+    c.appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+}
+
+function safeImg(url, fallback) {
+    if (!url) return fallback || '';
+    // If already absolute URL, use as-is; if relative path, prepend API_BASE
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/static/')) return url;
+    return API_BASE + url;
+}
+
 
 let restaurantMap, restaurantMarker;
-
-let pendingAgencies = [];
 
 const ADMIN_KEY = "668e4a2d545ddcdd0a8d40e0cf7a8079fadeeb21872198a1354cd6c4a9b739b6"
 
@@ -182,7 +255,7 @@ async function loadPendingApprovals() {
                 html += `
                         <div class="pending-item" style="background: white;padding: 1.5rem; margin-bottom: 1rem;border-radius: 12px;box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                             <div style="display:flex; gap:1.5rem;">
-                                <div><img src="${API_BASE}${item.image_url || 'https://via.placeholder.com/150'}" style="width:150px; height:120px; object-fit:cover; border-radius:10px;"></div>
+                                <div><img src="${safeImg(item.image_url, 'https://via.placeholder.com/150')}" style="width:150px; height:120px; object-fit:cover; border-radius:10px;"></div>
                                 <div style="flex:1;">
                                     <h4 style="font-size:1.2rem; margin-bottom:0.5rem;">${item.name}</h4>
                                     <p style="color:#6b7280; margin-bottom:0.5rem;">${item.description || 'No description provided'}</p>
@@ -209,7 +282,7 @@ async function loadPendingApprovals() {
             pendingRooms.forEach(item => {
                 html += `
                             <div style="background:white;padding:1.5rem; margin-bottom:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);display:flex;gap:1.5rem;align-items:center;">
-                                <img src="${API_BASE}${item.image_url || 'https://via.placeholder.com/120'}" style="width:120px; height:100px; object-fit:cover; border-radius:10px;">
+                                <img src="${safeImg(item.image_url, 'https://via.placeholder.com/120')}" style="width:120px; height:100px; object-fit:cover; border-radius:10px;">
                                 <div style="flex:1;">
                                     <h4 style="margin-bottom:0.5rem;">${item.hotel_name}</h4>
                                     <p style="color:#6b7280;">Room Type: ${item.room_type || 'N/A'}</p>
@@ -315,17 +388,17 @@ async function loadPendingApprovals() {
                     </div>`;
             });
             html += '</div></div>';
+        }
 
-
-            // ── Pending Agencies ─────────────────────────────────────────
-            if (pendingAgencies.length > 0) {
-                html += `<div class="table-container" style="margin-bottom:1.5rem;">
+        // ── Pending Agencies ─────────────────────────────────────────
+        if (pendingAgencies.length > 0) {
+            html += `<div class="table-container" style="margin-bottom:1.5rem;">
         <h3 style="padding:1rem;border-bottom:1px solid #e5e7eb;margin:0;">
             🌍 Pending Travel Agencies (${pendingAgencies.length})
         </h3>
         <div style="padding:1rem;">`;
-                pendingAgencies.forEach(a => {
-                    html += `
+            pendingAgencies.forEach(a => {
+                html += `
         <div style="background:white;padding:1.5rem;margin-bottom:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);display:flex;gap:1.5rem;">
             ${a.image_url ? `<img src="${a.image_url}" style="width:150px;height:120px;object-fit:cover;border-radius:10px;flex-shrink:0;">` : ''}
             <div style="flex:1;">
@@ -341,21 +414,18 @@ async function loadPendingApprovals() {
                 </div>
             </div>
             <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;">
-                <button onclick="approveItem('agency',${a.id})" 
+                <button onclick="approveItem('agency',${a.id})"
                     class="btn-create" style="background:#10b981;padding:0.5rem 1rem;white-space:nowrap;">
                     ✅ Approve
                 </button>
-                <button onclick="rejectItem('agency',${a.id})" 
+                <button onclick="rejectItem('agency',${a.id})"
                     class="btn-danger" style="padding:0.5rem 1rem;white-space:nowrap;">
                     ❌ Reject
                 </button>
             </div>
         </div>`;
-                });
-                html += '</div></div>';
-            }
-
-
+            });
+            html += '</div></div>';
         }
 
         if (total === 0) {
@@ -376,11 +446,11 @@ async function approveItem(type, id) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'approved', admin_email: 'ceo@example.com' })
         });
-        alert('✅ Approved!');
+        adminToast('Approved!', 'success');
         loadPendingApprovals();
         loadDashboard();
     } catch (error) {
-        alert('Error: ' + error.message);
+        adminToast('Error: ' + error.message, 'error');
     }
 }
 
@@ -393,11 +463,11 @@ async function rejectItem(type, id) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'rejected', rejection_reason: reason, admin_email: 'ceo@example.com' })
         });
-        alert('❌ Rejected');
+        adminToast('Rejected', 'error');
         loadPendingApprovals();
         loadDashboard();
     } catch (error) {
-        alert('Error: ' + error.message);
+        adminToast('Error: ' + error.message, 'error');
     }
 }
 
@@ -697,7 +767,7 @@ async function uploadImage(input, type) {
             document.getElementById(type + '-upload-progress').classList.remove('active');
         }, 2000);
     } catch (error) {
-        alert('Upload failed: ' + error.message);
+        adminToast('Upload failed: ' + error.message, 'error');
     }
 }
 
@@ -758,11 +828,11 @@ async function saveRestaurant(e) {
             })
         });
 
-        alert('✅ Created!');
+        adminToast('Created!', 'success');
         closeRestaurantModal();
         loadRestaurants();
     } catch (error) {
-        alert('Error: ' + error.message);
+        adminToast('Error: ' + error.message, 'error');
     }
 }
 
@@ -772,11 +842,11 @@ async function deleteRestaurant(id) {
 
     try {
         await fetchAPI(`/admin/restaurants/${id}`, { method: 'DELETE' });
-        alert('✅ Restaurant deleted!');
+        adminToast('Restaurant deleted!', 'success');
         closeRestaurantDetails();
         loadRestaurants();
     } catch (error) {
-        alert('Error: ' + error.message);
+        adminToast('Error: ' + error.message, 'error');
     }
 }
 
@@ -784,14 +854,14 @@ async function deleteReview(type, id) {
     if (!confirm('Delete?')) return;
     try {
         await fetchAPI(`/admin/reviews/${type}/${id}`, { method: 'DELETE' });
-        alert('✅ Deleted!');
+        adminToast('Deleted!', 'success');
         loadReviews();
     } catch (error) {
-        alert('Error: ' + error.message);
+        adminToast('Error: ' + error.message, 'error');
     }
 }
 
-function editRestaurant(id) {
+function editRestaurant(event, id) {
     event.stopPropagation();
     const r = allRestaurants.find(x => x.id === id);
     if (!r) return;
@@ -917,11 +987,11 @@ async function saveHotel(e) {
             body: JSON.stringify(data)
         });
 
-        alert(hotelId ? '✅ Hotel updated!' : '✅ Hotel created!');
+        adminToast(hotelId ? 'Hotel updated!' : 'Hotel created!', 'success');
         closeHotelModal();
         loadHotels();
     } catch (error) {
-        alert('Error: ' + error.message);
+        adminToast('Error: ' + error.message, 'error');
     }
 }
 
@@ -956,7 +1026,7 @@ async function uploadHotelImage(input) {
             document.getElementById('hotel-upload-progress').classList.remove('active');
         }, 2000);
     } catch (error) {
-        alert('Upload failed: ' + error.message);
+        adminToast('Upload failed: ' + error.message, 'error');
         document.getElementById('hotel-upload-progress').classList.remove('active');
     }
 }
@@ -1041,11 +1111,11 @@ async function saveAttraction(e) {
             body: JSON.stringify(data)
         });
 
-        alert(attractionId ? '✅ Attraction updated!' : '✅ Attraction created!');
+        adminToast(attractionId ? 'Attraction updated!' : 'Attraction created!', 'success');
         closeAttractionModal();
         loadAttractions();
     } catch (error) {
-        alert('Error: ' + error.message);
+        adminToast('Error: ' + error.message, 'error');
     }
 }
 
@@ -1080,7 +1150,7 @@ async function uploadAttractionImage(input) {
             document.getElementById('attraction-upload-progress').classList.remove('active');
         }, 2000);
     } catch (error) {
-        alert('Upload failed: ' + error.message);
+        adminToast('Upload failed: ' + error.message, 'error');
         document.getElementById('attraction-upload-progress').classList.remove('active');
     }
 }
@@ -1125,7 +1195,7 @@ function renderRestaurantsPage() {
                 </span>
             </td>
             <td onclick="event.stopPropagation()">
-                <button class="btn-small btn-edit" onclick="editRestaurant(${r.id})" title="Edit">✏️</button>
+                <button class="btn-small btn-edit" onclick="editRestaurant(event,${r.id})" title="Edit">✏️</button>
                 <button class="btn-small btn-danger" onclick="deleteRestaurant(${r.id})" title="Delete">🗑️</button>
             </td>
         </tr>
@@ -1213,7 +1283,7 @@ async function viewRestaurantDetails(restaurantId) {
                          onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                     
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <button class="btn-create" onclick="editRestaurant(${restaurant.id})" style="width: 100%;">
+                        <button class="btn-create" onclick="editRestaurant(event,${restaurant.id})" style="width: 100%;">
                             ✏️ Edit Restaurant
                         </button>
                         <button class="btn-danger" onclick="deleteRestaurant(${restaurant.id})" style="width: 100%; padding: 0.75rem;">
@@ -1293,7 +1363,7 @@ async function viewRestaurantDetails(restaurantId) {
 
     } catch (error) {
         console.error('View details error:', error);
-        alert('Failed to load restaurant details');
+        adminToast('Failed to load restaurant details', 'error');
     }
 }
 
@@ -1347,8 +1417,8 @@ function renderHotelsPage() {
                 </span>
             </td>
             <td onclick="event.stopPropagation()">
-                <button class="btn-small btn-edit" onclick="editHotel(${h.id})" title="Edit">✏️</button>
-                <button class="btn-small btn-danger" onclick="deleteHotel(${h.id})" title="Delete">🗑️</button>
+                <button class="btn-small btn-edit" onclick="editHotel(event,${h.id})" title="Edit">✏️</button>
+                <button class="btn-small btn-danger" onclick="deleteHotel(event,${h.id})" title="Delete">🗑️</button>
             </td>
         </tr>
     `).join('');
@@ -1428,15 +1498,15 @@ async function viewHotelDetails(hotelId) {
             <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem;">
                 <!-- Image -->
                 <div>
-                    <img src="${API_BASE}${hotel.image_url || '/static/placeholder.jpg'}" 
+                    <img src="${safeImg(hotel.image_url, 'https://via.placeholder.com/300x200?text=Hotel')}" 
                          style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
                          onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                     
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <button class="btn-create" onclick="editHotel(${hotel.id})" style="width: 100%;">
+                        <button class="btn-create" onclick="editHotel(event,${hotel.id})" style="width: 100%;">
                             ✏️ Edit Hotel
                         </button>
-                        <button class="btn-danger" onclick="deleteHotel(${hotel.id})" style="width: 100%; padding: 0.75rem;">
+                        <button class="btn-danger" onclick="deleteHotel(event,${hotel.id})" style="width: 100%; padding: 0.75rem;">
                             🗑️ Delete Hotel
                         </button>
                     </div>
@@ -1569,7 +1639,7 @@ async function viewHotelDetails(hotelId) {
 
     } catch (error) {
         console.error('View details error:', error);
-        alert('Failed to load hotel details');
+        adminToast('Failed to load hotel details', 'error');
     }
 }
 
@@ -1582,21 +1652,21 @@ function closeHotelDetails() {
     });
 }
 
-async function deleteHotel(id) {
+async function deleteHotel(event, id) {
     event.stopPropagation();
     if (!confirm('Delete this hotel? This cannot be undone.')) return;
 
     try {
         await fetchAPI(`/admin/hotels/${id}`, { method: 'DELETE' });
-        alert('✅ Hotel deleted!');
+        adminToast('Hotel deleted!', 'success');
         closeHotelDetails();
         loadHotels();
     } catch (error) {
-        alert('Error: ' + error.message);
+        adminToast('Error: ' + error.message, 'error');
     }
 }
 
-function editHotel(id) {
+function editHotel(event, id) {
     event.stopPropagation();
     const h = allHotels.find(x => x.id === id);
     if (!h) return;
@@ -1673,8 +1743,8 @@ function renderAttractionsPage() {
                 </span>
             </td>
             <td onclick="event.stopPropagation()">
-                <button class="btn-small btn-edit" onclick="editAttraction(${a.id})" title="Edit">✏️</button>
-                <button class="btn-small btn-danger" onclick="deleteAttraction(${a.id})" title="Delete">🗑️</button>
+                <button class="btn-small btn-edit" onclick="editAttraction(event,${a.id})" title="Edit">✏️</button>
+                <button class="btn-small btn-danger" onclick="deleteAttraction(event,${a.id})" title="Delete">🗑️</button>
             </td>
         </tr>
     `).join('');
@@ -1754,18 +1824,18 @@ async function viewAttractionDetails(attractionId) {
             <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem;">
                 <!-- Image -->
                 <div>
-                    <img src="${API_BASE}${attraction.image_url || '/static/placeholder.jpg'}" 
+                    <img src="${safeImg(attraction.image_url, 'https://via.placeholder.com/300x200?text=Attraction')}" 
                          style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
                          onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                     
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <button class="btn-create" onclick="editAttraction(${attraction.id})" style="width: 100%;">
+                        <button class="btn-create" onclick="editAttraction(event,${attraction.id})" style="width: 100%;">
                             ✏️ Edit Attraction
                         </button>
                         <button class="btn-create" onclick="openGalleryManager(${attraction.id})" style="width:100%;background:linear-gradient(135deg,#10b981,#059669);">
                             🖼️ Manage Photos
                         </button>
-                        <button class="btn-danger" onclick="deleteAttraction(${attraction.id})" style="width: 100%; padding: 0.75rem;">
+                        <button class="btn-danger" onclick="deleteAttraction(event,${attraction.id})" style="width: 100%; padding: 0.75rem;">
                             🗑️ Delete Attraction
                         </button>
                     </div>
@@ -1859,7 +1929,7 @@ async function viewAttractionDetails(attractionId) {
 
     } catch (error) {
         console.error('View details error:', error);
-        alert('Failed to load attraction details');
+        adminToast('Failed to load attraction details', 'error');
     }
 }
 
@@ -1872,21 +1942,21 @@ function closeAttractionDetails() {
     });
 }
 
-async function deleteAttraction(id) {
+async function deleteAttraction(event, id) {
     event.stopPropagation();
     if (!confirm('Delete this attraction? This cannot be undone.')) return;
 
     try {
         await fetchAPI(`/admin/attractions/${id}`, { method: 'DELETE' });
-        alert('✅ Attraction deleted!');
+        adminToast('Attraction deleted!', 'success');
         closeAttractionDetails();
         loadAttractions();
     } catch (error) {
-        alert('Error: ' + error.message);
+        adminToast('Error: ' + error.message, 'error');
     }
 }
 
-function editAttraction(id) {
+function editAttraction(event, id) {
     event.stopPropagation();
     const a = allAttractions.find(x => x.id === id);
     if (!a) return;
@@ -1975,7 +2045,7 @@ function renderAgenciesPage() {
             <td><span class="badge ${a.is_partner ? 'badge-success' : 'badge-secondary'}">${a.is_partner ? '⭐ Yes' : 'No'}</span></td>
             <td><span class="badge ${a.status === 'approved' ? 'badge-success' : a.status === 'pending' ? 'badge-warning' : 'badge-danger'}">${a.status || 'approved'}</span></td>
             <td onclick="event.stopPropagation()">
-                <button class="btn-small btn-edit"   onclick="editAgency(${a.id})">✏️</button>
+                <button class="btn-small btn-edit"   onclick="editAgency(event,${a.id})">✏️</button>
                 <button class="btn-small btn-danger"  onclick="deleteAgency(${a.id}, '${(a.name || '').replace(/'/g, "\\'")}')">🗑️</button>
             </td>
         </tr>
@@ -2026,7 +2096,7 @@ async function viewAgencyDetails(agencyId) {
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;">
                         ${tours.map(t => `
                             <div style="background:#f9fafb;padding:1rem;border-radius:8px;border:1px solid #e5e7eb;">
-                                ${t.image_url ? `<img src="${API_BASE}${t.image_url}" style="width:100%;height:90px;object-fit:cover;border-radius:6px;margin-bottom:0.6rem;" onerror="this.style.display='none'">` : ''}
+                                ${t.image_url ? `<img src="${safeImg(t.image_url)}" style="width:100%;height:90px;object-fit:cover;border-radius:6px;margin-bottom:0.6rem;" onerror="this.style.display='none'">` : ''}
                                 <div style="font-weight:600;margin-bottom:0.25rem;">${t.tour_name}</div>
                                 <div style="font-size:0.8rem;color:#6b7280;margin-bottom:0.4rem;">
                                     ${t.tour_type ? `<span style="background:#e0e7ff;color:#3730a3;padding:1px 7px;border-radius:50px;">${t.tour_type}</span> ` : ''}
@@ -2049,11 +2119,11 @@ async function viewAgencyDetails(agencyId) {
     document.getElementById('agency-details-content').innerHTML = `
         <div style="display:grid;grid-template-columns:280px 1fr;gap:2rem;">
             <div>
-                <img src="${API_BASE}${a.image_url || 'https://via.placeholder.com/280x180?text=No+Image'}"
+                <img src="${safeImg(a.image_url, 'https://via.placeholder.com/280x180?text=Agency')}"
                      style="width:100%;height:180px;object-fit:cover;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);"
                      onerror="this.src='${API_BASE}https://via.placeholder.com/280x180?text=No+Image'">
                 <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.5rem;">
-                    <button class="btn-create" onclick="editAgency(${a.id})" style="width:100%;">✏️ Edit Agency</button>
+                    <button class="btn-create" onclick="editAgency(event,${a.id})" style="width:100%;">✏️ Edit Agency</button>
                     <button class="btn-danger" onclick="deleteAgency(${a.id},'${(a.name || '').replace(/'/g, "\\'")}');" style="width:100%;padding:0.75rem;">🗑️ Delete Agency</button>
                 </div>
                 <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.4rem;">
@@ -2150,7 +2220,7 @@ function initAgencyMap() {
     });
 }
 
-function editAgency(id) {
+function editAgency(event, id) {
     event.stopPropagation();
     const a = allAgencies.find(x => x.id === id);
     if (!a) return;
@@ -2214,23 +2284,23 @@ async function saveAgency(e) {
         const url = id ? `/admin/travel-agencies/${id}` : '/admin/travel-agencies';
         const method = id ? 'PUT' : 'POST';
         await fetchAPI(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-        alert(id ? '✅ Agency updated!' : '✅ Agency created!');
+        adminToast(id ? 'Agency updated!' : 'Agency created!', 'success');
         closeAgencyModal();
         loadAgencies();
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { adminToast('Error: ' + err.message, 'error'); }
 }
 
 // ── Delete ─────────────────────────────────────────────────────
 
-async function deleteAgency(id, name) {
+async function deleteAgency(event, id, name) {
     event.stopPropagation();
     if (!confirm(`Delete "${name}"?\nThis will also remove ALL their tours and reviews.`)) return;
     try {
         await fetchAPI(`/admin/travel-agencies/${id}`, { method: 'DELETE' });
-        alert('✅ Agency deleted!');
+        adminToast('Agency deleted!', 'success');
         closeAgencyDetails();
         loadAgencies();
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { adminToast('Error: ' + err.message, 'error'); }
 }
 
 // ── Tour actions inside details panel ─────────────────────────
@@ -2242,18 +2312,18 @@ async function approveTour(id) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'approved', admin_email: 'ceo@example.com' })
         });
-        alert('✅ Tour approved!');
+        adminToast('Tour approved!', 'success');
         if (selectedAgency) viewAgencyDetails(selectedAgency.id);
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { adminToast('Error: ' + err.message, 'error'); }
 }
 
 async function deleteTour(id) {
     if (!confirm('Delete this tour?')) return;
     try {
         await fetchAPI(`/admin/travel-agencies/tours/${id}`, { method: 'DELETE' });
-        alert('✅ Tour deleted!');
+        adminToast('Tour deleted!', 'success');
         if (selectedAgency) viewAgencyDetails(selectedAgency.id);
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { adminToast('Error: ' + err.message, 'error'); }
 }
 
 // ── Image upload — identical pattern to uploadHotelImage ──────
@@ -2288,7 +2358,7 @@ async function uploadAgencyImage(input) {
         document.getElementById('agency-upload-progress').textContent = '✅ Upload complete!';
         setTimeout(() => document.getElementById('agency-upload-progress').classList.remove('active'), 2000);
     } catch (err) {
-        alert('Upload failed: ' + err.message);
+        adminToast('Upload failed: ' + err.message, 'error');
         document.getElementById('agency-upload-progress').classList.remove('active');
     }
 }
@@ -2298,7 +2368,7 @@ async function uploadAgencyImage(input) {
 // paSetStatus() works from HTML onclick before fetch
 // ══════════════════════════════════════════════════
 
-const PA_API = 'http://localhost:8000';
+const PA_API = API_BASE;
 let _paApps = [];
 let _paStatus = 'all';
 
@@ -2414,8 +2484,8 @@ async function paResend(id) {
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Resend failed.');
-        alert('✅ ' + data.message);
-    } catch (e) { alert('❌ ' + e.message); }
+        adminToast(data.message, 'success');
+    } catch (e) { adminToast(e.message, 'error'); }
 }
 
 async function paApprove(id) {
@@ -2426,9 +2496,9 @@ async function paApprove(id) {
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Approval failed.');
-        alert('✅ ' + data.message);
+        adminToast(data.message, 'success');
         loadPartnerApplications();
-    } catch (e) { alert('❌ ' + e.message); }
+    } catch (e) { adminToast(e.message, 'error'); }
 }
 
 function paShowReject(id) { document.getElementById(`prr-${id}`).classList.add('show'); }
@@ -2446,7 +2516,7 @@ async function paConfirmReject(id) {
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Rejection failed.');
         loadPartnerApplications();
-    } catch (e) { alert('❌ ' + e.message); }
+    } catch (e) { adminToast(e.message, 'error'); }
 }
 
 // Auto-load on page ready
@@ -2546,7 +2616,7 @@ async function handleGalleryUpload(input) {
         document.getElementById('gallery-upload-progress').textContent = '✅ Uploaded!';
         setTimeout(() => document.getElementById('gallery-upload-progress').classList.remove('active'), 2000);
     } catch (e) {
-        alert('Upload failed: ' + e.message);
+        adminToast('Upload failed: ' + e.message, 'error');
         document.getElementById('gallery-upload-progress').classList.remove('active');
     }
 }
@@ -2555,7 +2625,7 @@ async function saveGalleryPhoto() {
     const imageUrl = document.getElementById('gallery-new-image-url').value;
     const caption = document.getElementById('gallery-caption-input').value.trim();
 
-    if (!imageUrl) { alert('Please upload a photo first.'); return; }
+    if (!imageUrl) { adminToast('Please upload a photo first', 'info'); return; }
     if (!_galleryAttractionId) return;
 
     try {
@@ -2574,9 +2644,9 @@ async function saveGalleryPhoto() {
 
         // Reload grid
         await loadGalleryPhotos(_galleryAttractionId);
-        alert('✅ Photo added to gallery!');
+        adminToast('Photo added to gallery!', 'success');
     } catch (e) {
-        alert('Error: ' + e.message);
+        adminToast('Error: ' + e.message, 'error');
     }
 }
 
@@ -2587,7 +2657,7 @@ async function deleteGalleryPhoto(photoId) {
         if (!res.ok) throw new Error('Delete failed');
         await loadGalleryPhotos(_galleryAttractionId);
     } catch (e) {
-        alert('Error: ' + e.message);
+        adminToast('Error: ' + e.message, 'error');
     }
 }
 
@@ -2779,34 +2849,54 @@ function renderPartnersPage() {
 
 // ── BLOCK PARTNER ─────────────────────────────────────────────
 async function blockPartner(id, name) {
-    if (!confirm(`Block "${name}"?\n\nTheir listing will be hidden from the public site.\nAll data is kept. You can unblock them anytime.`)) return;
+    const reason = prompt(
+        `Block "${name}"?\n\nOptionally enter a reason that will be shown to the partner\n(leave empty for default message):`,
+        ''
+    );
+    // If they pressed Cancel (not just empty string), abort
+    if (reason === null) return;
+
+    const confirmMsg = reason.trim()
+        ? `Block "${name}"?\nReason: "${reason.trim()}"\n\nThey will receive an email notification.`
+        : `Block "${name}"?\n\nThey will receive an email notification.`;
+
+    if (!confirm(confirmMsg)) return;
+
     try {
         const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/block`, {
-            method: 'POST',
+            method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+            body:    JSON.stringify({ reason: reason.trim() || null })
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Failed');
-        alert(`✅ ${name} has been blocked. Their listing is now hidden.`);
+
+        alert(`✅ ${name} has been blocked.\nAn email notification has been sent to the partner.`);
         loadPartners();
-        loadPartnerApplications();
-    } catch (e) { alert('❌ ' + e.message); }
+        loadPartnerApplications?.();
+    } catch(e) { alert('❌ ' + e.message); }
 }
 
 // ── UNBLOCK PARTNER ───────────────────────────────────────────
 async function unblockPartner(id, name) {
-    if (!confirm(`Unblock "${name}"?\n\nTheir listing will reappear on the public site.`)) return;
+    if (!confirm(
+        `Unblock "${name}"?\n\n` +
+        `• Their listing will reappear on the public site\n` +
+        `• They will receive an email notification`
+    )) return;
+
     try {
         const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/unblock`, {
-            method: 'POST',
+            method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Failed');
-        alert(`✅ ${name} has been unblocked. Their listing is now visible.`);
+
+        alert(`✅ ${name} has been unblocked.\nAn email notification has been sent to the partner.`);
         loadPartners();
-        loadPartnerApplications();
-    } catch (e) { alert('❌ ' + e.message); }
+        loadPartnerApplications?.();
+    } catch(e) { alert('❌ ' + e.message); }
 }
 
 
@@ -2825,7 +2915,7 @@ async function deletePartner(id, name) {
     )) return;
 
     const typed = prompt('Type DELETE to confirm:');
-    if (typed !== 'DELETE') { alert('Cancelled.'); return; }
+    if (typed !== 'DELETE') { adminToast('Cancelled', 'info'); return; }
 
     try {
         const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/delete`, {
@@ -2834,10 +2924,10 @@ async function deletePartner(id, name) {
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Failed');
-        alert(`✅ ${name} and all their data have been permanently deleted.`);
+        adminToast(`${name} and all data permanently deleted.`, 'success');
         loadPartners();
         loadPartnerApplications();
-    } catch (e) { alert('❌ ' + e.message); }
+    } catch (e) { adminToast(e.message, 'error'); }
 }
 
 
@@ -2949,9 +3039,9 @@ async function approveRenewal(id) {
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Failed');
-        alert('✅ ' + (data.message || 'Plan extended successfully!'));
+        adminToast((data.message || 'Plan extended successfully!', 'success'));
         loadRenewals();
-    } catch (e) { alert('❌ ' + e.message); }
+    } catch (e) { adminToast(e.message, 'error'); }
 }
 
 function showRenewalReject(id) {
@@ -2972,7 +3062,7 @@ async function rejectRenewal(id) {
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Failed');
         loadRenewals();
-    } catch (e) { alert('❌ ' + e.message); }
+    } catch (e) { adminToast(e.message, 'error'); }
 }
 
 
@@ -3100,3 +3190,4 @@ function paCardHtml(a) {
         }
     } catch (e) { }
 })();
+

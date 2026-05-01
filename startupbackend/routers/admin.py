@@ -862,3 +862,25 @@ def list_all_likes(db: Session = Depends(get_db)):
         })
     
     return likes_data
+
+
+
+import hashlib
+import time
+from pydantic import BaseModel
+
+class AdminLoginRequest(BaseModel):
+    password: str
+
+@router.post("/verify-login")
+async def verify_admin_login(data: AdminLoginRequest):
+    correct = os.environ.get("ADMIN_LOGIN_PASSWORD", "")
+    if not correct:
+        raise HTTPException(500, "Admin password not configured in .env")
+    if data.password != correct:
+        raise HTTPException(401, "Incorrect password")
+    # Token changes every hour automatically — old sessions expire
+    token = hashlib.sha256(
+        f"{correct}{int(time.time() // 3600)}".encode()
+    ).hexdigest()
+    return {"token": token}

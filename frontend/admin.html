@@ -10,6 +10,48 @@
 </head>
 
 <body>
+
+    <!-- ── ADMIN LOGIN GATE ── -->
+    <div id="loginGate" style="
+    position:fixed;inset:0;
+    background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    display:flex;align-items:center;justify-content:center;
+    z-index:99999;font-family:'Segoe UI',sans-serif;">
+        <div style="background:white;border-radius:20px;padding:3rem;
+                width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,0.3);
+                text-align:center;">
+            <div style="font-size:3.5rem;margin-bottom:1rem;">🔐</div>
+            <h2 style="font-size:1.75rem;font-weight:800;color:#1e1b4b;margin-bottom:0.4rem;">
+                CEO Admin Panel
+            </h2>
+            <p style="color:#6b7280;margin-bottom:2rem;font-size:0.9rem;">
+                Discover Uzbekistan — Restricted Access
+            </p>
+            <div id="loginError" style="
+            background:#fee2e2;color:#991b1b;padding:0.75rem 1rem;
+            border-radius:10px;margin-bottom:1rem;font-weight:600;
+            font-size:0.875rem;display:none;">
+                ❌ Incorrect password. Try again.
+            </div>
+            <input type="password" id="adminPasswordInput" placeholder="Enter admin password"
+                autocomplete="current-password" style="width:100%;padding:0.9rem 1rem;border:2px solid #e5e7eb;
+                   border-radius:10px;font-size:1rem;font-family:inherit;
+                   margin-bottom:1rem;box-sizing:border-box;transition:border-color 0.2s;"
+                onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'"
+                onkeydown="if(event.key==='Enter') checkAdminLogin()">
+            <button onclick="checkAdminLogin()" id="loginBtn" style="width:100%;padding:1rem;
+                   background:linear-gradient(135deg,#667eea,#764ba2);
+                   color:white;border:none;border-radius:10px;
+                   font-size:1rem;font-weight:700;cursor:pointer;
+                   font-family:inherit;transition:opacity 0.2s;">
+                Sign In →
+            </button>
+            <p style="margin-top:1.5rem;font-size:0.78rem;color:#9ca3af;">
+                Unauthorized access is prohibited
+            </p>
+        </div>
+    </div>
+    
     <div class="admin-panel">
         <div class="sidebar">
             <div class="logo">🇺🇿 CEO Admin</div>

@@ -184,6 +184,9 @@ class ApproveRequest(BaseModel):
 
 class RejectRequest(BaseModel):
     reason: Optional[str] = None
+    
+class BlockRequest(BaseModel):
+    reason: Optional[str] = None
 
 
 # ── Serialisation helper ──────────────────────────────────────────────────────
@@ -397,6 +400,32 @@ def _verify_password_for(app: PartnerApplication, plain_pw: str, db: Session) ->
     rec = db.query(model).filter(model.id == app.linked_record_id).first()
     return rec is not None and rec.partner_password == _hash_password(plain_pw)
 
+def _set_business_status(
+    application: PartnerApplication,
+    status: str,
+    db: Session
+) -> None:
+    """Set status on the actual business record (hotel/restaurant/agency)."""
+    from models.hotel import Hotel
+    from models.restaurant import Restaurant
+    from models.travel_agency import TravelAgency
+ 
+    model_map = {
+        "hotel":         Hotel,
+        "restaurant":    Restaurant,
+        "travel_agency": TravelAgency,
+    }
+    model = model_map.get(application.business_type)
+    if not model or not application.linked_record_id:
+        return
+    rec = db.query(model).filter(
+        model.id == application.linked_record_id
+    ).first()
+    if rec:
+        rec.status = status
+        db.flush()
+ 
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  SECTION 6 — EMAIL HELPERS
@@ -542,6 +571,125 @@ def _send_rejection_email(app: PartnerApplication, reason: str, bg: BackgroundTa
         "Your Partner Application — Discover Uzbekistan", html
     )
 
+
+def _send_block_email(
+    app: PartnerApplication,
+    reason: str,
+    bg: BackgroundTasks
+) -> None:
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;
+                background:#fff;padding:40px;border-radius:12px;
+                border:1px solid #e5e7eb;">
+ 
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div style="font-size:3.5rem;margin-bottom:0.5rem;">🚫</div>
+            <h2 style="color:#dc2626;font-size:1.6rem;margin:0;">
+                Account Suspended
+            </h2>
+        </div>
+ 
+        <p>Hi <strong>{app.contact_name}</strong>,</p>
+        <p>Your partner account for <strong>{app.business_name}</strong> on
+           <strong>Discover Uzbekistan</strong> has been temporarily suspended.</p>
+ 
+        <div style="background:#fee2e2;border-left:4px solid #dc2626;
+                    border-radius:8px;padding:1.25rem;margin:1.5rem 0;">
+            <p style="color:#991b1b;margin:0;font-weight:700;font-size:0.9rem;">
+                Reason:
+            </p>
+            <p style="color:#7f1d1d;margin:0.5rem 0 0;font-size:0.95rem;">
+                {reason}
+            </p>
+        </div>
+ 
+        <p style="color:#374151;">While your account is suspended:</p>
+        <ul style="color:#6b7280;line-height:2.2;padding-left:1.5rem;">
+            <li>Your listing is hidden from the public site</li>
+            <li>Your partner dashboard is inaccessible</li>
+            <li>All your data is safely kept — nothing is deleted</li>
+            <li>Everything restores automatically when unblocked</li>
+        </ul>
+ 
+        <p style="color:#374151;margin-top:1.5rem;">
+            To resolve this issue, please contact us:
+        </p>
+        <div style="background:#f9fafb;border-radius:10px;
+                    padding:1.25rem;margin:1rem 0;">
+            <p style="margin:0;font-size:0.95rem;">
+                📧 <a href="mailto:{ADMIN_EMAIL}"
+                      style="color:#6366f1;">{ADMIN_EMAIL}</a>
+            </p>
+        </div>
+ 
+        <p style="color:#9ca3af;font-size:0.8rem;margin-top:2rem;
+                  border-top:1px solid #f3f4f6;padding-top:1rem;">
+            Discover Uzbekistan Partner Program
+        </p>
+    </div>"""
+    bg.add_task(
+        _send_email,
+        app.email,
+        app.contact_name,
+        "🚫 Your Discover Uzbekistan Account Has Been Suspended",
+        html,
+    )
+ 
+ 
+def _send_unblock_email(
+    app: PartnerApplication,
+    bg: BackgroundTasks
+) -> None:
+    login_url = _login_url()
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;
+                background:#fff;padding:40px;border-radius:12px;
+                border:1px solid #e5e7eb;">
+ 
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div style="font-size:3.5rem;margin-bottom:0.5rem;">✅</div>
+            <h2 style="color:#059669;font-size:1.6rem;margin:0;">
+                Account Reactivated!
+            </h2>
+        </div>
+ 
+        <p>Hi <strong>{app.contact_name}</strong>,</p>
+        <p>Great news! Your partner account for <strong>{app.business_name}</strong>
+           on <strong>Discover Uzbekistan</strong> has been reactivated.</p>
+ 
+        <div style="background:#d1fae5;border-left:4px solid #059669;
+                    border-radius:8px;padding:1.25rem;margin:1.5rem 0;">
+            <p style="color:#065f46;margin:0;font-weight:700;">
+                ✅ Your listing is now visible to the public again.
+            </p>
+        </div>
+ 
+        <p style="color:#374151;">You can now:</p>
+        <ul style="color:#6b7280;line-height:2.2;padding-left:1.5rem;">
+            <li>Log in to your partner dashboard</li>
+            <li>Manage your listing, photos and menu</li>
+            <li>View and respond to customer reviews</li>
+        </ul>
+ 
+        <a href="{login_url}"
+           style="display:inline-block;margin:1.5rem 0;padding:14px 32px;
+                  background:#6366f1;color:#fff;text-decoration:none;
+                  border-radius:8px;font-weight:bold;font-size:1rem;">
+            → Go to Dashboard
+        </a>
+ 
+        <p style="color:#9ca3af;font-size:0.8rem;margin-top:2rem;
+                  border-top:1px solid #f3f4f6;padding-top:1rem;">
+            Discover Uzbekistan Partner Program
+        </p>
+    </div>"""
+    bg.add_task(
+        _send_email,
+        app.email,
+        app.contact_name,
+        "✅ Your Discover Uzbekistan Account Has Been Reactivated",
+        html,
+    )
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  SECTION 7 — ROUTER  (all endpoints)
@@ -898,60 +1046,24 @@ async def change_password(
     return {"success": True, "message": "Password changed successfully."}
 
 
-
-
-# ══════════════════════════════════════════════════════════════
-#  BLOCK / UNBLOCK  (keeps all data, just hides from public)
-# ══════════════════════════════════════════════════════════════
-
-@router.post("/admin/{app_id}/block", summary="Block a partner account")
-async def block_partner(
-    app_id: int,
-    db:     Session = Depends(get_db),
+@router.get("/status-check")
+async def check_partner_status(
+    email: str,
+    db:    Session = Depends(get_db),
 ):
-    """
-    Suspend a partner without deleting their data.
-    Their listing disappears from the public site.
-    They can be unblocked later and everything comes back.
-    """
-    application = _get_or_404(app_id, db)
-
-    if application.status == "blocked":
-        raise HTTPException(400, "Partner is already blocked.")
-
-    # Save previous status so we can restore it on unblock
-    application.plan_status       = "blocked"
-    application.rejection_reason  = application.rejection_reason or "Blocked by admin."
-
-    # Hide from public by setting business record status to blocked
-    _set_business_status(application, "blocked", db)
-
-    db.commit()
-    return {"success": True, "message": f"{application.business_name} has been blocked."}
-
-
-@router.post("/admin/{app_id}/unblock", summary="Unblock a partner account")
-async def unblock_partner(
-    app_id: int,
-    db:     Session = Depends(get_db),
-):
-    """
-    Restore a previously blocked partner.
-    Their listing reappears on the public site.
-    """
-    application = _get_or_404(app_id, db)
-
-    if application.plan_status != "blocked":
-        raise HTTPException(400, "Partner is not blocked.")
-
-    application.plan_status      = "active"
-    application.rejection_reason = None
-
-    # Restore business record to approved
-    _set_business_status(application, "approved", db)
-
-    db.commit()
-    return {"success": True, "message": f"{application.business_name} has been unblocked."}
+    """Called by partner dashboards on load to check if blocked."""
+    app = db.query(PartnerApplication).filter(
+        PartnerApplication.email  == email,
+        PartnerApplication.status == "approved",
+    ).first()
+    if not app:
+        raise HTTPException(404, "Not found.")
+    return {
+        "is_blocked":        app.plan_status == "blocked",
+        "business_name":     app.business_name,
+        "rejection_reason":  app.rejection_reason,
+        "plan_status":       app.plan_status,
+    }
 
 
 # ══════════════════════════════════════════════════════════════
@@ -1032,6 +1144,138 @@ async def delete_partner(
         "message": f"Partner and all associated data permanently deleted. Email is now free to re-register."
     }
 
+@router.post("/admin/{app_id}/block", summary="Block a partner account")
+async def block_partner(
+    app_id: int,
+    body:   BlockRequest,
+    bg:     BackgroundTasks,
+    db:     Session = Depends(get_db),
+):
+    application = _get_or_404(app_id, db)
+ 
+    if application.plan_status == "blocked":
+        raise HTTPException(400, "Partner is already blocked.")
+ 
+    reason = body.reason or "Your account has been suspended by the administrator."
+ 
+    application.plan_status      = "blocked"
+    application.rejection_reason = reason
+    _set_business_status(application, "blocked", db)
+    db.commit()
+ 
+    # Send email — partner is notified immediately
+    _send_block_email(application, reason, bg)
+ 
+    return {
+        "success": True,
+        "message": f"{application.business_name} has been blocked.",
+    }
+ 
+ 
+@router.post("/admin/{app_id}/unblock", summary="Unblock a partner account")
+async def unblock_partner(
+    app_id: int,
+    bg:     BackgroundTasks,
+    db:     Session = Depends(get_db),
+):
+    application = _get_or_404(app_id, db)
+ 
+    if application.plan_status != "blocked":
+        raise HTTPException(400, "Partner is not blocked.")
+ 
+    application.plan_status      = "active"
+    application.rejection_reason = None
+    _set_business_status(application, "approved", db)
+    db.commit()
+ 
+    # Send email — partner is notified immediately
+    _send_unblock_email(application, bg)
+ 
+    return {
+        "success": True,
+        "message": f"{application.business_name} has been unblocked.",
+    }
+ 
+ 
+@router.delete("/admin/{app_id}/delete", summary="Permanently delete a partner")
+async def delete_partner(
+    app_id: int,
+    db:     Session = Depends(get_db),
+):
+    application = _get_or_404(app_id, db)
+    bt = application.business_type
+ 
+    try:
+        if bt == "restaurant":
+            from models.restaurant import Restaurant, RestaurantMenu, Review
+            rid = application.linked_record_id
+            if rid:
+                db.query(Review).filter(
+                    Review.restaurant_id == rid
+                ).delete(synchronize_session=False)
+                db.query(RestaurantMenu).filter(
+                    RestaurantMenu.restaurant_id == rid
+                ).delete(synchronize_session=False)
+                db.query(Restaurant).filter(
+                    Restaurant.id == rid
+                ).delete(synchronize_session=False)
+ 
+        elif bt == "hotel":
+            from models.hotel import Hotel, HotelRoom, HotelReview
+            hid = application.linked_record_id
+            if hid:
+                db.query(HotelReview).filter(
+                    HotelReview.hotel_id == hid
+                ).delete(synchronize_session=False)
+                db.query(HotelRoom).filter(
+                    HotelRoom.hotel_id == hid
+                ).delete(synchronize_session=False)
+                db.query(Hotel).filter(
+                    Hotel.id == hid
+                ).delete(synchronize_session=False)
+ 
+        elif bt == "travel_agency":
+            from models.travel_agency import (
+                TravelAgency, Tour, AgencyReview,
+                TourItinerary, TourDestination,
+            )
+            aid = application.linked_record_id
+            if aid:
+                tour_ids = [
+                    t[0] for t in db.query(Tour.id).filter(
+                        Tour.agency_id == aid
+                    ).all()
+                ]
+                for tid in tour_ids:
+                    db.query(TourItinerary).filter(
+                        TourItinerary.tour_id == tid
+                    ).delete(synchronize_session=False)
+                    db.query(TourDestination).filter(
+                        TourDestination.tour_id == tid
+                    ).delete(synchronize_session=False)
+                db.query(Tour).filter(
+                    Tour.agency_id == aid
+                ).delete(synchronize_session=False)
+                db.query(AgencyReview).filter(
+                    AgencyReview.agency_id == aid
+                ).delete(synchronize_session=False)
+                db.query(TravelAgency).filter(
+                    TravelAgency.id == aid
+                ).delete(synchronize_session=False)
+ 
+        # Delete the application row — frees the email for re-registration
+        db.delete(application)
+        db.commit()
+ 
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(500, f"Delete failed: {str(e)}")
+ 
+    return {
+        "success": True,
+        "message": "Partner and all data permanently deleted. Email is free to re-register.",
+    }
+
 
 # ══════════════════════════════════════════════════════════════
 #  HELPER
@@ -1055,3 +1299,131 @@ def _set_business_status(application: PartnerApplication, status: str, db: Sessi
     if rec:
         rec.status = status
         db.flush()
+        
+        
+
+# ── ADD THIS SCHEMA ───────────────────────────────────────────
+class BlockRequest(BaseModel):
+    reason: Optional[str] = None   # CEO can optionally explain why
+
+
+# ── REPLACE block_partner ─────────────────────────────────────
+@router.post("/admin/{app_id}/block")
+async def block_partner(
+    app_id: int,
+    body:   BlockRequest,
+    bg:     BackgroundTasks,
+    db:     Session = Depends(get_db),
+):
+    application = _get_or_404(app_id, db)
+
+    if application.plan_status == "blocked":
+        raise HTTPException(400, "Partner is already blocked.")
+
+    reason = body.reason or "Your account has been suspended by the admin."
+
+    application.plan_status      = "blocked"
+    application.rejection_reason = reason
+    _set_business_status(application, "blocked", db)
+    db.commit()
+
+    # Send email notification
+    _send_block_email(application, reason, bg)
+
+    return {"success": True, "message": f"{application.business_name} blocked."}
+
+
+# ── REPLACE unblock_partner ───────────────────────────────────
+@router.post("/admin/{app_id}/unblock")
+async def unblock_partner(
+    app_id: int,
+    bg:     BackgroundTasks,
+    db:     Session = Depends(get_db),
+):
+    application = _get_or_404(app_id, db)
+
+    if application.plan_status != "blocked":
+        raise HTTPException(400, "Partner is not blocked.")
+
+    application.plan_status      = "active"
+    application.rejection_reason = None
+    _set_business_status(application, "approved", db)
+    db.commit()
+
+    # Send unblock email
+    _send_unblock_email(application, bg)
+
+    return {"success": True, "message": f"{application.business_name} unblocked."}
+
+
+# ── EMAIL HELPERS ─────────────────────────────────────────────
+def _send_block_email(app: PartnerApplication, reason: str, bg: BackgroundTasks) -> None:
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;
+                background:#fff;padding:40px;border-radius:12px;">
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div style="font-size:3rem;">🚫</div>
+            <h2 style="color:#dc2626;margin-top:0.5rem;">Account Suspended</h2>
+        </div>
+        <p>Hi <strong>{app.contact_name}</strong>,</p>
+        <p>Your partner account for <strong>{app.business_name}</strong> on
+           <strong>Discover Uzbekistan</strong> has been temporarily suspended.</p>
+        <div style="background:#fee2e2;border-left:4px solid #dc2626;
+                    border-radius:8px;padding:1.25rem;margin:1.5rem 0;">
+            <p style="color:#991b1b;margin:0;font-weight:600;">
+                Reason: {reason}
+            </p>
+        </div>
+        <p>While suspended:</p>
+        <ul style="color:#374151;line-height:2;">
+            <li>Your listing is hidden from the public site</li>
+            <li>Your partner dashboard is inaccessible</li>
+            <li>All your data is safely kept</li>
+        </ul>
+        <p>To resolve this, please contact us:</p>
+        <div style="background:#f9fafb;border-radius:10px;padding:1.25rem;margin:1rem 0;">
+            <p style="margin:0;">📧 <a href="mailto:{ADMIN_EMAIL}" style="color:#6366f1;">{ADMIN_EMAIL}</a></p>
+        </div>
+        <p style="color:#6b7280;font-size:0.875rem;">
+            Once resolved, your account will be reactivated and your listing will reappear automatically.
+        </p>
+    </div>"""
+    bg.add_task(
+        _send_email, app.email, app.contact_name,
+        "🚫 Your Discover Uzbekistan Account Has Been Suspended", html
+    )
+
+
+def _send_unblock_email(app: PartnerApplication, bg: BackgroundTasks) -> None:
+    login_url = _login_url()
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;
+                background:#fff;padding:40px;border-radius:12px;">
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div style="font-size:3rem;">✅</div>
+            <h2 style="color:#059669;margin-top:0.5rem;">Account Reactivated!</h2>
+        </div>
+        <p>Hi <strong>{app.contact_name}</strong>,</p>
+        <p>Great news! Your partner account for <strong>{app.business_name}</strong> on
+           <strong>Discover Uzbekistan</strong> has been reactivated.</p>
+        <div style="background:#d1fae5;border-left:4px solid #059669;
+                    border-radius:8px;padding:1.25rem;margin:1.5rem 0;">
+            <p style="color:#065f46;margin:0;font-weight:600;">
+                ✅ Your listing is now visible to the public again.
+            </p>
+        </div>
+        <p>You can log in to your dashboard and continue managing your listing:</p>
+        <a href="{login_url}"
+           style="display:inline-block;margin:1.5rem 0;padding:14px 32px;
+                  background:#6366f1;color:#fff;text-decoration:none;
+                  border-radius:8px;font-weight:bold;font-size:1rem;">
+            → Go to Dashboard
+        </a>
+        <p style="color:#6b7280;font-size:0.875rem;">
+            If you have any questions, reply to this email and we'll be happy to help.
+        </p>
+    </div>"""
+    bg.add_task(
+        _send_email, app.email, app.contact_name,
+        "✅ Your Discover Uzbekistan Account Has Been Reactivated", html
+    )

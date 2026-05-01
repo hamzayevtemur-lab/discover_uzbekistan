@@ -1171,6 +1171,100 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script>
+    const ADMIN_CONTACT_EMAIL = 'hamzaevtemurbek@gmail.com'; // your real email
+
+    function showBlockedScreen(businessName, reason) {
+      // Hide the whole dashboard layout
+      const layout = document.querySelector('.layout');
+      if (layout) layout.style.display = 'none';
+
+      // Remove any existing blocked screen
+      const existing = document.getElementById('blockedScreen');
+      if (existing) existing.remove();
+
+      const div = document.createElement('div');
+      div.id = 'blockedScreen';
+      div.style.cssText = `
+        position:fixed;inset:0;
+        background:linear-gradient(135deg,#1e1b4b 0%,#312e81 100%);
+        display:flex;align-items:center;justify-content:center;
+        z-index:99999;padding:2rem;
+        font-family:'Plus Jakarta Sans',sans-serif;`;
+
+      div.innerHTML = `
+        <div style="background:white;border-radius:24px;padding:3rem 2.5rem;
+                    max-width:520px;width:100%;text-align:center;
+                    box-shadow:0 24px 80px rgba(0,0,0,0.5);">
+ 
+            <div style="font-size:4rem;margin-bottom:0.75rem;">🚫</div>
+ 
+            <h2 style="font-size:1.75rem;font-weight:800;color:#dc2626;
+                       margin:0 0 0.4rem;">Account Suspended</h2>
+ 
+            <p style="color:#6b7280;font-size:0.95rem;margin:0 0 1.75rem;
+                      font-weight:600;">${businessName}</p>
+ 
+            ${reason ? `
+            <div style="background:#fee2e2;border-left:4px solid #dc2626;
+                        border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;
+                        text-align:left;">
+                <p style="color:#991b1b;font-weight:700;font-size:0.8rem;
+                           margin:0 0 0.4rem;text-transform:uppercase;
+                           letter-spacing:0.05em;">Reason</p>
+                <p style="color:#7f1d1d;font-size:0.9rem;margin:0;line-height:1.5;">
+                    ${reason}
+                </p>
+            </div>` : ''}
+ 
+            <div style="background:#f9fafb;border-radius:12px;padding:1.25rem;
+                        margin-bottom:1.75rem;text-align:left;">
+                <p style="font-weight:700;font-size:0.82rem;color:#374151;
+                           margin:0 0 0.75rem;text-transform:uppercase;
+                           letter-spacing:0.05em;">Important</p>
+                <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                    <div style="display:flex;align-items:flex-start;gap:0.6rem;
+                                font-size:0.875rem;color:#6b7280;">
+                        <span style="flex-shrink:0;">💾</span>
+                        <span>All your data, photos and listings are safely kept</span>
+                    </div>
+                    <div style="display:flex;align-items:flex-start;gap:0.6rem;
+                                font-size:0.875rem;color:#6b7280;">
+                        <span style="flex-shrink:0;">🔄</span>
+                        <span>Everything restores automatically when your account is unblocked</span>
+                    </div>
+                    <div style="display:flex;align-items:flex-start;gap:0.6rem;
+                                font-size:0.875rem;color:#6b7280;">
+                        <span style="flex-shrink:0;">🙈</span>
+                        <span>Your listing is currently hidden from the public site</span>
+                    </div>
+                </div>
+            </div>
+ 
+            <p style="color:#374151;font-size:0.9rem;margin-bottom:1.25rem;font-weight:600;">
+                To resolve this, please contact us:
+            </p>
+ 
+            <a href="mailto:${ADMIN_CONTACT_EMAIL}"
+               style="display:inline-block;width:100%;padding:0.95rem;
+                      background:#6366f1;color:white;text-decoration:none;
+                      border-radius:10px;font-weight:700;font-size:0.95rem;
+                      box-sizing:border-box;margin-bottom:0.75rem;">
+                📧 Contact Admin
+            </a>
+ 
+            <button onclick="logout()"
+                style="background:none;border:none;color:#9ca3af;
+                       font-size:0.82rem;cursor:pointer;
+                       font-family:inherit;text-decoration:underline;
+                       margin-top:0.25rem;">
+                Log out
+            </button>
+        </div>`;
+
+      document.body.appendChild(div);
+    }
+
+
     const API = 'http://localhost:8000';
     let restaurantId = null;
     let partnerEmail = null;
@@ -1184,15 +1278,25 @@
     function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }; }
     function authFD() { return { 'Authorization': `Bearer ${getToken()}` }; }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const params = new URLSearchParams(window.location.search);
       restaurantId = params.get('id') || localStorage.getItem('restaurant_id');
       partnerEmail = localStorage.getItem('partner_email');
-
       if (!getToken() || !restaurantId) { window.location.href = '/partner-login.html'; return; }
-
       document.getElementById('partnerEmail').textContent = partnerEmail || '';
-      initMap();
+
+      // Check block status from partner_applications table directly
+      try {
+        const res = await fetch(`${API}/api/partner-applications/status-check?email=${encodeURIComponent(partnerEmail)}`);
+        if (res.ok) {
+          const s = await res.json();
+          if (s.is_blocked) {
+            showBlockedScreen(s.business_name, s.rejection_reason);
+            return;
+          }
+        }
+      } catch (e) { }
+
       loadDashboard();
       loadSubscription();
     });
