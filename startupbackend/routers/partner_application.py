@@ -430,19 +430,21 @@ def _set_business_status(
 # ══════════════════════════════════════════════════════════════════════════════
 #  SECTION 6 — EMAIL HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
-
 def _send_email(to_email: str, to_name: str, subject: str, html: str) -> None:
-    """Send a single HTML email via Gmail SMTP SSL. Logs errors rather than raising."""
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"]    = f"{FROM_NAME} <{SMTP_USER}>"
-    msg["To"]      = f"{to_name} <{to_email}>"
-    msg.attach(MIMEText(html, "html"))
+    import resend
+    resend.api_key = os.environ.get("RESEND_API_KEY", "")
+    
+    if not resend.api_key:
+        print("❌ RESEND_API_KEY not set")
+        return
+    
     try:
-        context = ssl.create_default_context(cafile=certifi.where())
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_USER, to_email, msg.as_string())
+        resend.Emails.send({
+            "from":    f"{FROM_NAME} <onboarding@resend.dev>",
+            "to":      [to_email],
+            "subject": subject,
+            "html":    html,
+        })
         print(f"✅ Email → {to_email}")
     except Exception as exc:
         print(f"❌ Email failed → {to_email}: {exc}")
