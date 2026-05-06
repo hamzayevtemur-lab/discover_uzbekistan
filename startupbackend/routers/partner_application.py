@@ -440,7 +440,7 @@ def _send_email(to_email: str, to_name: str, subject: str, html: str) -> None:
     
     try:
         resend.Emails.send({
-            "from":    f"{FROM_NAME} <onboarding@resend.dev>",
+            "from": "Discover Uzbekistan <noreply@discover-travel-uzbekistan.com>",
             "to":      [to_email],
             "subject": subject,
             "html":    html,
