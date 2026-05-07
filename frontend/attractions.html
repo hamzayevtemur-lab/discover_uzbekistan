@@ -12,9 +12,6 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap"
         rel="stylesheet">
-
-    <script src="/config.js"></script>
-    
     <style>
         :root {
             --teal: #0ABFBC;
@@ -985,11 +982,37 @@
                 </div>
                 <div id="attractionMap"></div>
             </div>
+            <!-- Historical Significance -->
+            <div class="section" id="historicalSection" style="display:none;">
+                <div class="sec-head">
+                    <div class="sec-line"></div>
+                    <h2>Historical Significance</h2>
+                </div>
+                <p id="historicalText" style="color:#555;line-height:1.8;font-size:1rem;"></p>
+            </div>
+
+            <!-- Timeline -->
+            <div class="section" id="timelineSection" style="display:none;">
+                <div class="sec-head">
+                    <div class="sec-line"></div>
+                    <h2>Historical Timeline</h2>
+                </div>
+                <div id="timelineList"></div>
+            </div>
+
+            <!-- Reviews -->
             <div class="section">
                 <div class="sec-head">
                     <div class="sec-line"></div>
                     <h2>Visitor Reviews</h2>
                 </div>
+                <button onclick="openReviewModal()" style="display:inline-flex;align-items:center;gap:0.5rem;
+                           padding:0.75rem 1.5rem;background:#6366f1;color:white;
+                           border:none;border-radius:10px;font-weight:700;
+                           font-size:0.95rem;cursor:pointer;margin-bottom:1.5rem;
+                           box-shadow:0 4px 12px rgba(99,102,241,0.3);">
+                    ✍️ Write a Review
+                </button>
                 <div id="reviewsList"></div>
                 <button class="toggle-reviews-btn" id="revToggleBtn" onclick="toggleReviews()">Load Reviews</button>
             </div>
@@ -1041,6 +1064,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/config.js"></script>
     <script>
         // API defined in config.js
 
@@ -1107,6 +1131,39 @@
             document.getElementById('iBuilt').textContent = a.year_built || '—';
             document.getElementById('iRating').textContent = r.toFixed(1) + ' / 5.0';
             document.getElementById('iRevs').textContent = (a.review_count || 0) + ' reviews';
+
+            // Show historical significance
+            if (a.historical_significance) {
+                document.getElementById('historicalSection').style.display = '';
+                document.getElementById('historicalText').textContent = a.historical_significance;
+            }
+
+            // Load timeline
+            try {
+                const tlRes = await fetch(`${API}/attractions/${a.id}/timeline`);
+                if (tlRes.ok) {
+                    const timeline = await tlRes.json();
+                    if (timeline.length) {
+                        document.getElementById('timelineSection').style.display = '';
+                        document.getElementById('timelineList').innerHTML = timeline.map(t => `
+                            <div style="display:flex;gap:1.5rem;padding:1rem 0;
+                                        border-bottom:1px solid #f0f0f0;">
+                                <div style="min-width:80px;font-weight:800;
+                                            color:#6366f1;font-size:1.1rem;">
+                                    ${t.year || ''}
+                                </div>
+                                <div>
+                                    <div style="font-weight:700;margin-bottom:0.25rem;">
+                                        ${t.title || ''}
+                                    </div>
+                                    <div style="color:#666;font-size:0.9rem;line-height:1.6;">
+                                        ${t.description || ''}
+                                    </div>
+                                </div>
+                            </div>`).join('');
+                    }
+                }
+            } catch (e) { }
         }
 
         function starsStr(r) { const f = Math.round(r); return '★'.repeat(f) + '☆'.repeat(5 - f); }

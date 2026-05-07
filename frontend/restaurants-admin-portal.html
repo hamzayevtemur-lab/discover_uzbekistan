@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="/config.js"></script>
   <style>
     :root {
       --primary: #4f46e5;
@@ -1027,6 +1026,32 @@
 
       <!-- REVIEWS -->
       <div id="section-reviews" class="section">
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-header">
+            <h2 class="card-title">✍️ Write a Test Review</h2>
+          </div>
+          <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.25rem;">Use this to submit a review as a
+            customer would. New reviews will appear as pending for you to approve.</p>
+          <div class="form-grid">
+            <div class="form-group"><label>Your Name</label><input type="text" id="newReviewName"
+                placeholder="Customer name"></div>
+            <div class="form-group">
+              <label>Rating</label>
+              <select id="newReviewRating">
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4)</option>
+                <option value="3">⭐⭐⭐ (3)</option>
+                <option value="2">⭐⭐ (2)</option>
+                <option value="1">⭐ (1)</option>
+              </select>
+            </div>
+            <div class="form-group full"><label>Comment</label><textarea id="newReviewComment"
+                placeholder="Share your experience…" style="min-height:80px;"></textarea></div>
+          </div>
+          <div class="alert alert-error" id="reviewFormAlert"></div>
+          <button class="btn btn-primary" onclick="submitTestReview()" style="margin-top:0.75rem;">Submit
+            Review</button>
+        </div>
         <div class="card">
           <div class="card-header">
             <h2 class="card-title">Customer Reviews</h2>
@@ -1172,102 +1197,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script>
-    const ADMIN_CONTACT_EMAIL = 'hamzaevtemurbek@gmail.com'; // your real email
-
-    function showBlockedScreen(businessName, reason) {
-      // Hide the whole dashboard layout
-      const layout = document.querySelector('.layout');
-      if (layout) layout.style.display = 'none';
-
-      // Remove any existing blocked screen
-      const existing = document.getElementById('blockedScreen');
-      if (existing) existing.remove();
-
-      const div = document.createElement('div');
-      div.id = 'blockedScreen';
-      div.style.cssText = `
-        position:fixed;inset:0;
-        background:linear-gradient(135deg,#1e1b4b 0%,#312e81 100%);
-        display:flex;align-items:center;justify-content:center;
-        z-index:99999;padding:2rem;
-        font-family:'Plus Jakarta Sans',sans-serif;`;
-
-      div.innerHTML = `
-        <div style="background:white;border-radius:24px;padding:3rem 2.5rem;
-                    max-width:520px;width:100%;text-align:center;
-                    box-shadow:0 24px 80px rgba(0,0,0,0.5);">
- 
-            <div style="font-size:4rem;margin-bottom:0.75rem;">🚫</div>
- 
-            <h2 style="font-size:1.75rem;font-weight:800;color:#dc2626;
-                       margin:0 0 0.4rem;">Account Suspended</h2>
- 
-            <p style="color:#6b7280;font-size:0.95rem;margin:0 0 1.75rem;
-                      font-weight:600;">${businessName}</p>
- 
-            ${reason ? `
-            <div style="background:#fee2e2;border-left:4px solid #dc2626;
-                        border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;
-                        text-align:left;">
-                <p style="color:#991b1b;font-weight:700;font-size:0.8rem;
-                           margin:0 0 0.4rem;text-transform:uppercase;
-                           letter-spacing:0.05em;">Reason</p>
-                <p style="color:#7f1d1d;font-size:0.9rem;margin:0;line-height:1.5;">
-                    ${reason}
-                </p>
-            </div>` : ''}
- 
-            <div style="background:#f9fafb;border-radius:12px;padding:1.25rem;
-                        margin-bottom:1.75rem;text-align:left;">
-                <p style="font-weight:700;font-size:0.82rem;color:#374151;
-                           margin:0 0 0.75rem;text-transform:uppercase;
-                           letter-spacing:0.05em;">Important</p>
-                <div style="display:flex;flex-direction:column;gap:0.6rem;">
-                    <div style="display:flex;align-items:flex-start;gap:0.6rem;
-                                font-size:0.875rem;color:#6b7280;">
-                        <span style="flex-shrink:0;">💾</span>
-                        <span>All your data, photos and listings are safely kept</span>
-                    </div>
-                    <div style="display:flex;align-items:flex-start;gap:0.6rem;
-                                font-size:0.875rem;color:#6b7280;">
-                        <span style="flex-shrink:0;">🔄</span>
-                        <span>Everything restores automatically when your account is unblocked</span>
-                    </div>
-                    <div style="display:flex;align-items:flex-start;gap:0.6rem;
-                                font-size:0.875rem;color:#6b7280;">
-                        <span style="flex-shrink:0;">🙈</span>
-                        <span>Your listing is currently hidden from the public site</span>
-                    </div>
-                </div>
-            </div>
- 
-            <p style="color:#374151;font-size:0.9rem;margin-bottom:1.25rem;font-weight:600;">
-                To resolve this, please contact us:
-            </p>
- 
-            <a href="mailto:${ADMIN_CONTACT_EMAIL}"
-               style="display:inline-block;width:100%;padding:0.95rem;
-                      background:#6366f1;color:white;text-decoration:none;
-                      border-radius:10px;font-weight:700;font-size:0.95rem;
-                      box-sizing:border-box;margin-bottom:0.75rem;">
-                📧 Contact Admin
-            </a>
- 
-            <button onclick="logout()"
-                style="background:none;border:none;color:#9ca3af;
-                       font-size:0.82rem;cursor:pointer;
-                       font-family:inherit;text-decoration:underline;
-                       margin-top:0.25rem;">
-                Log out
-            </button>
-        </div>`;
-
-      document.body.appendChild(div);
-    }
-
-
-    // API defined in config.js
-
+    const API = 'http://localhost:8000';
     let restaurantId = null;
     let partnerEmail = null;
     let allReviews = [];
@@ -1280,25 +1210,14 @@
     function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }; }
     function authFD() { return { 'Authorization': `Bearer ${getToken()}` }; }
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
       restaurantId = params.get('id') || localStorage.getItem('restaurant_id');
       partnerEmail = localStorage.getItem('partner_email');
+
       if (!getToken() || !restaurantId) { window.location.href = '/partner-login.html'; return; }
+
       document.getElementById('partnerEmail').textContent = partnerEmail || '';
-
-      // Check block status from partner_applications table directly
-      try {
-        const res = await fetch(`${API}/api/partner-applications/status-check?email=${encodeURIComponent(partnerEmail)}`);
-        if (res.ok) {
-          const s = await res.json();
-          if (s.is_blocked) {
-            showBlockedScreen(s.business_name, s.rejection_reason);
-            return;
-          }
-        }
-      } catch (e) { }
-
       loadDashboard();
       loadSubscription();
     });
@@ -1320,7 +1239,11 @@
       if (name === 'dashboard') loadDashboard();
       if (name === 'info') loadInfo();
       if (name === 'menu') loadMenu('');
-      if (name === 'location') { loadLocation(); setTimeout(() => rMap?.invalidateSize(), 100); }
+      if (name === 'location') {
+        if (!rMap) initMap();
+        loadLocation();
+        setTimeout(() => { if (rMap) rMap.invalidateSize(); }, 300);
+      }
       if (name === 'reviews') loadReviews();
       if (name === 'subscription') loadSubscription();
     }
@@ -1594,14 +1517,10 @@
             </div>
             <p class="review-comment">${r.comment || ''}</p>
             ${status === 'pending' ? `
-<div class="review-actions">
-    <button class="btn btn-success btn-sm" onclick="reviewAction(${r.id},'approve')">✅ Approve</button>
-    <button class="btn btn-danger btn-sm" onclick="reviewAction(${r.id},'reject')">❌ Reject</button>
-    <button class="btn btn-secondary btn-sm" onclick="deleteReview(${r.id})">🗑 Delete</button>
-</div>` : `
-<div class="review-actions">
-    <button class="btn btn-secondary btn-sm" onclick="deleteReview(${r.id})">🗑 Delete</button>
-</div>`}
+            <div class="review-actions">
+                <button class="btn btn-success btn-sm" onclick="reviewAction(${r.id},'approve')">✅ Approve</button>
+                <button class="btn btn-danger btn-sm" onclick="reviewAction(${r.id},'reject')">❌ Reject</button>
+            </div>` : ''}
         </div>`;
       }).join('');
     }
@@ -1613,15 +1532,6 @@
         loadReviews();
         loadDashboard();
       } catch (e) { toast('Failed: ' + e.message, 'error'); }
-    }
-
-    async function deleteReview(id) {
-      if (!confirm('Delete this review permanently?')) return;
-      try {
-        await api('DELETE', `/api/partner/restaurant/${restaurantId}/reviews/${id}`);
-        toast('Review deleted.', 'success');
-        loadReviews();
-      } catch (e) { toast('Delete failed: ' + e.message, 'error'); }
     }
 
     // ── SUBSCRIPTION ──────────────────────────────────────────────
@@ -1764,6 +1674,40 @@
       } catch (e) { showAlert('pwAlert', e.message); }
     }
 
+    // ── SUBMIT REVIEW (test/demo — same endpoint customers use) ─────
+    async function submitTestReview() {
+      const name = document.getElementById('newReviewName').value.trim();
+      const rating = parseInt(document.getElementById('newReviewRating').value);
+      const comment = document.getElementById('newReviewComment').value.trim();
+      const alertEl = document.getElementById('reviewFormAlert');
+      alertEl.classList.remove('show');
+
+      if (!name) { alertEl.textContent = 'Please enter your name.'; alertEl.classList.add('show'); return; }
+      if (!comment) { alertEl.textContent = 'Please write a comment.'; alertEl.classList.add('show'); return; }
+
+      try {
+        const res = await fetch(`${API}/restaurants/reviews`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            restaurant_id: parseInt(restaurantId),
+            reviewer_name: name,
+            rating: rating,
+            comment: comment,
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed to submit review');
+
+        // Clear form
+        document.getElementById('newReviewName').value = '';
+        document.getElementById('newReviewComment').value = '';
+        document.getElementById('newReviewRating').selectedIndex = 0;
+
+        toast('✅ Review submitted! It will appear as pending below.', 'success');
+        loadReviews();
+      } catch (e) { alertEl.textContent = '❌ ' + e.message; alertEl.classList.add('show'); }
+    }
 
     // ── HELPERS ───────────────────────────────────────────────────
     function showPreview(url, previewId) {
