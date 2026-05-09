@@ -1006,11 +1006,14 @@
                     <div class="sec-line"></div>
                     <h2>Visitor Reviews</h2>
                 </div>
-                <button onclick="openReviewModal()" style="display:inline-flex;align-items:center;gap:0.5rem;
-                           padding:0.75rem 1.5rem;background:#6366f1;color:white;
-                           border:none;border-radius:10px;font-weight:700;
-                           font-size:0.95rem;cursor:pointer;margin-bottom:1.5rem;
-                           box-shadow:0 4px 12px rgba(99,102,241,0.3);">
+                <button onclick="openReviewModal()" style="display:inline-flex;align-items:center;gap:0.6rem;
+                           padding:0.875rem 2rem;
+                           background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);
+                           color:white;border:none;border-radius:50px;
+                           font-weight:700;font-size:0.95rem;cursor:pointer;
+                           margin-bottom:1.5rem;letter-spacing:0.01em;
+                           box-shadow:0 6px 20px rgba(99,102,241,0.35);
+                           transition:all 0.25s;">
                     ✍️ Write a Review
                 </button>
                 <div id="reviewsList"></div>
@@ -1093,6 +1096,25 @@
                 attraction = await res.json();
                 renderHero();
                 await loadGallery();
+
+                // Load timeline (must be in async function)
+                try {
+                    const tlRes = await fetch(`${API}/attractions/${attraction.id}/timeline`);
+                    if (tlRes.ok) {
+                        const timeline = await tlRes.json();
+                        if (timeline.length) {
+                            document.getElementById('timelineSection').style.display = '';
+                            document.getElementById('timelineList').innerHTML = timeline.map(t => `
+                                <div style="display:flex;gap:1.5rem;padding:1rem 0;border-bottom:1px solid #f0f0f0;">
+                                    <div style="min-width:80px;font-weight:800;color:#6366f1;font-size:1.1rem;">${t.year || ''}</div>
+                                    <div>
+                                        <div style="font-weight:700;margin-bottom:0.25rem;">${t.title || ''}</div>
+                                        <div style="color:#666;font-size:0.9rem;line-height:1.6;">${t.description || ''}</div>
+                                    </div>
+                                </div>`).join('');
+                        }
+                    }
+                } catch (e) { }
                 initMap();
                 checkLiked();
             } catch (e) {
@@ -1137,33 +1159,6 @@
                 document.getElementById('historicalSection').style.display = '';
                 document.getElementById('historicalText').textContent = a.historical_significance;
             }
-
-            // Load timeline
-            try {
-                const tlRes = await fetch(`${API}/attractions/${a.id}/timeline`);
-                if (tlRes.ok) {
-                    const timeline = await tlRes.json();
-                    if (timeline.length) {
-                        document.getElementById('timelineSection').style.display = '';
-                        document.getElementById('timelineList').innerHTML = timeline.map(t => `
-                            <div style="display:flex;gap:1.5rem;padding:1rem 0;
-                                        border-bottom:1px solid #f0f0f0;">
-                                <div style="min-width:80px;font-weight:800;
-                                            color:#6366f1;font-size:1.1rem;">
-                                    ${t.year || ''}
-                                </div>
-                                <div>
-                                    <div style="font-weight:700;margin-bottom:0.25rem;">
-                                        ${t.title || ''}
-                                    </div>
-                                    <div style="color:#666;font-size:0.9rem;line-height:1.6;">
-                                        ${t.description || ''}
-                                    </div>
-                                </div>
-                            </div>`).join('');
-                    }
-                }
-            } catch (e) { }
         }
 
         function starsStr(r) { const f = Math.round(r); return '★'.repeat(f) + '☆'.repeat(5 - f); }

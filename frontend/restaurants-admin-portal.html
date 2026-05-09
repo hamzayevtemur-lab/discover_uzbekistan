@@ -7,6 +7,7 @@
   <title>Restaurant Partner Portal - Discover Uzbekistan</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="/config.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -830,6 +831,7 @@
       .layout {
         flex-direction: column;
         padding: 1rem;
+        gap: 1rem;
       }
 
       .sidebar {
@@ -838,13 +840,23 @@
 
       .sidebar-sticky {
         position: static;
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
       }
 
       .nav-item {
-        width: auto;
+        width: 100%;
+        padding: 0.6rem 0.5rem;
+        font-size: 0.78rem;
+        justify-content: center;
+        text-align: center;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      .nav-item i {
+        font-size: 1rem;
       }
 
       .nav-section {
@@ -857,6 +869,32 @@
 
       .form-grid {
         grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 1.25rem;
+      }
+
+      .menu-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      }
+    }
+
+    @media(max-width:480px) {
+      .sidebar-sticky {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .header {
+        padding: 0 1rem;
+      }
+
+      .logo {
+        font-size: 1rem;
       }
     }
   </style>
@@ -1197,7 +1235,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script>
-    const API = 'http://localhost:8000';
+    // API defined in config.js
     let restaurantId = null;
     let partnerEmail = null;
     let allReviews = [];
