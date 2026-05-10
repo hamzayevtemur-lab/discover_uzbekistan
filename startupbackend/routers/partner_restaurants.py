@@ -26,10 +26,10 @@ class RestaurantUpdate(BaseModel):
     telegram:  Optional[str] = None 
 
 class LocationUpdate(BaseModel):
-    address: str
-    latitude: float
-    longitude: float
-    opening_hours: str
+    latitude:      float
+    longitude:     float
+    address:       Optional[str] = None
+    opening_hours: Optional[str] = None
 
 class MenuItemCreate(BaseModel):
     item_name: str
@@ -133,10 +133,13 @@ async def update_restaurant_location(
     if not restaurant:
         raise HTTPException(status_code=404, detail="Restaurant not found")
 
-    restaurant.address = data.address
-    restaurant.latitude = data.latitude
+    restaurant.latitude  = data.latitude
+    
     restaurant.longitude = data.longitude
-    restaurant.opening_hours = data.opening_hours
+    if data.address:
+        restaurant.address = data.address
+    if data.opening_hours:
+        restaurant.opening_hours = data.opening_hours
 
     if hasattr(restaurant, 'status'):
         restaurant.status = 'pending'
