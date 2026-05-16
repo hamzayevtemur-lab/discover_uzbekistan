@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text, func, desc
 from typing import List, Optional
 from datetime import datetime
+from pydantic import BaseModel
 import os
 import shutil
 from pathlib import Path
@@ -26,6 +27,28 @@ async def verify_admin_key(key: str = Security(api_key_header)):
         raise HTTPException(status_code=403, detail="Not authorized")
     
 
+class ContentLoginRequest(BaseModel):
+    password: str
+
+@router.post("/content-admin/verify-login")
+async def verify_content_admin_login(data: ContentLoginRequest):
+    correct = os.environ.get("CONTENT_ADMIN_PASSWORD", "")
+    if not correct or data.password != correct:
+        raise HTTPException(401, "Incorrect password.")
+    token = hashlib.sha256(
+        f"{correct}{int(time.time() // 3600)}".encode()
+    ).hexdigest()
+    return {"token": token}
+
+@router.post("/news-admin/verify-login")
+async def verify_news_admin_login(data: ContentLoginRequest):
+    correct = os.environ.get("NEWS_ADMIN_PASSWORD", "")
+    if not correct or data.password != correct:
+        raise HTTPException(401, "Incorrect password.")
+    token = hashlib.sha256(
+        f"{correct}{int(time.time() // 3600)}".encode()
+    ).hexdigest()
+    return {"token": token}
 
 # ==================== IMAGE UPLOAD ====================
 
