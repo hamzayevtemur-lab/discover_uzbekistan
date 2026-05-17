@@ -1361,11 +1361,12 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script>
-    // ── FIX: use BASE_URL instead of API to avoid conflict with config.js ──
-    // config.js likely exports a variable called `API`; we use a different name.
-    var BASE_URL = (typeof window.APP_CONFIG !== 'undefined' && window.APP_CONFIG.apiBase)
-      ? window.APP_CONFIG.apiBase
-      : 'http://localhost:8000';
+    // config.js (loaded in <head>) already declares:
+    //   const API = location.hostname === 'localhost' ? 'http://localhost:8000' : '';
+    // We just use that global directly — no redeclaration needed.
+    // Fallback in case this page is ever loaded without config.js.
+    if (typeof API === 'undefined') { window.API = 'http://localhost:8000'; }
+    var BASE_URL = API;
 
     var hotelId = null, partnerEmail = null;
     var hMap = null, hMarker = null;
