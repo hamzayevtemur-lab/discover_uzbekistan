@@ -1,79 +1,4 @@
-// ── ADMIN LOGIN GATE ──────────────────────────────────────────
-const SESSION_KEY = 'ceo_admin_auth';
-
-(function checkExistingSession() {
-    // If already authenticated this session, hide the gate immediately
-    if (sessionStorage.getItem(SESSION_KEY)) {
-        document.getElementById('loginGate').style.display = 'none';
-    }
-})();
-
-async function checkAdminLogin() {
-    const input   = document.getElementById('adminPasswordInput').value;
-    const errorEl = document.getElementById('loginError');
-    const btn     = document.getElementById('loginBtn');
-
-    if (!input) return;
-
-    errorEl.style.display = 'none';
-    btn.textContent = '⏳ Checking…';
-    btn.disabled    = true;
-
-    try {
-        const resp = await fetch(`${API_BASE}/admin/verify-login`, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ password: input })
-        });
-
-        if (resp.ok) {
-            const data = await resp.json();
-            // Store token — it auto-expires every hour server-side
-            sessionStorage.setItem(SESSION_KEY, data.token);
-            document.getElementById('loginGate').style.display = 'none';
-        } else {
-            errorEl.style.display = 'block';
-            document.getElementById('adminPasswordInput').value = '';
-            document.getElementById('adminPasswordInput').focus();
-        }
-
-    } catch(e) {
-        errorEl.textContent = '❌ Could not connect to server. Is it running?';
-        errorEl.style.display = 'block';
-    } finally {
-        btn.textContent = 'Sign In →';
-        btn.disabled    = false;
-    }
-}
-// ── END LOGIN GATE ────────────────────────────────────────────
-
-
-
-// API defined in config.js
-
-function adminToast(msg, type = 'info') {
-    const c = document.getElementById('toastContainer');
-    if (!c) { console.log(msg); return; }
-    const el = document.createElement('div');
-    el.className = `toast toast-${type}`;
-    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
-    const icon = document.createElement('span');
-    icon.textContent = icons[type] || 'ℹ️';
-    const text = document.createElement('span');
-    text.textContent = msg;
-    el.appendChild(icon);
-    el.appendChild(text);
-    c.appendChild(el);
-    setTimeout(() => el.remove(), 4500);
-}
-
-function safeImg(url, fallback) {
-    if (!url) return fallback || '';
-    // If already absolute URL, use as-is; if relative path, prepend API_BASE
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/static/')) return url;
-    return API_BASE + url;
-}
-
+// API_BASE defined in config.js (loaded in admin.html)
 
 let restaurantMap, restaurantMarker;
 
@@ -100,17 +25,8 @@ function showSection(sectionId) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-    const section = document.getElementById(sectionId);
-    if (section) section.classList.add('active');
-
-    // Find the nav item that triggered this and mark active
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(n => {
-        const onclick = n.getAttribute('onclick') || '';
-        if (onclick.includes(`'${sectionId}'`) || onclick.includes(`"${sectionId}"`)) {
-            n.classList.add('active');
-        }
-    });
+    document.getElementById(sectionId).classList.add('active');
+    event.target.classList.add('active');
 
     if (sectionId === 'dashboard') loadDashboard();
     else if (sectionId === 'partners') loadPartners();
@@ -123,6 +39,7 @@ function showSection(sectionId) {
     else if (sectionId === 'agencies') loadAgencies();
     else if (sectionId === 'platform-analytics') {
         loadPlatformAnalytics();
+
         setInterval(loadRealtimeStats, 30000);
     }
 }
@@ -168,25 +85,15 @@ async function loadDashboard() {
 async function loadPendingApprovals() {
     try {
         // ✅ Destructure ALL 5 results — was missing pendingTours causing crash
-        const [
-            pendingRestaurants,
-            pendingMenuItems,
-            pendingHotels,
-            pendingRooms,
-            pendingTours,
-            pendingAgencies
-        ] = await Promise.all([
+        const [pendingRestaurants, pendingMenuItems, pendingHotels, pendingRooms, pendingTours] = await Promise.all([
             fetchAPI('/api/admin-approval/restaurants/pending'),
             fetchAPI('/api/admin-approval/menu-items/pending'),
             fetchAPI('/api/admin-approval/hotels/pending'),
             fetchAPI('/api/admin-approval/hotel-rooms/pending'),
             fetchAPI('/api/admin-approval/tours/pending'),
-            fetchAPI('/api/admin-approval/agencies/pending'),
         ]);
 
-        const total = pendingRestaurants.length + pendingMenuItems.length +
-            pendingHotels.length + pendingRooms.length + pendingTours.length + pendingAgencies.length;
-
+        const total = pendingRestaurants.length + pendingMenuItems.length + pendingHotels.length + pendingRooms.length + pendingTours.length;
         const badge = document.getElementById('nav-pending-badge');
         if (total > 0) {
             badge.textContent = total;
@@ -255,7 +162,7 @@ async function loadPendingApprovals() {
                 html += `
                         <div class="pending-item" style="background: white;padding: 1.5rem; margin-bottom: 1rem;border-radius: 12px;box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                             <div style="display:flex; gap:1.5rem;">
-                                <div><img src="${safeImg(item.image_url, 'https://via.placeholder.com/150')}" style="width:150px; height:120px; object-fit:cover; border-radius:10px;"></div>
+                                <div><img src="${API_BASE}${item.image_url || 'https://via.placeholder.com/150'}" style="width:150px; height:120px; object-fit:cover; border-radius:10px;"></div>
                                 <div style="flex:1;">
                                     <h4 style="font-size:1.2rem; margin-bottom:0.5rem;">${item.name}</h4>
                                     <p style="color:#6b7280; margin-bottom:0.5rem;">${item.description || 'No description provided'}</p>
@@ -282,7 +189,7 @@ async function loadPendingApprovals() {
             pendingRooms.forEach(item => {
                 html += `
                             <div style="background:white;padding:1.5rem; margin-bottom:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);display:flex;gap:1.5rem;align-items:center;">
-                                <img src="${safeImg(item.image_url, 'https://via.placeholder.com/120')}" style="width:120px; height:100px; object-fit:cover; border-radius:10px;">
+                                <img src="${API_BASE}${item.image_url || 'https://via.placeholder.com/120'}" style="width:120px; height:100px; object-fit:cover; border-radius:10px;">
                                 <div style="flex:1;">
                                     <h4 style="margin-bottom:0.5rem;">${item.hotel_name}</h4>
                                     <p style="color:#6b7280;">Room Type: ${item.room_type || 'N/A'}</p>
@@ -303,127 +210,32 @@ async function loadPendingApprovals() {
         if (pendingTours.length > 0) {
             html += '<div class="table-container" style="margin-bottom:1.5rem;"><h3 style="padding: 1rem; border-bottom: 1px solid #e5e7eb; margin: 0;">🗺️ Pending Tours (' + pendingTours.length + ')</h3><div style="padding: 1rem;">';
             pendingTours.forEach(t => {
-                const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-                const inclusions = Array.isArray(t.inclusions) ? t.inclusions.join(', ') : (t.inclusions || null);
-                const exclusions = Array.isArray(t.exclusions) ? t.exclusions.join(', ') : (t.exclusions || null);
-                const highlights = Array.isArray(t.highlights) ? t.highlights : [];
-                const itinerary = Array.isArray(t.itinerary) ? t.itinerary : [];
                 html += `
-                    <div style="background:white;padding:1.5rem;margin-bottom:1.2rem;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.07);border:1px solid #f1f5f9;">
-                        <!-- Header row -->
-                        <div style="display:flex;gap:1.5rem;margin-bottom:1rem;">
-                            <div style="flex-shrink:0;">
-                                <img src="${t.image_url || 'https://via.placeholder.com/160x120?text=Tour'}"
-                                     style="width:160px;height:120px;object-fit:cover;border-radius:10px;border:1px solid #e5e7eb;"
-                                     onerror="this.src='https://via.placeholder.com/160x120?text=No+Image'">
-                            </div>
-                            <div style="flex:1;min-width:0;">
-                                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
-                                    <div>
-                                        <h4 style="font-size:1.15rem;font-weight:700;color:#1e293b;margin-bottom:0.25rem;">${t.tour_name || t.name || 'Unnamed Tour'}</h4>
-                                        <p style="color:#6366f1;font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;">
-                                            🏢 ${t.agency_name || 'Unknown Agency'}
-                                            ${t.agency_city ? `<span style="color:#94a3b8;font-weight:400;"> · ${t.agency_city}</span>` : ''}
-                                        </p>
-                                    </div>
-                                    <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;">
-                                        <button onclick="approveItem('tour', ${t.id})" style="background:#10b981;color:white;border:none;padding:0.5rem 1.1rem;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;white-space:nowrap;">✅ Approve</button>
-                                        <button onclick="rejectItem('tour', ${t.id})" style="background:white;color:#ef4444;border:1px solid #fecaca;padding:0.5rem 1.1rem;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;white-space:nowrap;">❌ Reject</button>
-                                    </div>
+                            <div style="background:white;padding:1.5rem;margin-bottom:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);display:flex;gap:1.5rem;">
+                                <div style="flex-shrink:0;">
+                                    <img src="${t.image_url || 'https://via.placeholder.com/150x120?text=Tour'}"
+                                         style="width:150px;height:120px;object-fit:cover;border-radius:10px;">
                                 </div>
-                                <!-- Key metrics chips -->
-                                <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem;">
-                                    ${t.duration_days ? `<span class="tour-chip tour-chip-blue">📅 ${t.duration_days} day${t.duration_days > 1 ? 's' : ''}</span>` : ''}
-                                    ${(t.price || t.price_per_person) ? `<span class="tour-chip tour-chip-green">💰 ${t.currency || 'USD'} ${t.price || t.price_per_person}/person</span>` : ''}
-                                    ${t.difficulty_level ? `<span class="tour-chip tour-chip-orange">🏃 ${t.difficulty_level}</span>` : ''}
-                                    ${t.max_group_size ? `<span class="tour-chip tour-chip-purple">👥 Max ${t.max_group_size} people</span>` : ''}
-                                    ${t.min_age ? `<span class="tour-chip">👶 Min age ${t.min_age}</span>` : ''}
-                                    ${t.best_season ? `<span class="tour-chip">🌤 ${t.best_season}</span>` : ''}
-                                    ${t.tour_type ? `<span class="tour-chip">🏷️ ${t.tour_type}</span>` : ''}
-                                    ${t.languages ? `<span class="tour-chip">🗣 ${Array.isArray(t.languages) ? t.languages.join(', ') : t.languages}</span>` : ''}
+                                <div style="flex:1;">
+                                    <h4 style="font-size:1.1rem;margin-bottom:0.3rem;">${t.tour_name}</h4>
+                                    <p style="color:#6b7280;font-size:0.85rem;margin-bottom:0.4rem;">
+                                        Agency: <strong>${t.agency_name}</strong>
+                                    </p>
+                                    <p style="color:#374151;font-size:0.9rem;margin-bottom:0.5rem;">${t.description || 'No description'}</p>
+                                    <div style="font-size:0.85rem;color:#374151;display:flex;flex-wrap:wrap;gap:0.75rem;">
+                                        <span>📅 ${t.duration_days || '—'} days</span>
+                                        <span>💰 ${t.currency || 'USD'} ${t.price || '—'}</span>
+                                        <span>🏃 ${t.difficulty_level || 'Any level'}</span>
+                                        <span>👥 Max ${t.max_group_size || '—'}</span>
+                                        ${t.best_season ? `<span>🌤 ${t.best_season}</span>` : ''}
+                                    </div>
+                                    ${t.rejection_reason ? `<p style="color:#ef4444;font-size:0.85rem;margin-top:0.5rem;">❌ Prev. rejection: ${t.rejection_reason}</p>` : ''}
                                 </div>
-                                <!-- Dates if available -->
-                                ${(t.start_date || t.end_date) ? `<p style="font-size:0.82rem;color:#374151;">📆 ${fmtDate(t.start_date)} → ${fmtDate(t.end_date)}</p>` : ''}
-                                ${t.meeting_point ? `<p style="font-size:0.82rem;color:#374151;">📍 Meeting: ${t.meeting_point}</p>` : ''}
-                            </div>
-                        </div>
-                        <!-- Description -->
-                        ${t.description ? `<div style="background:#f8fafc;border-radius:8px;padding:0.75rem 1rem;margin-bottom:0.75rem;font-size:0.875rem;color:#374151;line-height:1.6;border-left:3px solid #6366f1;">
-                            <strong style="color:#1e293b;">Description:</strong><br>${t.description}
-                        </div>` : ''}
-                        <!-- Highlights -->
-                        ${highlights.length > 0 ? `<div style="margin-bottom:0.75rem;">
-                            <p style="font-size:0.8rem;font-weight:700;color:#374151;margin-bottom:0.4rem;">✨ Highlights:</p>
-                            <ul style="margin:0;padding-left:1.2rem;font-size:0.82rem;color:#475569;line-height:1.8;">
-                                ${highlights.slice(0, 5).map(h => `<li>${h}</li>`).join('')}
-                                ${highlights.length > 5 ? `<li style="color:#94a3b8;">+${highlights.length - 5} more…</li>` : ''}
-                            </ul>
-                        </div>` : ''}
-                        <!-- Itinerary preview -->
-                        ${itinerary.length > 0 ? `<div style="margin-bottom:0.75rem;">
-                            <p style="font-size:0.8rem;font-weight:700;color:#374151;margin-bottom:0.4rem;">🗓 Itinerary (${itinerary.length} day${itinerary.length > 1 ? 's' : ''}):</p>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
-                                ${itinerary.slice(0, 4).map((day, i) => `<span style="background:#eff6ff;color:#1d4ed8;font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;">Day ${i + 1}: ${typeof day === 'string' ? day.substring(0, 40) : (day.title || day.description || 'Activity').substring(0, 40)}${(typeof day === 'string' ? day : (day.title || day.description || '')).length > 40 ? '…' : ''}</span>`).join('')}
-                                ${itinerary.length > 4 ? `<span style="background:#f1f5f9;color:#64748b;font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;">+${itinerary.length - 4} more days</span>` : ''}
-                            </div>
-                        </div>` : ''}
-                        <!-- Inclusions / Exclusions -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.5rem;">
-                            ${inclusions ? `<div style="background:#f0fdf4;border-radius:8px;padding:0.6rem 0.8rem;font-size:0.8rem;">
-                                <strong style="color:#065f46;">✅ Included:</strong>
-                                <p style="color:#374151;margin-top:0.2rem;line-height:1.5;">${inclusions}</p>
-                            </div>` : ''}
-                            ${exclusions ? `<div style="background:#fef2f2;border-radius:8px;padding:0.6rem 0.8rem;font-size:0.8rem;">
-                                <strong style="color:#991b1b;">❌ Not Included:</strong>
-                                <p style="color:#374151;margin-top:0.2rem;line-height:1.5;">${exclusions}</p>
-                            </div>` : ''}
-                        </div>
-                        <!-- Contact & submission info -->
-                        <div style="display:flex;flex-wrap:wrap;gap:1rem;font-size:0.78rem;color:#94a3b8;border-top:1px solid #f1f5f9;padding-top:0.6rem;margin-top:0.5rem;">
-                            ${t.contact_email || t.agency_email ? `<span>📧 ${t.contact_email || t.agency_email}</span>` : ''}
-                            ${t.contact_phone || t.agency_phone ? `<span>📞 ${t.contact_phone || t.agency_phone}</span>` : ''}
-                            ${t.created_at ? `<span>📤 Submitted ${fmtDate(t.created_at)}</span>` : ''}
-                            ${t.rejection_reason ? `<span style="color:#ef4444;font-weight:600;">⚠️ Prev. rejection: ${t.rejection_reason}</span>` : ''}
-                        </div>
-                    </div>`;
-            });
-            html += '</div></div>';
-        }
-
-        // ── Pending Agencies ─────────────────────────────────────────
-        if (pendingAgencies.length > 0) {
-            html += `<div class="table-container" style="margin-bottom:1.5rem;">
-        <h3 style="padding:1rem;border-bottom:1px solid #e5e7eb;margin:0;">
-            🌍 Pending Travel Agencies (${pendingAgencies.length})
-        </h3>
-        <div style="padding:1rem;">`;
-            pendingAgencies.forEach(a => {
-                html += `
-        <div style="background:white;padding:1.5rem;margin-bottom:1rem;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.05);display:flex;gap:1.5rem;">
-            ${a.image_url ? `<img src="${a.image_url}" style="width:150px;height:120px;object-fit:cover;border-radius:10px;flex-shrink:0;">` : ''}
-            <div style="flex:1;">
-                <h4 style="font-size:1.1rem;margin-bottom:0.3rem;">${a.name}</h4>
-                <p style="color:#6b7280;font-size:0.85rem;margin-bottom:0.4rem;">
-                    ${a.agency_type || 'Tour Operator'} ${a.city ? '· ' + a.city : ''}
-                </p>
-                <p style="color:#374151;font-size:0.9rem;">${a.description || 'No description'}</p>
-                <div style="font-size:0.85rem;color:#374151;margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.75rem;">
-                    ${a.phone ? `<span>📞 ${a.phone}</span>` : ''}
-                    ${a.email ? `<span>✉️ ${a.email}</span>` : ''}
-                    ${a.website ? `<span>🌐 <a href="${a.website}" target="_blank">${a.website}</a></span>` : ''}
-                </div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;">
-                <button onclick="approveItem('agency',${a.id})"
-                    class="btn-create" style="background:#10b981;padding:0.5rem 1rem;white-space:nowrap;">
-                    ✅ Approve
-                </button>
-                <button onclick="rejectItem('agency',${a.id})"
-                    class="btn-danger" style="padding:0.5rem 1rem;white-space:nowrap;">
-                    ❌ Reject
-                </button>
-            </div>
-        </div>`;
+                                <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0;">
+                                    <button onclick="approveItem('tour', ${t.id})" class="btn-create" style="background:#10b981;padding:0.5rem 1rem;white-space:nowrap;">✅ Approve</button>
+                                    <button onclick="rejectItem('tour', ${t.id})" class="btn-danger" style="padding:0.5rem 1rem;white-space:nowrap;">❌ Reject</button>
+                                </div>
+                            </div>`;
             });
             html += '</div></div>';
         }
@@ -446,11 +258,11 @@ async function approveItem(type, id) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'approved', admin_email: 'ceo@example.com' })
         });
-        adminToast('Approved!', 'success');
+        alert('✅ Approved!');
         loadPendingApprovals();
         loadDashboard();
     } catch (error) {
-        adminToast('Error: ' + error.message, 'error');
+        alert('Error: ' + error.message);
     }
 }
 
@@ -458,16 +270,16 @@ async function rejectItem(type, id) {
     const reason = prompt('Rejection reason:');
     if (!reason) return;
     try {
-        await fetchAPI(`/api/admin-approval/${type}/${id}/reject`, {
+        await fetchAPI(`/api/admin-approval/${type}/${id}/approve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'rejected', rejection_reason: reason, admin_email: 'ceo@example.com' })
         });
-        adminToast('Rejected', 'error');
+        alert('❌ Rejected');
         loadPendingApprovals();
         loadDashboard();
     } catch (error) {
-        adminToast('Error: ' + error.message, 'error');
+        alert('Error: ' + error.message);
     }
 }
 
@@ -516,224 +328,38 @@ async function loadAttractions() {
     }
 }
 
-let _allReviews = [];
-let _reviewsPage = 1;
-const REVIEWS_PER_PAGE = 15;
-
 async function loadReviews() {
     try {
-        document.getElementById('reviews-container').innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><p>Loading reviews…</p></div>';
         const reviews = await fetchAPI('/admin/reviews');
-        _allReviews = reviews || [];
-        updateReviewsStats(_allReviews);
-        _reviewsPage = 1;
-        filterReviews();
+        const html = reviews.map(r => `
+                    <div style="background: #f9fafb; padding: 1rem; margin-bottom: 1rem; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <div><strong>${r.place_name}</strong> (${r.type})<div style="color: #6b7280;">by ${r.reviewer_name} • ${'⭐'.repeat(r.rating)}</div><p style="margin-top: 0.5rem; font-style: italic;">${r.comment}</p></div>
+                            <button class="btn-danger" onclick="deleteReview('${r.type}', ${r.id})">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+        document.getElementById('reviews-container').innerHTML = html || '<p style="text-align: center; color: #6b7280;">No reviews</p>';
     } catch (error) {
-        document.getElementById('reviews-container').innerHTML = '<p style="color:#ef4444;text-align:center;padding:2rem;">Failed to load reviews</p>';
         console.error('Load error:', error);
     }
 }
-
-function updateReviewsStats(reviews) {
-    document.getElementById('rv-total').textContent = reviews.length;
-    const types = { restaurant: 0, hotel: 0, attraction: 0, agency: 0 };
-    reviews.forEach(r => { const t = (r.type || '').toLowerCase(); if (types[t] !== undefined) types[t]++; });
-    document.getElementById('rv-restaurant').textContent = types.restaurant;
-    document.getElementById('rv-hotel').textContent = types.hotel;
-    document.getElementById('rv-attraction').textContent = types.attraction;
-    document.getElementById('rv-agency').textContent = types.agency;
-}
-
-function filterReviews() {
-    const search = (document.getElementById('reviews-search')?.value || '').toLowerCase();
-    const type = document.getElementById('reviews-type-filter')?.value || '';
-    const rating = document.getElementById('reviews-rating-filter')?.value || '';
-    const dateFrom = document.getElementById('reviews-date-from')?.value;
-    const dateTo = document.getElementById('reviews-date-to')?.value;
-
-    let filtered = _allReviews.filter(r => {
-        if (type && (r.type || '').toLowerCase() !== type) return false;
-        if (rating && String(r.rating) !== rating) return false;
-        if (search) {
-            const haystack = `${r.place_name} ${r.reviewer_name} ${r.comment}`.toLowerCase();
-            if (!haystack.includes(search)) return false;
-        }
-        if (dateFrom && r.created_at) { if (new Date(r.created_at) < new Date(dateFrom)) return false; }
-        if (dateTo && r.created_at) { if (new Date(r.created_at) > new Date(dateTo + 'T23:59:59')) return false; }
-        return true;
-    });
-
-    _reviewsPage = 1;
-    renderReviews(filtered);
-
-    const summary = document.getElementById('reviews-filter-summary');
-    if (filtered.length !== _allReviews.length) {
-        summary.textContent = `Showing ${filtered.length} of ${_allReviews.length} reviews`;
-        summary.style.display = 'block';
-    } else {
-        summary.style.display = 'none';
-    }
-}
-
-function renderReviews(filtered) {
-    const start = (_reviewsPage - 1) * REVIEWS_PER_PAGE;
-    const page = filtered.slice(start, start + REVIEWS_PER_PAGE);
-
-    const typeEmoji = { restaurant: '🍽️', hotel: '🏨', attraction: '🏛️', agency: '🗺️' };
-    const typeColor = { restaurant: '#f59e0b', hotel: '#10b981', attraction: '#3b82f6', agency: '#8b5cf6' };
-
-    if (!filtered.length) {
-        document.getElementById('reviews-container').innerHTML = '<div class="empty-state"><div style="font-size:2.5rem;margin-bottom:0.75rem;">💬</div><p>No reviews match the current filters.</p></div>';
-        document.getElementById('reviews-pagination').innerHTML = '';
-        return;
-    }
-
-    const html = page.map(r => {
-        const t = (r.type || '').toLowerCase();
-        const stars = '⭐'.repeat(Math.min(5, Math.max(1, r.rating || 0)));
-        const emptyStars = '☆'.repeat(5 - Math.min(5, Math.max(1, r.rating || 0)));
-        const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-        return `
-        <div class="review-card">
-            <div class="review-card-left">
-                <div class="review-type-badge" style="background:${(typeColor[t] || '#6366f1')}15;color:${typeColor[t] || '#6366f1'};border:1px solid ${typeColor[t] || '#6366f1'}40;">
-                    ${typeEmoji[t] || '📍'} ${r.type || 'Other'}
-                </div>
-                <div class="review-place">${r.place_name || '—'}</div>
-                <div class="review-reviewer">by <strong>${r.reviewer_name || 'Anonymous'}</strong></div>
-                ${date ? `<div class="review-date">${date}</div>` : ''}
-            </div>
-            <div class="review-card-center">
-                <div class="review-stars">${stars}<span style="color:#d1d5db">${emptyStars}</span> <span style="font-size:0.78rem;color:#6b7280;margin-left:0.25rem;">${r.rating}/5</span></div>
-                <p class="review-comment">${r.comment || '<em style="color:#94a3b8">No comment</em>'}</p>
-            </div>
-            <div class="review-card-right">
-                <button class="btn-danger btn-small" onclick="deleteReview('${r.type}', ${r.id})" title="Delete review">🗑️</button>
-            </div>
-        </div>`;
-    }).join('');
-
-    document.getElementById('reviews-container').innerHTML = html;
-
-    // Pagination
-    const totalPages = Math.ceil(filtered.length / REVIEWS_PER_PAGE);
-    if (totalPages > 1) {
-        let pag = `<div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-top:1px solid #f3f4f6;">
-            <span style="color:#6b7280;font-size:0.875rem;">Showing ${start + 1}–${Math.min(start + REVIEWS_PER_PAGE, filtered.length)} of ${filtered.length}</span>
-            <div style="display:flex;gap:0.4rem;">
-                <button class="btn-secondary" onclick="_reviewsPage=${_reviewsPage - 1};filterReviews()" ${_reviewsPage === 1 ? 'disabled' : ''}>← Prev</button>`;
-        for (let i = 1; i <= Math.min(totalPages, 7); i++) {
-            pag += `<button class="btn-secondary" style="${i === _reviewsPage ? 'background:#6366f1;color:white;' : ''}" onclick="_reviewsPage=${i};filterReviews()">${i}</button>`;
-        }
-        pag += `<button class="btn-secondary" onclick="_reviewsPage=${_reviewsPage + 1};filterReviews()" ${_reviewsPage === totalPages ? 'disabled' : ''}>Next →</button>
-            </div></div>`;
-        document.getElementById('reviews-pagination').innerHTML = pag;
-    } else {
-        document.getElementById('reviews-pagination').innerHTML = `<div style="padding:0.75rem 1.5rem;color:#6b7280;font-size:0.875rem;border-top:1px solid #f3f4f6;">${filtered.length} review${filtered.length !== 1 ? 's' : ''}</div>`;
-    }
-}
-
-function clearReviewFilters() {
-    document.getElementById('reviews-search').value = '';
-    document.getElementById('reviews-type-filter').value = '';
-    document.getElementById('reviews-rating-filter').value = '';
-    document.getElementById('reviews-date-from').value = '';
-    document.getElementById('reviews-date-to').value = '';
-    filterReviews();
-}
-
-let _allLikes = [];
 
 async function loadLikes() {
     try {
-        document.getElementById('likes-table').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94a3b8;">Loading…</td></tr>';
         const likes = await fetchAPI('/admin/likes');
-        _allLikes = likes || [];
-        updateLikesStats(_allLikes);
-        filterLikes();
+        const html = likes.map(l => `
+                    <tr>
+                        <td><strong>${l.place_name}</strong></td>
+                        <td><span class="badge badge-secondary">${l.place_type}</span></td>
+                        <td style="color: #ef4444; font-weight: 700;">❤️ ${l.like_count}</td>
+                        <td>${new Date(l.updated_at).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+        document.getElementById('likes-table').innerHTML = html;
     } catch (error) {
-        document.getElementById('likes-table').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#ef4444;">Failed to load</td></tr>';
         console.error('Load error:', error);
     }
-}
-
-function updateLikesStats(likes) {
-    const total = likes.reduce((s, l) => s + (l.like_count || 0), 0);
-    document.getElementById('lk-total').textContent = total.toLocaleString();
-    const types = { restaurant: 0, hotel: 0, attraction: 0, agency: 0 };
-    likes.forEach(l => { const t = (l.place_type || '').toLowerCase(); if (types[t] !== undefined) types[t] += (l.like_count || 0); });
-    document.getElementById('lk-restaurant').textContent = types.restaurant.toLocaleString();
-    document.getElementById('lk-hotel').textContent = types.hotel.toLocaleString();
-    document.getElementById('lk-attraction').textContent = types.attraction.toLocaleString();
-    document.getElementById('lk-agency').textContent = types.agency.toLocaleString();
-}
-
-function filterLikes() {
-    const search = (document.getElementById('likes-search')?.value || '').toLowerCase();
-    const type = document.getElementById('likes-type-filter')?.value || '';
-    const sort = document.getElementById('likes-sort-filter')?.value || 'desc';
-    const dateFrom = document.getElementById('likes-date-from')?.value;
-    const dateTo = document.getElementById('likes-date-to')?.value;
-
-    let filtered = _allLikes.filter(l => {
-        if (type && (l.place_type || '').toLowerCase() !== type) return false;
-        if (search && !(l.place_name || '').toLowerCase().includes(search)) return false;
-        if (dateFrom && l.updated_at) { if (new Date(l.updated_at) < new Date(dateFrom)) return false; }
-        if (dateTo && l.updated_at) { if (new Date(l.updated_at) > new Date(dateTo + 'T23:59:59')) return false; }
-        return true;
-    });
-
-    if (sort === 'asc') filtered.sort((a, b) => (a.like_count || 0) - (b.like_count || 0));
-    else if (sort === 'recent') filtered.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-    else filtered.sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
-
-    const typeEmoji = { restaurant: '🍽️', hotel: '🏨', attraction: '🏛️', agency: '🗺️' };
-    const typeColor = { restaurant: '#f59e0b', hotel: '#10b981', attraction: '#3b82f6', agency: '#8b5cf6' };
-
-    const html = filtered.map((l, i) => {
-        const t = (l.place_type || '').toLowerCase();
-        const date = l.updated_at ? new Date(l.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-        const rank = sort === 'asc' ? filtered.length - i : (sort === 'desc' ? i + 1 : null);
-        return `<tr>
-            <td>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    ${rank !== null && rank <= 3 ? `<span style="font-size:1.1rem;">${['🥇', '🥈', '🥉'][rank - 1]}</span>` : (rank ? `<span style="color:#94a3b8;font-size:0.8rem;min-width:1.2rem;">#${rank}</span>` : '')}
-                    <strong>${l.place_name || '—'}</strong>
-                </div>
-            </td>
-            <td><span class="badge" style="background:${(typeColor[t] || '#6366f1')}15;color:${typeColor[t] || '#6366f1'};border:1px solid ${(typeColor[t] || '#6366f1')}30;">${typeEmoji[t] || '📍'} ${l.place_type || 'Other'}</span></td>
-            <td>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    <div style="background:#fee2e2;border-radius:20px;padding:0.25rem 0.75rem;display:inline-flex;align-items:center;gap:0.35rem;">
-                        <span style="color:#ef4444;font-size:1rem;">❤️</span>
-                        <strong style="color:#991b1b;">${(l.like_count || 0).toLocaleString()}</strong>
-                    </div>
-                    ${l.like_count > 100 ? '<span style="font-size:0.75rem;color:#f59e0b;font-weight:600;">🔥 Hot</span>' : ''}
-                </div>
-            </td>
-            <td style="color:#6b7280;font-size:0.875rem;">${date}</td>
-        </tr>`;
-    }).join('');
-
-    document.getElementById('likes-table').innerHTML = html || '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94a3b8;">No results match the filters.</td></tr>';
-
-    const infoEl = document.getElementById('likes-count-info');
-    if (infoEl) infoEl.textContent = filtered.length !== _allLikes.length ? `Showing ${filtered.length} of ${_allLikes.length} entries` : `${filtered.length} entries`;
-
-    const summary = document.getElementById('likes-filter-summary');
-    if (filtered.length !== _allLikes.length) {
-        summary.textContent = `Showing ${filtered.length} of ${_allLikes.length} places`;
-        summary.style.display = 'block';
-    } else { summary.style.display = 'none'; }
-}
-
-function clearLikesFilters() {
-    document.getElementById('likes-search').value = '';
-    document.getElementById('likes-type-filter').value = '';
-    document.getElementById('likes-sort-filter').value = 'desc';
-    document.getElementById('likes-date-from').value = '';
-    document.getElementById('likes-date-to').value = '';
-    filterLikes();
 }
 
 async function uploadImage(input, type) {
@@ -767,7 +393,7 @@ async function uploadImage(input, type) {
             document.getElementById(type + '-upload-progress').classList.remove('active');
         }, 2000);
     } catch (error) {
-        adminToast('Upload failed: ' + error.message, 'error');
+        alert('Upload failed: ' + error.message);
     }
 }
 
@@ -828,11 +454,11 @@ async function saveRestaurant(e) {
             })
         });
 
-        adminToast('Created!', 'success');
+        alert('✅ Created!');
         closeRestaurantModal();
         loadRestaurants();
     } catch (error) {
-        adminToast('Error: ' + error.message, 'error');
+        alert('Error: ' + error.message);
     }
 }
 
@@ -842,11 +468,11 @@ async function deleteRestaurant(id) {
 
     try {
         await fetchAPI(`/admin/restaurants/${id}`, { method: 'DELETE' });
-        adminToast('Restaurant deleted!', 'success');
+        alert('✅ Restaurant deleted!');
         closeRestaurantDetails();
         loadRestaurants();
     } catch (error) {
-        adminToast('Error: ' + error.message, 'error');
+        alert('Error: ' + error.message);
     }
 }
 
@@ -854,14 +480,14 @@ async function deleteReview(type, id) {
     if (!confirm('Delete?')) return;
     try {
         await fetchAPI(`/admin/reviews/${type}/${id}`, { method: 'DELETE' });
-        adminToast('Deleted!', 'success');
+        alert('✅ Deleted!');
         loadReviews();
     } catch (error) {
-        adminToast('Error: ' + error.message, 'error');
+        alert('Error: ' + error.message);
     }
 }
 
-function editRestaurant(event, id) {
+function editRestaurant(id) {
     event.stopPropagation();
     const r = allRestaurants.find(x => x.id === id);
     if (!r) return;
@@ -987,11 +613,11 @@ async function saveHotel(e) {
             body: JSON.stringify(data)
         });
 
-        adminToast(hotelId ? 'Hotel updated!' : 'Hotel created!', 'success');
+        alert(hotelId ? '✅ Hotel updated!' : '✅ Hotel created!');
         closeHotelModal();
         loadHotels();
     } catch (error) {
-        adminToast('Error: ' + error.message, 'error');
+        alert('Error: ' + error.message);
     }
 }
 
@@ -1026,7 +652,7 @@ async function uploadHotelImage(input) {
             document.getElementById('hotel-upload-progress').classList.remove('active');
         }, 2000);
     } catch (error) {
-        adminToast('Upload failed: ' + error.message, 'error');
+        alert('Upload failed: ' + error.message);
         document.getElementById('hotel-upload-progress').classList.remove('active');
     }
 }
@@ -1111,11 +737,11 @@ async function saveAttraction(e) {
             body: JSON.stringify(data)
         });
 
-        adminToast(attractionId ? 'Attraction updated!' : 'Attraction created!', 'success');
+        alert(attractionId ? '✅ Attraction updated!' : '✅ Attraction created!');
         closeAttractionModal();
         loadAttractions();
     } catch (error) {
-        adminToast('Error: ' + error.message, 'error');
+        alert('Error: ' + error.message);
     }
 }
 
@@ -1150,7 +776,7 @@ async function uploadAttractionImage(input) {
             document.getElementById('attraction-upload-progress').classList.remove('active');
         }, 2000);
     } catch (error) {
-        adminToast('Upload failed: ' + error.message, 'error');
+        alert('Upload failed: ' + error.message);
         document.getElementById('attraction-upload-progress').classList.remove('active');
     }
 }
@@ -1195,7 +821,7 @@ function renderRestaurantsPage() {
                 </span>
             </td>
             <td onclick="event.stopPropagation()">
-                <button class="btn-small btn-edit" onclick="editRestaurant(event,${r.id})" title="Edit">✏️</button>
+                <button class="btn-small btn-edit" onclick="editRestaurant(${r.id})" title="Edit">✏️</button>
                 <button class="btn-small btn-danger" onclick="deleteRestaurant(${r.id})" title="Delete">🗑️</button>
             </td>
         </tr>
@@ -1283,7 +909,7 @@ async function viewRestaurantDetails(restaurantId) {
                          onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                     
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <button class="btn-create" onclick="editRestaurant(event,${restaurant.id})" style="width: 100%;">
+                        <button class="btn-create" onclick="editRestaurant(${restaurant.id})" style="width: 100%;">
                             ✏️ Edit Restaurant
                         </button>
                         <button class="btn-danger" onclick="deleteRestaurant(${restaurant.id})" style="width: 100%; padding: 0.75rem;">
@@ -1363,7 +989,7 @@ async function viewRestaurantDetails(restaurantId) {
 
     } catch (error) {
         console.error('View details error:', error);
-        adminToast('Failed to load restaurant details', 'error');
+        alert('Failed to load restaurant details');
     }
 }
 
@@ -1417,8 +1043,8 @@ function renderHotelsPage() {
                 </span>
             </td>
             <td onclick="event.stopPropagation()">
-                <button class="btn-small btn-edit" onclick="editHotel(event,${h.id})" title="Edit">✏️</button>
-                <button class="btn-small btn-danger" onclick="deleteHotel(event,${h.id})" title="Delete">🗑️</button>
+                <button class="btn-small btn-edit" onclick="editHotel(${h.id})" title="Edit">✏️</button>
+                <button class="btn-small btn-danger" onclick="deleteHotel(${h.id})" title="Delete">🗑️</button>
             </td>
         </tr>
     `).join('');
@@ -1498,15 +1124,15 @@ async function viewHotelDetails(hotelId) {
             <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem;">
                 <!-- Image -->
                 <div>
-                    <img src="${safeImg(hotel.image_url, 'https://via.placeholder.com/300x200?text=Hotel')}" 
+                    <img src="${API_BASE}${hotel.image_url || '/static/placeholder.jpg'}" 
                          style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
                          onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                     
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <button class="btn-create" onclick="editHotel(event,${hotel.id})" style="width: 100%;">
+                        <button class="btn-create" onclick="editHotel(${hotel.id})" style="width: 100%;">
                             ✏️ Edit Hotel
                         </button>
-                        <button class="btn-danger" onclick="deleteHotel(event,${hotel.id})" style="width: 100%; padding: 0.75rem;">
+                        <button class="btn-danger" onclick="deleteHotel(${hotel.id})" style="width: 100%; padding: 0.75rem;">
                             🗑️ Delete Hotel
                         </button>
                     </div>
@@ -1639,7 +1265,7 @@ async function viewHotelDetails(hotelId) {
 
     } catch (error) {
         console.error('View details error:', error);
-        adminToast('Failed to load hotel details', 'error');
+        alert('Failed to load hotel details');
     }
 }
 
@@ -1652,21 +1278,21 @@ function closeHotelDetails() {
     });
 }
 
-async function deleteHotel(event, id) {
+async function deleteHotel(id) {
     event.stopPropagation();
     if (!confirm('Delete this hotel? This cannot be undone.')) return;
 
     try {
         await fetchAPI(`/admin/hotels/${id}`, { method: 'DELETE' });
-        adminToast('Hotel deleted!', 'success');
+        alert('✅ Hotel deleted!');
         closeHotelDetails();
         loadHotels();
     } catch (error) {
-        adminToast('Error: ' + error.message, 'error');
+        alert('Error: ' + error.message);
     }
 }
 
-function editHotel(event, id) {
+function editHotel(id) {
     event.stopPropagation();
     const h = allHotels.find(x => x.id === id);
     if (!h) return;
@@ -1743,8 +1369,8 @@ function renderAttractionsPage() {
                 </span>
             </td>
             <td onclick="event.stopPropagation()">
-                <button class="btn-small btn-edit" onclick="editAttraction(event,${a.id})" title="Edit">✏️</button>
-                <button class="btn-small btn-danger" onclick="deleteAttraction(event,${a.id})" title="Delete">🗑️</button>
+                <button class="btn-small btn-edit" onclick="editAttraction(${a.id})" title="Edit">✏️</button>
+                <button class="btn-small btn-danger" onclick="deleteAttraction(${a.id})" title="Delete">🗑️</button>
             </td>
         </tr>
     `).join('');
@@ -1824,18 +1450,18 @@ async function viewAttractionDetails(attractionId) {
             <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem;">
                 <!-- Image -->
                 <div>
-                    <img src="${safeImg(attraction.image_url, 'https://via.placeholder.com/300x200?text=Attraction')}" 
+                    <img src="${API_BASE}${attraction.image_url || '/static/placeholder.jpg'}" 
                          style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
                          onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                     
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <button class="btn-create" onclick="editAttraction(event,${attraction.id})" style="width: 100%;">
+                        <button class="btn-create" onclick="editAttraction(${attraction.id})" style="width: 100%;">
                             ✏️ Edit Attraction
                         </button>
                         <button class="btn-create" onclick="openGalleryManager(${attraction.id})" style="width:100%;background:linear-gradient(135deg,#10b981,#059669);">
                             🖼️ Manage Photos
                         </button>
-                        <button class="btn-danger" onclick="deleteAttraction(event,${attraction.id})" style="width: 100%; padding: 0.75rem;">
+                        <button class="btn-danger" onclick="deleteAttraction(${attraction.id})" style="width: 100%; padding: 0.75rem;">
                             🗑️ Delete Attraction
                         </button>
                     </div>
@@ -1929,7 +1555,7 @@ async function viewAttractionDetails(attractionId) {
 
     } catch (error) {
         console.error('View details error:', error);
-        adminToast('Failed to load attraction details', 'error');
+        alert('Failed to load attraction details');
     }
 }
 
@@ -1942,21 +1568,21 @@ function closeAttractionDetails() {
     });
 }
 
-async function deleteAttraction(event, id) {
+async function deleteAttraction(id) {
     event.stopPropagation();
     if (!confirm('Delete this attraction? This cannot be undone.')) return;
 
     try {
         await fetchAPI(`/admin/attractions/${id}`, { method: 'DELETE' });
-        adminToast('Attraction deleted!', 'success');
+        alert('✅ Attraction deleted!');
         closeAttractionDetails();
         loadAttractions();
     } catch (error) {
-        adminToast('Error: ' + error.message, 'error');
+        alert('Error: ' + error.message);
     }
 }
 
-function editAttraction(event, id) {
+function editAttraction(id) {
     event.stopPropagation();
     const a = allAttractions.find(x => x.id === id);
     if (!a) return;
@@ -2045,7 +1671,7 @@ function renderAgenciesPage() {
             <td><span class="badge ${a.is_partner ? 'badge-success' : 'badge-secondary'}">${a.is_partner ? '⭐ Yes' : 'No'}</span></td>
             <td><span class="badge ${a.status === 'approved' ? 'badge-success' : a.status === 'pending' ? 'badge-warning' : 'badge-danger'}">${a.status || 'approved'}</span></td>
             <td onclick="event.stopPropagation()">
-                <button class="btn-small btn-edit"   onclick="editAgency(event,${a.id})">✏️</button>
+                <button class="btn-small btn-edit"   onclick="editAgency(${a.id})">✏️</button>
                 <button class="btn-small btn-danger"  onclick="deleteAgency(${a.id}, '${(a.name || '').replace(/'/g, "\\'")}')">🗑️</button>
             </td>
         </tr>
@@ -2096,7 +1722,7 @@ async function viewAgencyDetails(agencyId) {
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;">
                         ${tours.map(t => `
                             <div style="background:#f9fafb;padding:1rem;border-radius:8px;border:1px solid #e5e7eb;">
-                                ${t.image_url ? `<img src="${safeImg(t.image_url)}" style="width:100%;height:90px;object-fit:cover;border-radius:6px;margin-bottom:0.6rem;" onerror="this.style.display='none'">` : ''}
+                                ${t.image_url ? `<img src="${API_BASE}${t.image_url}" style="width:100%;height:90px;object-fit:cover;border-radius:6px;margin-bottom:0.6rem;" onerror="this.style.display='none'">` : ''}
                                 <div style="font-weight:600;margin-bottom:0.25rem;">${t.tour_name}</div>
                                 <div style="font-size:0.8rem;color:#6b7280;margin-bottom:0.4rem;">
                                     ${t.tour_type ? `<span style="background:#e0e7ff;color:#3730a3;padding:1px 7px;border-radius:50px;">${t.tour_type}</span> ` : ''}
@@ -2119,11 +1745,11 @@ async function viewAgencyDetails(agencyId) {
     document.getElementById('agency-details-content').innerHTML = `
         <div style="display:grid;grid-template-columns:280px 1fr;gap:2rem;">
             <div>
-                <img src="${safeImg(a.image_url, 'https://via.placeholder.com/280x180?text=Agency')}"
+                <img src="${API_BASE}${a.image_url || 'https://via.placeholder.com/280x180?text=No+Image'}"
                      style="width:100%;height:180px;object-fit:cover;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);"
                      onerror="this.src='${API_BASE}https://via.placeholder.com/280x180?text=No+Image'">
                 <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.5rem;">
-                    <button class="btn-create" onclick="editAgency(event,${a.id})" style="width:100%;">✏️ Edit Agency</button>
+                    <button class="btn-create" onclick="editAgency(${a.id})" style="width:100%;">✏️ Edit Agency</button>
                     <button class="btn-danger" onclick="deleteAgency(${a.id},'${(a.name || '').replace(/'/g, "\\'")}');" style="width:100%;padding:0.75rem;">🗑️ Delete Agency</button>
                 </div>
                 <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.4rem;">
@@ -2220,7 +1846,7 @@ function initAgencyMap() {
     });
 }
 
-function editAgency(event, id) {
+function editAgency(id) {
     event.stopPropagation();
     const a = allAgencies.find(x => x.id === id);
     if (!a) return;
@@ -2284,23 +1910,23 @@ async function saveAgency(e) {
         const url = id ? `/admin/travel-agencies/${id}` : '/admin/travel-agencies';
         const method = id ? 'PUT' : 'POST';
         await fetchAPI(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-        adminToast(id ? 'Agency updated!' : 'Agency created!', 'success');
+        alert(id ? '✅ Agency updated!' : '✅ Agency created!');
         closeAgencyModal();
         loadAgencies();
-    } catch (err) { adminToast('Error: ' + err.message, 'error'); }
+    } catch (err) { alert('Error: ' + err.message); }
 }
 
 // ── Delete ─────────────────────────────────────────────────────
 
-async function deleteAgency(event, id, name) {
+async function deleteAgency(id, name) {
     event.stopPropagation();
     if (!confirm(`Delete "${name}"?\nThis will also remove ALL their tours and reviews.`)) return;
     try {
         await fetchAPI(`/admin/travel-agencies/${id}`, { method: 'DELETE' });
-        adminToast('Agency deleted!', 'success');
+        alert('✅ Agency deleted!');
         closeAgencyDetails();
         loadAgencies();
-    } catch (err) { adminToast('Error: ' + err.message, 'error'); }
+    } catch (err) { alert('Error: ' + err.message); }
 }
 
 // ── Tour actions inside details panel ─────────────────────────
@@ -2312,18 +1938,18 @@ async function approveTour(id) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'approved', admin_email: 'ceo@example.com' })
         });
-        adminToast('Tour approved!', 'success');
+        alert('✅ Tour approved!');
         if (selectedAgency) viewAgencyDetails(selectedAgency.id);
-    } catch (err) { adminToast('Error: ' + err.message, 'error'); }
+    } catch (err) { alert('Error: ' + err.message); }
 }
 
 async function deleteTour(id) {
     if (!confirm('Delete this tour?')) return;
     try {
         await fetchAPI(`/admin/travel-agencies/tours/${id}`, { method: 'DELETE' });
-        adminToast('Tour deleted!', 'success');
+        alert('✅ Tour deleted!');
         if (selectedAgency) viewAgencyDetails(selectedAgency.id);
-    } catch (err) { adminToast('Error: ' + err.message, 'error'); }
+    } catch (err) { alert('Error: ' + err.message); }
 }
 
 // ── Image upload — identical pattern to uploadHotelImage ──────
@@ -2358,95 +1984,92 @@ async function uploadAgencyImage(input) {
         document.getElementById('agency-upload-progress').textContent = '✅ Upload complete!';
         setTimeout(() => document.getElementById('agency-upload-progress').classList.remove('active'), 2000);
     } catch (err) {
-        adminToast('Upload failed: ' + err.message, 'error');
+        alert('Upload failed: ' + err.message);
         document.getElementById('agency-upload-progress').classList.remove('active');
     }
 }
 
 // ══════════════════════════════════════════════════
-// Partner Applications — module-level (no IIFE) so
-// paSetStatus() works from HTML onclick before fetch
-// ══════════════════════════════════════════════════
 
-const PA_API = API_BASE;
-let _paApps = [];
-let _paStatus = 'all';
+(function () {   // wrap in IIFE to avoid variable collisions with existing admin.js
 
-const PA_TYPE_LABELS = {
-    restaurant: '🍽️ Restaurant',
-    hotel: '🏨 Hotel',
-    travel_agency: '🌍 Travel Agency',
-    attraction: '🏛️ Attraction',
-    multiple: '📦 Multiple',
-};
-const PA_STATUS_LABELS = {
-    pending: 'Pending Email',
-    email_verified: 'Awaiting Review',
-    approved: 'Approved',
-    rejected: 'Rejected',
-};
+    const PA_API = 'http://localhost:8000';
+    let _paApps = [];
+    let _paStatus = 'all';
 
-async function loadPartnerApplications() {
-    try {
-        const resp = await fetch(`${PA_API}/api/partner-applications/admin/list`);
-        _paApps = await resp.json();
-        paUpdateCounts();
+    const TYPE_LABELS = {
+        restaurant: '🍽️ Restaurant',
+        hotel: '🏨 Hotel',
+        travel_agency: '🌍 Travel Agency',
+        attraction: '🏛️ Attraction',
+        multiple: '📦 Multiple',
+    };
+    const STATUS_LABELS = {
+        pending: 'Pending Email',
+        email_verified: 'Awaiting Review',
+        approved: 'Approved',
+        rejected: 'Rejected',
+    };
+
+    window.loadPartnerApplications = async function () {
+        try {
+            const resp = await fetch(`${PA_API}/api/partner-applications/admin/list`);
+            _paApps = await resp.json();
+            paUpdateCounts();
+            paRender();
+        } catch (e) {
+            document.getElementById('paGrid').innerHTML =
+                `<div class="pa-empty"><div class="ei">⚠️</div><p>Failed to load. Is the server running?</p></div>`;
+        }
+    };
+
+    function paUpdateCounts() {
+        const c = { all: _paApps.length, pending: 0, email_verified: 0, approved: 0, rejected: 0 };
+        _paApps.forEach(a => { if (c[a.status] !== undefined) c[a.status]++ });
+        Object.entries(c).forEach(([k, v]) => {
+            const el = document.getElementById(`pcnt-${k}`);
+            if (el) el.textContent = v;
+        });
+    }
+
+    window.paSetStatus = function (s, btn) {
+        _paStatus = s;
+        document.querySelectorAll('.pa-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         paRender();
-    } catch (e) {
+    };
+
+    window.paRender = function () {
+        const typeFilter = document.getElementById('paTypeFilter')?.value || '';
+        let list = _paStatus === 'all' ? _paApps : _paApps.filter(a => a.status === _paStatus);
+        if (typeFilter) list = list.filter(a => a.business_type === typeFilter);
         const grid = document.getElementById('paGrid');
-        if (grid) grid.innerHTML =
-            `<div class="pa-empty"><div class="ei">⚠️</div><p>Failed to load. Is the server running?</p></div>`;
-    }
-}
+        if (!list.length) {
+            grid.innerHTML = `<div class="pa-empty"><div class="ei">📭</div><p>No applications match this filter.</p></div>`;
+            return;
+        }
+        grid.innerHTML = list.map(paCardHtml).join('');
+    };
 
-function paUpdateCounts() {
-    const c = { all: _paApps.length, pending: 0, email_verified: 0, approved: 0, rejected: 0 };
-    _paApps.forEach(a => { if (c[a.status] !== undefined) c[a.status]++; });
-    Object.entries(c).forEach(([k, v]) => {
-        const el = document.getElementById(`pcnt-${k}`);
-        if (el) el.textContent = v;
-    });
-}
+    function paCardHtml(a) {
+        const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+        const chips = [
+            a.city ? `<span class="pa-chip">📍 ${a.city}</span>` : '',
+            a.address ? `<span class="pa-chip">🏢 ${a.address}</span>` : '',
+            a.plan ? `<span class="pa-chip">💳 ${a.plan} ($${a.plan_amount || 0})</span>` : '',
+            a.languages ? `<span class="pa-chip">🗣️ ${a.languages}</span>` : '',
+            a.years_experience ? `<span class="pa-chip">📅 ${a.years_experience} yrs</span>` : '',
+            a.website ? `<span class="pa-chip"><a href="${a.website}" target="_blank">🌐 website</a></span>` : '',
+        ].filter(Boolean).join('');
 
-function paSetStatus(s, btn) {
-    _paStatus = s;
-    document.querySelectorAll('.pa-tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    paRender();
-}
+        const canApprove = a.status === 'email_verified';
+        const canReject = ['pending', 'email_verified'].includes(a.status);
 
-function paRender() {
-    const typeFilter = document.getElementById('paTypeFilter')?.value || '';
-    let list = _paStatus === 'all' ? _paApps : _paApps.filter(a => a.status === _paStatus);
-    if (typeFilter) list = list.filter(a => a.business_type === typeFilter);
-    const grid = document.getElementById('paGrid');
-    if (!grid) return;
-    if (!list.length) {
-        grid.innerHTML = `<div class="pa-empty"><div class="ei">📭</div><p>No applications match this filter.</p></div>`;
-        return;
-    }
-    grid.innerHTML = list.map(paCardHtml).join('');
-}
-
-function paCardHtml(a) {
-    const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-    const chips = [
-        a.city ? `<span class="pa-chip">📍 ${a.city}</span>` : '',
-        a.address ? `<span class="pa-chip">🏢 ${a.address}</span>` : '',
-        a.plan ? `<span class="pa-chip">💳 ${a.plan} ($${a.plan_amount || 0})</span>` : '',
-        a.languages ? `<span class="pa-chip">🗣️ ${a.languages}</span>` : '',
-        a.years_experience ? `<span class="pa-chip">📅 ${a.years_experience} yrs</span>` : '',
-        a.website ? `<span class="pa-chip"><a href="${a.website}" target="_blank">🌐 website</a></span>` : '',
-    ].filter(Boolean).join('');
-
-    const canApprove = a.status === 'email_verified';
-    const canReject = ['pending', 'email_verified'].includes(a.status);
-
-    return `
+        return `
   <div class="pa-card" id="pacard-${a.id}">
     <div class="pa-head">
       <div>
-        <div class="pa-biz-type">${PA_TYPE_LABELS[a.business_type] || a.business_type}</div>
+        <div class="pa-biz-type">${TYPE_LABELS[a.business_type] || a.business_type}</div>
         <div class="pa-name">${a.business_name}</div>
         <div class="pa-contact">
           👤 ${a.contact_name} &nbsp;·&nbsp;
@@ -2454,13 +2077,13 @@ function paCardHtml(a) {
           ${a.phone ? ` &nbsp;·&nbsp; 📞 ${a.phone}` : ''}
         </div>
       </div>
-      <span class="pa-badge pb-${a.status}">${PA_STATUS_LABELS[a.status] || a.status}</span>
+      <span class="pa-badge pb-${a.status}">${STATUS_LABELS[a.status] || a.status}</span>
     </div>
     ${chips ? `<div class="pa-meta">${chips}</div>` : ''}
     ${a.description ? `<div class="pa-desc">${a.description}</div>` : ''}
     <div class="pa-actions">
       ${canApprove ? `<button class="pa-btn-approve" onclick="paApprove(${a.id})">✓ Approve & Send Credentials</button>` : ''}
-      ${canReject ? `<button class="pa-btn-reject" onclick="paShowReject(${a.id})">✕ Reject</button>` : ''}
+      ${canReject ? `<button class="pa-btn-reject"  onclick="paShowReject(${a.id})">✕ Reject</button>` : ''}
       ${a.status === 'approved' ? `
         <span style="font-size:.76rem;color:#64748b">✅ Credentials sent to ${a.email}</span>
         <button class="pa-btn-approve" style="background:#0891b2;" onclick="paResend(${a.id})">↺ Resend Credentials</button>` : ''}
@@ -2471,78 +2094,61 @@ function paCardHtml(a) {
     <div class="pa-reject-row" id="prr-${a.id}">
       <input type="text" id="prreason-${a.id}" placeholder="Reason for rejection (optional)"/>
       <button class="pa-btn-confirm" onclick="paConfirmReject(${a.id})">Confirm Reject</button>
-      <button class="pa-btn-cancel" onclick="paHideReject(${a.id})">Cancel</button>
+      <button class="pa-btn-cancel"  onclick="paHideReject(${a.id})">Cancel</button>
     </div>
   </div>`;
-}
+    }
 
-async function paResend(id) {
-    if (!confirm('Generate a new password and resend credentials by email?')) return;
-    try {
-        const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/resend-credentials`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || 'Resend failed.');
-        adminToast(data.message, 'success');
-    } catch (e) { adminToast(e.message, 'error'); }
-}
+    window.paResend = async function (id) {
+        if (!confirm('Generate a new password and resend credentials by email?')) return;
+        try {
+            const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/resend-credentials`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.detail || 'Resend failed.');
+            alert('✅ ' + data.message);
+        } catch (e) { alert('❌ ' + e.message); }
+    };
 
-async function paApprove(id) {
-    if (!confirm('Approve this application and send login credentials by email?')) return;
-    try {
-        const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/approve`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
-        });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || 'Approval failed.');
-        adminToast(data.message, 'success');
+    window.paApprove = async function (id) {
+        if (!confirm('Approve this application and send login credentials by email?')) return;
+        try {
+            const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/approve`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.detail || 'Approval failed.');
+            alert('✅ ' + data.message);
+            loadPartnerApplications();
+        } catch (e) { alert('❌ ' + e.message) }
+    };
+
+    window.paShowReject = id => document.getElementById(`prr-${id}`).classList.add('show');
+    window.paHideReject = id => { document.getElementById(`prr-${id}`).classList.remove('show'); document.getElementById(`prreason-${id}`).value = ''; };
+
+    window.paConfirmReject = async function (id) {
+        const reason = document.getElementById(`prreason-${id}`).value.trim();
+        try {
+            const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/reject`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: reason || null })
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.detail || 'Rejection failed.');
+            loadPartnerApplications();
+        } catch (e) { alert('❌ ' + e.message) }
+    };
+
+    // Auto-load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadPartnerApplications);
+    } else {
         loadPartnerApplications();
-    } catch (e) { adminToast(e.message, 'error'); }
-}
+    }
 
-function paShowReject(id) { document.getElementById(`prr-${id}`).classList.add('show'); }
-function paHideReject(id) {
-    document.getElementById(`prr-${id}`).classList.remove('show');
-    document.getElementById(`prreason-${id}`).value = '';
-}
-
-async function paConfirmReject(id) {
-    const reason = document.getElementById(`prreason-${id}`).value.trim();
-    try {
-        const resp = await fetch(`${PA_API}/api/partner-applications/admin/${id}/reject`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: reason || null })
-        });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || 'Rejection failed.');
-        loadPartnerApplications();
-    } catch (e) { adminToast(e.message, 'error'); }
-}
-
-// Auto-load on page ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadPartnerApplications);
-} else {
-    loadPartnerApplications();
-}
-
-// ── Platform Analytics ─────────────────────────────
-// The analytics section embeds a Looker Studio iframe — no JS fetch needed.
-// This function just ensures the section is visible; the iframe loads itself.
-function loadPlatformAnalytics() {
-    // Nothing to fetch — Looker Studio iframe is self-loading.
-    // Errors from lookerstudio.google.com/embed/getSchema are a Google-side
-    // 400 on their schema endpoint and do not affect the dashboard display.
-}
-
-function loadRealtimeStats() {
-    // Placeholder — hook into your own realtime endpoint if needed.
-    // Called every 30s from showSection('platform-analytics').
-}
-
-
-
-// (old IIFE removed — all partner application functions are now module-level above)
+})();
+// end IIFE
 
 let _galleryAttractionId = null;
 
@@ -2616,7 +2222,7 @@ async function handleGalleryUpload(input) {
         document.getElementById('gallery-upload-progress').textContent = '✅ Uploaded!';
         setTimeout(() => document.getElementById('gallery-upload-progress').classList.remove('active'), 2000);
     } catch (e) {
-        adminToast('Upload failed: ' + e.message, 'error');
+        alert('Upload failed: ' + e.message);
         document.getElementById('gallery-upload-progress').classList.remove('active');
     }
 }
@@ -2625,7 +2231,7 @@ async function saveGalleryPhoto() {
     const imageUrl = document.getElementById('gallery-new-image-url').value;
     const caption = document.getElementById('gallery-caption-input').value.trim();
 
-    if (!imageUrl) { adminToast('Please upload a photo first', 'info'); return; }
+    if (!imageUrl) { alert('Please upload a photo first.'); return; }
     if (!_galleryAttractionId) return;
 
     try {
@@ -2644,9 +2250,9 @@ async function saveGalleryPhoto() {
 
         // Reload grid
         await loadGalleryPhotos(_galleryAttractionId);
-        adminToast('Photo added to gallery!', 'success');
+        alert('✅ Photo added to gallery!');
     } catch (e) {
-        adminToast('Error: ' + e.message, 'error');
+        alert('Error: ' + e.message);
     }
 }
 
@@ -2657,7 +2263,7 @@ async function deleteGalleryPhoto(photoId) {
         if (!res.ok) throw new Error('Delete failed');
         await loadGalleryPhotos(_galleryAttractionId);
     } catch (e) {
-        adminToast('Error: ' + e.message, 'error');
+        alert('Error: ' + e.message);
     }
 }
 
@@ -2749,7 +2355,7 @@ function renderPartnersPage() {
     };
 
     if (!slice.length) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8;">No partners found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8;">No partners found.</td></tr>';
         pagDiv.innerHTML = '';
         return;
     }
@@ -2758,67 +2364,43 @@ function renderPartnersPage() {
         const endDate = p.plan_end_date ? new Date(p.plan_end_date) : null;
         const days = endDate ? Math.ceil((endDate - now) / 86400000) : null;
         const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-        const isBlocked = p.plan_status === 'blocked';
 
-        // Days remaining display
         let daysHtml = '—';
-        let statusHtml;
+        let statusHtml = '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">No plan</span>';
 
-        if (isBlocked) {
-            daysHtml = '—';
-            statusHtml = '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">🚫 Blocked</span>';
-        } else if (days === null) {
-            statusHtml = '<span style="background:#f1f5f9;color:#64748b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">No plan</span>';
-        } else if (days <= 0) {
-            daysHtml = '<span style="color:#ef4444;font-weight:700;">Expired</span>';
-            statusHtml = '<span style="background:#fee2e2;color:#991b1b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">❌ Expired</span>';
-        } else if (days <= 7) {
-            daysHtml = `<span style="color:#d97706;font-weight:700;">${days}d</span>`;
-            statusHtml = '<span style="background:#fef3c7;color:#92400e;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">⚠️ Expiring</span>';
-        } else {
-            daysHtml = `<span style="color:#10b981;font-weight:700;">${days}d</span>`;
-            statusHtml = '<span style="background:#d1fae5;color:#065f46;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">✅ Active</span>';
+        if (days !== null) {
+            if (days <= 0) {
+                daysHtml = '<span style="color:#ef4444;font-weight:700;">Expired</span>';
+                statusHtml = '<span style="background:#fee2e2;color:#991b1b;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">❌ Expired</span>';
+            } else if (days <= 7) {
+                daysHtml = `<span style="color:#d97706;font-weight:700;">${days}d</span>`;
+                statusHtml = '<span style="background:#fef3c7;color:#92400e;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">⚠️ Expiring</span>';
+            } else {
+                daysHtml = `<span style="color:#10b981;font-weight:700;">${days}d</span>`;
+                statusHtml = '<span style="background:#d1fae5;color:#065f46;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:700;">✅ Active</span>';
+            }
         }
 
-        const planLabel = { '1month': '1 Month', '3months': '3 Months', '6months': '6 Months', '1year': '1 Year' }[p.plan] || p.plan || '—';
-        const safeName = p.business_name.replace(/'/g, "\\'");
+        const planLabel = {
+            '1month': '1 Month', '3months': '3 Months', '6months': '6 Months', '1year': '1 Year'
+        }[p.plan] || p.plan || '—';
 
-        return `<tr style="${isBlocked ? 'opacity:0.6;' : ''}">
-            <td>
-                <div style="font-weight:700;color:#1e293b;">${p.business_name}</div>
-                <div style="font-size:0.75rem;color:#94a3b8;">#${p.id}</div>
-            </td>
+        return `<tr>
+            <td><div style="font-weight:700;color:#1e293b;">${p.business_name}</div><div style="font-size:0.75rem;color:#94a3b8;">#${p.id}</div></td>
             <td><span style="font-size:0.82rem;">${TYPE_LABELS[p.business_type] || p.business_type}</span></td>
             <td><a href="mailto:${p.email}" style="color:#6366f1;font-size:0.875rem;">${p.email}</a></td>
-            <td>
-                <span style="font-size:0.82rem;font-weight:600;">${planLabel}</span>
-                ${p.plan_amount ? `<br><span style="font-size:0.75rem;color:#94a3b8;">$${p.plan_amount}</span>` : ''}
-            </td>
+            <td><span style="font-size:0.82rem;font-weight:600;">${planLabel}</span>${p.plan_amount ? `<br><span style="font-size:0.75rem;color:#94a3b8;">$${p.plan_amount}</span>` : ''}</td>
             <td style="font-size:0.82rem;">${fmtDate(p.plan_end_date)}</td>
             <td>${daysHtml}</td>
             <td>${statusHtml}</td>
             <td>
                 <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                     <button onclick="paResend(${p.id})"
-                        style="padding:0.3rem 0.7rem;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;
-                               border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                        style="padding:0.3rem 0.7rem;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
                         ↺ Resend
                     </button>
-                    ${isBlocked
-                ? `<button onclick="unblockPartner(${p.id},'${safeName}')"
-                               style="padding:0.3rem 0.7rem;background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;
-                                      border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
-                               ✅ Unblock
-                           </button>`
-                : `<button onclick="blockPartner(${p.id},'${safeName}')"
-                               style="padding:0.3rem 0.7rem;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;
-                                      border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
-                               🚫 Block
-                           </button>`
-            }
-                    <button onclick="deletePartner(${p.id},'${safeName}')"
-                        style="padding:0.3rem 0.7rem;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;
-                               border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                    <button onclick="deletePartner(${p.id},'${p.business_name.replace(/'/g, "\\'")}')"
+                        style="padding:0.3rem 0.7rem;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;">
                         🗑 Delete
                     </button>
                 </div>
@@ -2827,107 +2409,41 @@ function renderPartnersPage() {
     }).join('');
 
     // Pagination
-    if (pages <= 1) {
-        pagDiv.innerHTML = `Showing ${total} partner${total !== 1 ? 's' : ''}`;
-        return;
-    }
+    if (pages <= 1) { pagDiv.innerHTML = `Showing ${total} partner${total !== 1 ? 's' : ''}`; return; }
     pagDiv.innerHTML = `
         Showing ${start + 1}–${Math.min(start + PARTNER_PAGE_SIZE, total)} of ${total} partners &nbsp;
-        <button onclick="_partnerPage=Math.max(0,_partnerPage-1);renderPartnersPage()"
-            ${_partnerPage === 0 ? 'disabled' : ''}
-            style="padding:0.3rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:white;">
-            ← Prev
-        </button>
+        <button onclick="_partnerPage=Math.max(0,_partnerPage-1);renderPartnersPage()" ${_partnerPage === 0 ? 'disabled' : ''} 
+            style="padding:0.3rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:white;">← Prev</button>
         &nbsp;Page ${_partnerPage + 1} of ${pages}&nbsp;
-        <button onclick="_partnerPage=Math.min(${pages}-1,_partnerPage+1);renderPartnersPage()"
-            ${_partnerPage >= pages - 1 ? 'disabled' : ''}
-            style="padding:0.3rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:white;">
-            Next →
-        </button>`;
+        <button onclick="_partnerPage=Math.min(pages-1,_partnerPage+1);renderPartnersPage()" ${_partnerPage >= pages - 1 ? 'disabled' : ''}
+            style="padding:0.3rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:white;">Next →</button>`;
 }
 
-
-// ── BLOCK PARTNER ─────────────────────────────────────────────
-async function blockPartner(id, name) {
-    const reason = prompt(
-        `Block "${name}"?\n\nOptionally enter a reason that will be shown to the partner\n(leave empty for default message):`,
-        ''
-    );
-    // If they pressed Cancel (not just empty string), abort
-    if (reason === null) return;
-
-    const confirmMsg = reason.trim()
-        ? `Block "${name}"?\nReason: "${reason.trim()}"\n\nThey will receive an email notification.`
-        : `Block "${name}"?\n\nThey will receive an email notification.`;
-
-    if (!confirm(confirmMsg)) return;
-
-    try {
-        const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/block`, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-            body:    JSON.stringify({ reason: reason.trim() || null })
-        });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || 'Failed');
-
-        alert(`✅ ${name} has been blocked.\nAn email notification has been sent to the partner.`);
-        loadPartners();
-        loadPartnerApplications?.();
-    } catch(e) { alert('❌ ' + e.message); }
-}
-
-// ── UNBLOCK PARTNER ───────────────────────────────────────────
-async function unblockPartner(id, name) {
-    if (!confirm(
-        `Unblock "${name}"?\n\n` +
-        `• Their listing will reappear on the public site\n` +
-        `• They will receive an email notification`
-    )) return;
-
-    try {
-        const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/unblock`, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-        });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || 'Failed');
-
-        alert(`✅ ${name} has been unblocked.\nAn email notification has been sent to the partner.`);
-        loadPartners();
-        loadPartnerApplications?.();
-    } catch(e) { alert('❌ ' + e.message); }
-}
-
-
-
-// ── DELETE PARTNER (permanent) ────────────────────────────────
 async function deletePartner(id, name) {
-    if (!confirm(
-        `⚠️ PERMANENTLY DELETE "${name}"?\n\n` +
-        `This will remove:\n` +
-        `• Their partner account\n` +
-        `• Their listing (restaurant/hotel/agency)\n` +
-        `• All rooms, menu items, tours\n` +
-        `• All reviews\n\n` +
-        `Their email will be FREE to register again.\n` +
-        `This CANNOT be undone.`
-    )) return;
-
+    if (!confirm(`⚠️ Delete partner "${name}"?\n\nThis will:\n• Delete their account\n• Remove all their data (listings, rooms, tours)\n• This CANNOT be undone.\n\nType DELETE to confirm.`)) return;
     const typed = prompt('Type DELETE to confirm:');
-    if (typed !== 'DELETE') { adminToast('Cancelled', 'info'); return; }
+    if (typed !== 'DELETE') { alert('Cancelled — you must type DELETE exactly.'); return; }
 
     try {
-        const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/delete`, {
+        // Reject the application to mark as deleted
+        const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/reject`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+            body: JSON.stringify({ reason: 'Partner account deleted by admin.' })
+        });
+        if (!resp.ok) throw new Error((await resp.json()).detail || 'Failed');
+
+        // Also trigger data deletion via subscription endpoint
+        await fetch(`${API_BASE}/api/subscription/admin/delete-partner/${id}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-        });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || 'Failed');
-        adminToast(`${name} and all data permanently deleted.`, 'success');
+        }).catch(() => { }); // best-effort
+
+        alert(`✅ Partner "${name}" has been deleted.`);
         loadPartners();
-        loadPartnerApplications();
-    } catch (e) { adminToast(e.message, 'error'); }
+    } catch (e) {
+        alert('❌ ' + e.message);
+    }
 }
 
 
@@ -3039,9 +2555,9 @@ async function approveRenewal(id) {
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Failed');
-        adminToast((data.message || 'Plan extended successfully!', 'success'));
+        alert('✅ ' + (data.message || 'Plan extended successfully!'));
         loadRenewals();
-    } catch (e) { adminToast(e.message, 'error'); }
+    } catch (e) { alert('❌ ' + e.message); }
 }
 
 function showRenewalReject(id) {
@@ -3062,7 +2578,7 @@ async function rejectRenewal(id) {
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.detail || 'Failed');
         loadRenewals();
-    } catch (e) { adminToast(e.message, 'error'); }
+    } catch (e) { alert('❌ ' + e.message); }
 }
 
 
@@ -3156,13 +2672,13 @@ function paCardHtml(a) {
         <div class="pa-actions">
             ${canApprove ? `<button class="pa-btn-approve" onclick="paApprove(${a.id})">✓ Approve & Send Credentials</button>` : ''}
             ${canReject ? `<button class="pa-btn-reject"  onclick="paShowReject(${a.id})">✕ Reject</button>` : ''}
-            
             ${a.status === 'approved' ? `
                 <span style="font-size:.76rem;color:#64748b">✅ Credentials sent to ${a.email}</span>
                 <button class="pa-btn-approve" style="background:#0891b2;" onclick="paResend(${a.id})">↺ Resend Credentials</button>
-                <button onclick="blockPartner(${a.id},'${a.business_name.replace(/'/g, "\\'")}')">🚫 Block</button>
-            <button onclick="deletePartner(${a.id},'${a.business_name.replace(/'/g, "\\'")}')">🗑 Delete</button>` : ''}
-
+                <button onclick="deletePartner(${a.id},'${a.business_name.replace(/'/g, "\\'")}')"
+                    style="padding:0.35rem 0.75rem;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                    🗑 Delete
+                </button>` : ''}
             ${a.status === 'rejected' ? `<span style="font-size:.76rem;color:#64748b">✕ Rejected${a.rejection_reason ? ' — ' + a.rejection_reason : ''}</span>` : ''}
             ${a.status === 'pending' ? `<span style="font-size:.74rem;color:#c2410c">⚠️ Waiting for email verification</span>` : ''}
             <span class="pa-date">Applied ${fmtDate(a.applied_at)}</span>
@@ -3190,4 +2706,3 @@ function paCardHtml(a) {
         }
     } catch (e) { }
 })();
-

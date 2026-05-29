@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Admin — Discover Uzbekistan</title>
+    <script src="/config.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #059669;
+            --success-light: #d1fae5;
+            --warning: #d97706;
+            --warning-light: #fef3c7;
+            --danger: #dc2626;
+            --danger-light: #fee2e2;
+            --bg: #f8f7ff;
+            --surface: #fff;
+            --border: #e5e3ff;
+            --text: #1e1b4b;
+            --muted: #6b7280;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* LOGIN */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+        }
+
+        .login-sub {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-error {
+            background: var(--danger-light);
+            color: var(--danger);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* LAYOUT */
+        .header {
+            background: var(--surface);
+            border-bottom: 2px solid var(--border);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-logo {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .layout {
+            display: flex;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-sticky {
+            position: sticky;
+            top: 80px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--muted);
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .nav-item:hover {
+            background: var(--border);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+
+        /* FORM */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group.full {
+            grid-column: 1/-1;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text);
+        }
+
+        input,
+        select,
+        textarea {
+            padding: 0.65rem 0.9rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--bg);
+            transition: all 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 0.6rem 1.4rem;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid #fca5a5;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-light);
+            color: var(--success);
+            border: 1px solid #6ee7b7;
+        }
+
+        .btn-sm {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.78rem;
+        }
+
+        /* TABLE */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--bg);
+            padding: 0.7rem 1rem;
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        /* IMAGE */
+        .img-preview {
+            max-width: 100%;
+            max-height: 160px;
+            border-radius: 10px;
+            margin-top: 0.5rem;
+            display: none;
+            object-fit: cover;
+            border: 2px solid var(--border);
+        }
+
+        .img-preview.show {
+            display: block;
+        }
+
+        .upload-progress {
+            display: none;
+            margin-top: 0.5rem;
+            background: #dbeafe;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #1d4ed8;
+        }
+
+        .upload-progress.show {
+            display: block;
+        }
+
+        /* MAP */
+        #attraction-map {
+            height: 280px;
+            border-radius: 12px;
+            margin-top: 0.75rem;
+            border: 2px solid var(--border);
+        }
+
+        /* ALERT */
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        /* TOAST */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            max-width: 320px;
+        }
+
+        .toast-success {
+            background: var(--success-light);
+            color: var(--success);
+            border: 2px solid #6ee7b7;
+        }
+
+        .toast-error {
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 2px solid #fca5a5;
+        }
+
+        .toast-info {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border: 2px solid #93c5fd;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .badge-success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .empty {
+            text-align: center;
+            padding: 3rem;
+            color: var(--muted);
+        }
+
+        /* TIMELINE */
+        .timeline-item {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .timeline-item-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div class="login-icon">🏛️</div>
+            <h2 class="login-title">Content Admin</h2>
+            <p class="login-sub">Discover Uzbekistan — Attractions Manager</p>
+            <div class="login-error" id="loginError">❌ Incorrect password</div>
+            <input type="password" id="loginInput" class="login-input" placeholder="Enter password"
+                onkeydown="if(event.key==='Enter') doLogin()">
+            <button class="login-btn" onclick="doLogin()">Sign In →</button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-logo">🏛️ Content Admin — Attractions</div>
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-sticky">
+                <button class="nav-item active" onclick="showSection('attractions',this)">
+                    🏛️ All Attractions
+                </button>
+                <button class="nav-item" onclick="showSection('new-attraction',this);resetForm()">
+                    ➕ New Attraction
+                </button>
+                <button class="nav-item" onclick="showSection('timeline',this)">
+                    📅 Timelines
+                </button>
+                <button class="nav-item" onclick="showSection('gallery',this)">
+                    🖼️ Gallery
+                </button>
+                <button class="nav-item" onclick="showSection('reviews',this)">
+                    ⭐ Reviews
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+
+            <!-- ALL ATTRACTIONS -->
+            <div id="section-attractions" class="section active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">All Attractions</h2>
+                        <div style="display:flex;gap:0.5rem;">
+                            <input type="text" id="searchAttractions" placeholder="🔍 Search…"
+                                oninput="filterAttractions()" style="padding:0.5rem 0.9rem;border:2px solid var(--border);
+                                   border-radius:8px;font-size:0.875rem;font-family:inherit;">
+                            <button class="btn btn-primary btn-sm"
+                                onclick="showSection('new-attraction',document.querySelector('[onclick*=new-attraction]'));resetForm()">
+                                ➕ New
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>City</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attractionsTbody">
+                                <tr>
+                                    <td colspan="5" class="empty">Loading…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW / EDIT ATTRACTION -->
+            <div id="section-new-attraction" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" id="formTitle">New Attraction</h2>
+                        <button class="btn btn-secondary btn-sm"
+                            onclick="showSection('attractions',document.querySelector('[onclick*=attractions]'));loadAttractions()">
+                            ← Back to list
+                        </button>
+                    </div>
+                    <input type="hidden" id="editId">
+                    <div class="alert alert-success" id="formSuccess"></div>
+                    <div class="alert alert-error" id="formError"></div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Name *</label>
+                            <input type="text" id="aName" placeholder="Registan Square">
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="aCategory">
+                                <option value="historical">Historical</option>
+                                <option value="natural">Natural</option>
+                                <option value="religious">Religious</option>
+                                <option value="cultural">Cultural</option>
+                                <option value="museum">Museum</option>
+                                <option value="architectural">Architectural</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Entry Fee</label>
+                            <input type="text" id="aFee" placeholder="Free / $5">
+                        </div>
+                        <div class="form-group">
+                            <label>Duration</label>
+                            <input type="text" id="aDuration" placeholder="1-2 hours">
+                        </div>
+                        <div class="form-group">
+                            <label>Best Time to Visit</label>
+                            <input type="text" id="aBestTime" placeholder="Spring, Autumn">
+                        </div>
+                        <div class="form-group">
+                            <label>Opening Hours</label>
+                            <input type="text" id="aHours" placeholder="09:00–18:00">
+                        </div>
+                        <div class="form-group">
+                            <label>Website</label>
+                            <input type="url" id="aWebsite" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" id="aAddress" placeholder="Samarkand, Uzbekistan">
+                        </div>
+                        <div class="form-group full">
+                            <label>Description</label>
+                            <textarea id="aDescription" placeholder="Tell visitors about this attraction…"></textarea>
+                        </div>
+                        <div class="form-group full">
+                            <label>Historical Significance</label>
+                            <textarea id="aHistorical" placeholder="Historical background and significance…"></textarea>
+                        </div>
+                        <div class="form-group full">
+                            <label>Photo</label>
+                            <input type="file" id="aImageFile" accept="image/*" onchange="uploadAttractionImage(this)">
+                            <input type="text" id="aImageUrl" placeholder="Or paste image URL"
+                                style="margin-top:0.5rem;" oninput="showPreview(this.value,'aImagePreview')">
+                            <div class="upload-progress" id="uploadProgress">⏳ Uploading…</div>
+                            <img id="aImagePreview" class="img-preview" alt="Preview">
+                        </div>
+                        <div class="form-group">
+                            <label>Latitude</label>
+                            <input type="number" id="aLat" step="0.000001">
+                        </div>
+                        <div class="form-group">
+                            <label>Longitude</label>
+                            <input type="number" id="aLng" step="0.000001">
+                        </div>
+                        <div class="form-group full">
+                            <label>Click map to set location</label>
+                            <div id="attraction-map"></div>
+                        </div>
+                        <div class="form-group" style="flex-direction:row;align-items:center;gap:0.75rem;">
+                            <input type="checkbox" id="aIsPartner" style="width:20px;height:20px;border-radius:4px;">
+                            <label style="text-transform:none;letter-spacing:0;font-size:0.9rem;">
+                                Is Partner Attraction
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:0.75rem;margin-top:1.75rem;">
+                        <button class="btn btn-primary" onclick="saveAttraction()">
+                            💾 Save Attraction
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIMELINE -->
+            <div id="section-timeline" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📅 Manage Timelines</h2>
+                    </div>
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label>Select Attraction</label>
+                        <select id="tlAttractionSelect" onchange="loadTimeline()">
+                            <option value="">— Choose attraction —</option>
+                        </select>
+                    </div>
+                    <div id="timelineItems">
+                        <div class="empty">Select an attraction to manage its timeline.</div>
+                    </div>
+                    <div id="addTimelineForm" style="display:none;margin-top:1.5rem;">
+                        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Add Timeline Event</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Year</label>
+                                <input type="text" id="tlYear" placeholder="e.g. 1370">
+                            </div>
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" id="tlTitle" placeholder="Event title">
+                            </div>
+                            <div class="form-group full">
+                                <label>Description</label>
+                                <textarea id="tlDesc" style="min-height:70px;"
+                                    placeholder="What happened in this year?"></textarea>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top:0.75rem;" onclick="addTimelineEvent()">+ Add
+                            Event</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GALLERY -->
+            <div id="section-gallery" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🖼️ Manage Gallery</h2>
+                    </div>
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label>Select Attraction</label>
+                        <select id="galAttractionSelect" onchange="loadGallery()">
+                            <option value="">— Choose attraction —</option>
+                        </select>
+                    </div>
+                    <div id="galleryItems">
+                        <div class="empty">Select an attraction to manage its gallery.</div>
+                    </div>
+                    <div id="addGalleryForm" style="display:none;margin-top:1.5rem;">
+                        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Add Photo</h3>
+                        <div class="form-group">
+                            <label>Upload Photo</label>
+                            <input type="file" id="galImageFile" accept="image/*" onchange="uploadGalleryImage(this)">
+                            <input type="text" id="galImageUrl" placeholder="Or paste image URL"
+                                style="margin-top:0.5rem;">
+                            <img id="galPreview" class="img-preview" alt="Preview">
+                        </div>
+                        <div class="form-group" style="margin-top:0.75rem;">
+                            <label>Caption (optional)</label>
+                            <input type="text" id="galCaption" placeholder="Photo description">
+                        </div>
+                        <button class="btn btn-primary" style="margin-top:0.75rem;" onclick="addGalleryPhoto()">+ Add
+                            Photo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REVIEWS -->
+            <div id="section-reviews" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">⭐ Attraction Reviews</h2>
+                    </div>
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label>Select Attraction</label>
+                        <select id="revAttractionSelect" onchange="loadAttractionReviews()">
+                            <option value="">— Choose attraction —</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+                        <button class="btn btn-secondary btn-sm" id="rfAll"
+                            onclick="filterAttractionReviews('all',this)">All</button>
+                        <button class="btn btn-secondary btn-sm" id="rfPending"
+                            onclick="filterAttractionReviews('pending',this)">⏳ Pending</button>
+                        <button class="btn btn-secondary btn-sm" id="rfApproved"
+                            onclick="filterAttractionReviews('approved',this)">✅ Approved</button>
+                    </div>
+                    <div id="attractionReviewsList">
+                        <div class="empty">Select an attraction to see its reviews.</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const SESSION_KEY = 'content_admin_auth';
+        let aMap = null, aMarker = null;
+        let allAttractions = [];
+
+        // ── AUTH ──────────────────────────────────────────────────────
+        (function () {
+            if (sessionStorage.getItem(SESSION_KEY)) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                init();
+            }
+        })();
+
+        async function doLogin() {
+            const pw = document.getElementById('loginInput').value;
+            const err = document.getElementById('loginError');
+            err.style.display = 'none';
+            try {
+                const res = await fetch(`${API}/admin/content-admin/verify-login`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pw })
+                });
+                if (res.ok) {
+                    const d = await res.json();
+                    sessionStorage.setItem(SESSION_KEY, d.token);
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    init();
+                } else {
+                    err.style.display = 'block';
+                    document.getElementById('loginInput').value = '';
+                }
+            } catch (e) {
+                err.textContent = '❌ Cannot connect to server.';
+                err.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem(SESSION_KEY);
+            location.reload();
+        }
+
+        // ── INIT ──────────────────────────────────────────────────────
+        function init() {
+            initMap();
+            loadAttractions();
+        }
+
+        // ── NAVIGATION ────────────────────────────────────────────────
+        function showSection(name, btn) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.getElementById(`section-${name}`).classList.add('active');
+            if (btn) btn.classList.add('active');
+            if (name === 'attractions') loadAttractions();
+            if (name === 'timeline') populateAttractionSelects();
+            if (name === 'gallery') populateAttractionSelects();
+            if (name === 'reviews') populateReviewSelect();
+            if (name === 'new-attraction') { setTimeout(() => { if (aMap) aMap.invalidateSize(); }, 300); }
+        }
+
+        // ── API HELPER ────────────────────────────────────────────────
+        async function api(method, path, body) {
+            const opts = {
+                method,
+                headers: { 'Content-Type': 'application/json', 'X-Admin-Key': getAdminKey() }
+            };
+            if (body !== undefined) opts.body = JSON.stringify(body);
+            const r = await fetch(API + path, opts);
+            if (!r.ok) { const t = await r.json(); throw new Error(t.detail || 'Request failed'); }
+            return method === 'DELETE' ? null : r.json();
+        }
+
+        function getAdminKey() {
+            return '668e4a2d545ddcdd0a8d40e0cf7a8079fadeeb21872198a1354cd6c4a9b739b6';
+        }
+
+        // ── ATTRACTIONS ───────────────────────────────────────────────
+        async function loadAttractions() {
+            const tbody = document.getElementById('attractionsTbody');
+            try {
+                const data = await api('GET', '/admin/attractions');
+                allAttractions = data.attractions || [];
+                renderAttractions(allAttractions);
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty" style="color:var(--danger);">Failed to load.</td></tr>`;
+            }
+        }
+
+        function filterAttractions() {
+            const q = document.getElementById('searchAttractions').value.toLowerCase();
+            renderAttractions(allAttractions.filter(a =>
+                a.name.toLowerCase().includes(q) ||
+                (a.address || '').toLowerCase().includes(q)
+            ));
+        }
+
+        function renderAttractions(list) {
+            const tbody = document.getElementById('attractionsTbody');
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty">No attractions found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(a => `
+        <tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    ${a.image_url ? `<img src="${API}${a.image_url}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" onerror="this.style.display='none'">` : ''}
+                    <strong>${a.name}</strong>
+                </div>
+            </td>
+            <td style="color:var(--muted);font-size:0.82rem;">${a.category || '—'}</td>
+            <td style="font-size:0.82rem;">${a.address || '—'}</td>
+            <td><span class="badge ${a.status === 'approved' ? 'badge-success' : 'badge-warning'}">${a.status || 'approved'}</span></td>
+            <td>
+                <div style="display:flex;gap:0.4rem;">
+                    <button class="btn btn-secondary btn-sm" onclick="editAttraction(${a.id})">✏ Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAttraction(${a.id},'${a.name.replace(/'/g, "\\'")}')">✕</button>
+                </div>
+            </td>
+        </tr>`).join('');
+        }
+
+        async function editAttraction(id) {
+            try {
+                const a = await api('GET', `/admin/attractions/${id}`);
+                document.getElementById('editId').value = a.id;
+                document.getElementById('formTitle').textContent = 'Edit Attraction';
+                document.getElementById('aName').value = a.name || '';
+                document.getElementById('aCategory').value = a.category || 'historical';
+                document.getElementById('aFee').value = a.entry_fee || '';
+                document.getElementById('aDuration').value = a.duration || '';
+                document.getElementById('aBestTime').value = a.best_time || '';
+                document.getElementById('aHours').value = a.opening_hours || '';
+                document.getElementById('aWebsite').value = a.website || '';
+                document.getElementById('aAddress').value = a.address || '';
+                document.getElementById('aDescription').value = a.description || '';
+                document.getElementById('aHistorical').value = a.historical_significance || '';
+                document.getElementById('aImageUrl').value = a.image_url || '';
+                document.getElementById('aLat').value = a.latitude || '';
+                document.getElementById('aLng').value = a.longitude || '';
+                document.getElementById('aIsPartner').checked = a.is_partner || false;
+                if (a.image_url) showPreview(API + a.image_url, 'aImagePreview');
+                if (a.latitude && a.longitude) setMapPin(a.latitude, a.longitude);
+                showSection('new-attraction', document.querySelector('[onclick*="new-attraction"]'));
+            } catch (e) { toast('Failed to load attraction', 'error'); }
+        }
+
+        async function saveAttraction() {
+            clearAlerts();
+            const id = document.getElementById('editId').value;
+            const body = {
+                name: document.getElementById('aName').value,
+                category: document.getElementById('aCategory').value,
+                entry_fee: document.getElementById('aFee').value || null,
+                duration: document.getElementById('aDuration').value || null,
+                best_time: document.getElementById('aBestTime').value || null,
+                opening_hours: document.getElementById('aHours').value || null,
+                website: document.getElementById('aWebsite').value || null,
+                address: document.getElementById('aAddress').value || null,
+                description: document.getElementById('aDescription').value || null,
+                historical_significance: document.getElementById('aHistorical').value || null,
+                image_url: document.getElementById('aImageUrl').value || null,
+                latitude: parseFloat(document.getElementById('aLat').value) || null,
+                longitude: parseFloat(document.getElementById('aLng').value) || null,
+                is_partner: document.getElementById('aIsPartner').checked,
+            };
+            if (!body.name) { showAlert('formError', 'Name is required.'); return; }
+            try {
+                if (id) {
+                    await api('PUT', `/admin/attractions/${id}`, body);
+                    showAlert('formSuccess', '✅ Attraction updated successfully!');
+                } else {
+                    await api('POST', '/admin/attractions', body);
+                    showAlert('formSuccess', '✅ Attraction created successfully!');
+                    resetForm();
+                }
+                loadAttractions();
+            } catch (e) { showAlert('formError', '❌ ' + e.message); }
+        }
+
+        async function deleteAttraction(id, name) {
+            if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+            try {
+                await api('DELETE', `/admin/attractions/${id}`);
+                toast(`"${name}" deleted`, 'success');
+                loadAttractions();
+            } catch (e) { toast('Delete failed: ' + e.message, 'error'); }
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = '';
+            document.getElementById('formTitle').textContent = 'New Attraction';
+            ['aName', 'aFee', 'aDuration', 'aBestTime', 'aHours', 'aWebsite',
+                'aAddress', 'aDescription', 'aHistorical', 'aImageUrl', 'aLat', 'aLng']
+                .forEach(id => document.getElementById(id).value = '');
+            document.getElementById('aCategory').selectedIndex = 0;
+            document.getElementById('aIsPartner').checked = false;
+            document.getElementById('aImagePreview').classList.remove('show');
+            clearAlerts();
+        }
+
+        // ── MAP ───────────────────────────────────────────────────────
+        function initMap() {
+            aMap = L.map('attraction-map').setView([39.7084, 66.9975], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(aMap);
+            aMap.on('click', e => {
+                setMapPin(e.latlng.lat, e.latlng.lng);
+                document.getElementById('aLat').value = e.latlng.lat.toFixed(6);
+                document.getElementById('aLng').value = e.latlng.lng.toFixed(6);
+            });
+        }
+
+        function setMapPin(lat, lng) {
+            if (aMarker) aMap.removeLayer(aMarker);
+            aMarker = L.marker([lat, lng]).addTo(aMap);
+            aMap.setView([lat, lng], 13);
+        }
+
+        // ── IMAGE UPLOAD ──────────────────────────────────────────────
+        async function uploadAttractionImage(input) {
+            const file = input.files[0]; if (!file) return;
+            const prog = document.getElementById('uploadProgress');
+            prog.classList.add('show'); prog.textContent = '⏳ Uploading…';
+            try {
+                const fd = new FormData(); fd.append('file', file);
+                const r = await fetch(`${API}/admin/upload-image`, { method: 'POST', body: fd });
+                const d = await r.json(); if (!r.ok) throw new Error(d.detail);
+                document.getElementById('aImageUrl').value = d.url;
+                showPreview(API + d.url, 'aImagePreview');
+                prog.textContent = '✅ Uploaded!';
+                setTimeout(() => prog.classList.remove('show'), 2000);
+            } catch (e) { prog.classList.remove('show'); toast('Upload failed', 'error'); }
+        }
+
+        async function uploadGalleryImage(input) {
+            const file = input.files[0]; if (!file) return;
+            try {
+                const fd = new FormData(); fd.append('file', file);
+                const r = await fetch(`${API}/admin/upload-image`, { method: 'POST', body: fd });
+                const d = await r.json(); if (!r.ok) throw new Error(d.detail);
+                document.getElementById('galImageUrl').value = d.url;
+                showPreview(API + d.url, 'galPreview');
+            } catch (e) { toast('Upload failed', 'error'); }
+        }
+
+        // ── TIMELINE ──────────────────────────────────────────────────
+        function populateReviewSelect() {
+            const opts = allAttractions.map(a =>
+                `<option value="${a.id}">${a.name}</option>`).join('');
+            document.getElementById('revAttractionSelect').innerHTML =
+                '<option value="">— Choose attraction —</option>' + opts;
+        }
+
+        function populateAttractionSelects() {
+            const opts = allAttractions.map(a =>
+                `<option value="${a.id}">${a.name}</option>`).join('');
+            document.getElementById('tlAttractionSelect').innerHTML =
+                '<option value="">— Choose attraction —</option>' + opts;
+            document.getElementById('galAttractionSelect').innerHTML =
+                '<option value="">— Choose attraction —</option>' + opts;
+        }
+
+        async function loadTimeline() {
+            const id = document.getElementById('tlAttractionSelect').value;
+            if (!id) return;
+            document.getElementById('addTimelineForm').style.display = 'block';
+            const wrap = document.getElementById('timelineItems');
+            try {
+                const items = await api('GET', `/attractions/${id}/timeline`);
+                if (!items.length) {
+                    wrap.innerHTML = '<div class="empty">No timeline events yet. Add one below.</div>';
+                    return;
+                }
+                wrap.innerHTML = items.map(t => `
+            <div class="timeline-item">
+                <div class="timeline-item-head">
+                    <div>
+                        <strong style="color:var(--primary);">${t.year || ''}</strong>
+                        — <strong>${t.title || ''}</strong>
+                    </div>
+                    <button class="btn btn-danger btn-sm"
+                        onclick="deleteTimelineEvent(${t.id})">✕ Delete</button>
+                </div>
+                <p style="font-size:0.875rem;color:var(--muted);">${t.description || ''}</p>
+            </div>`).join('');
+            } catch (e) { wrap.innerHTML = '<div class="empty" style="color:var(--danger);">Failed to load.</div>'; }
+        }
+
+        async function addTimelineEvent() {
+            const id = document.getElementById('tlAttractionSelect').value;
+            const year = document.getElementById('tlYear').value;
+            const title = document.getElementById('tlTitle').value;
+            const desc = document.getElementById('tlDesc').value;
+            if (!id || !year || !title) { toast('Year and title are required', 'error'); return; }
+            try {
+                await api('POST', `/admin/attractions/${id}/timeline`, {
+                    year,
+                    event_title: title,
+                    event_description: desc
+                });
+                toast('Timeline event added!', 'success');
+                document.getElementById('tlYear').value = '';
+                document.getElementById('tlTitle').value = '';
+                document.getElementById('tlDesc').value = '';
+                loadTimeline();
+            } catch (e) { toast('Failed: ' + e.message, 'error'); }
+        }
+
+        async function deleteTimelineEvent(id) {
+            if (!confirm('Delete this timeline event?')) return;
+            try {
+                await api('DELETE', `/admin/attractions/timeline/${id}`);
+                toast('Deleted', 'success');
+                loadTimeline();
+            } catch (e) { toast('Failed', 'error'); }
+        }
+
+        // ── GALLERY ───────────────────────────────────────────────────
+        async function loadGallery() {
+            const id = document.getElementById('galAttractionSelect').value;
+            if (!id) return;
+            document.getElementById('addGalleryForm').style.display = 'block';
+            const wrap = document.getElementById('galleryItems');
+            try {
+                const items = await api('GET', `/attractions/${id}/gallery`);
+                if (!items.length) {
+                    wrap.innerHTML = '<div class="empty">No gallery photos yet.</div>';
+                    return;
+                }
+                wrap.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:1rem;">` +
+                    items.map(g => `
+                <div style="position:relative;border-radius:12px;overflow:hidden;border:2px solid var(--border);">
+                    <img src="${API}${g.image_url}" style="width:100%;height:120px;object-fit:cover;"
+                        onerror="this.src='/images/reg5.jpg'">
+                    <div style="padding:0.5rem;font-size:0.75rem;color:var(--muted);">${g.caption || ''}</div>
+                    <button onclick="deleteGalleryPhoto(${g.id})"
+                        style="position:absolute;top:4px;right:4px;background:var(--danger);
+                               color:white;border:none;border-radius:6px;padding:0.2rem 0.5rem;
+                               cursor:pointer;font-size:0.75rem;">✕</button>
+                </div>`).join('') + '</div>';
+            } catch (e) { wrap.innerHTML = '<div class="empty" style="color:var(--danger);">Failed to load.</div>'; }
+        }
+
+        async function addGalleryPhoto() {
+            const id = document.getElementById('galAttractionSelect').value;
+            const url = document.getElementById('galImageUrl').value;
+            const caption = document.getElementById('galCaption').value;
+            if (!id || !url) { toast('Select attraction and provide image', 'error'); return; }
+            try {
+                await api('POST', `/admin/attractions/${id}/gallery`, { image_url: url, caption });
+                toast('Photo added!', 'success');
+                document.getElementById('galImageUrl').value = '';
+                document.getElementById('galCaption').value = '';
+                document.getElementById('galPreview').classList.remove('show');
+                loadGallery();
+            } catch (e) { toast('Failed: ' + e.message, 'error'); }
+        }
+
+        async function deleteGalleryPhoto(id) {
+            if (!confirm('Delete this photo?')) return;
+            try {
+                await api('DELETE', `/admin/attractions/gallery/${id}`);
+                toast('Photo deleted', 'success');
+                loadGallery();
+            } catch (e) { toast('Failed', 'error'); }
+        }
+
+        // ── ATTRACTION REVIEWS ───────────────────────────────────────
+        let _allRevs = [], _revFilter = 'all';
+
+        async function loadAttractionReviews() {
+            const id = document.getElementById('revAttractionSelect').value;
+            if (!id) return;
+            const wrap = document.getElementById('attractionReviewsList');
+            wrap.innerHTML = '<div class="empty">Loading…</div>';
+            try {
+                _allRevs = await api('GET', `/admin/attractions/${id}/reviews`);
+                renderAttractionReviews();
+            } catch (e) {
+                wrap.innerHTML = '<div class="empty" style="color:var(--danger);">Failed to load.</div>';
+            }
+        }
+
+        function filterAttractionReviews(f, btn) {
+            _revFilter = f;
+            document.querySelectorAll('#section-reviews .btn').forEach(b => {
+                b.classList.remove('btn-primary'); b.classList.add('btn-secondary');
+            });
+            if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-primary'); }
+            renderAttractionReviews();
+        }
+
+        function renderAttractionReviews() {
+            const wrap = document.getElementById('attractionReviewsList');
+            const list = _revFilter === 'all'
+                ? _allRevs
+                : _allRevs.filter(r => (r.status || 'pending') === _revFilter);
+            if (!list.length) {
+                wrap.innerHTML = '<div class="empty">No reviews in this category.</div>';
+                return;
+            }
+            const attrId = document.getElementById('revAttractionSelect').value;
+            wrap.innerHTML = list.map(r => {
+                const status = r.status || 'pending';
+                const stars = '★'.repeat(Math.round(r.rating || 0)) + '☆'.repeat(5 - Math.round(r.rating || 0));
+                const date = r.created_at
+                    ? new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                    : '';
+                return `
+        <div style="background:var(--bg);border:2px solid ${status === 'pending' ? '#fcd34d' : status === 'rejected' ? '#fca5a5' : 'var(--border)'};
+                    border-radius:12px;padding:1.25rem;margin-bottom:1rem;
+                    background:${status === 'pending' ? '#fffbeb' : status === 'rejected' ? '#fff5f5' : 'var(--bg)'};">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
+                <div>
+                    <div style="font-weight:700;">${r.reviewer_name || 'Anonymous'}</div>
+                    <div style="color:#fbbf24;">${stars}</div>
+                    <div style="font-size:0.78rem;color:var(--muted);">${date}</div>
+                </div>
+                <span style="padding:0.2rem 0.6rem;border-radius:20px;font-size:0.72rem;font-weight:700;
+                             background:${status === 'approved' ? 'var(--success-light)' : status === 'rejected' ? 'var(--danger-light)' : 'var(--warning-light)'};
+                             color:${status === 'approved' ? 'var(--success)' : status === 'rejected' ? 'var(--danger)' : 'var(--warning)'};">
+                    ${status === 'approved' ? '✅ Approved' : status === 'rejected' ? '❌ Rejected' : '⏳ Pending'}
+                </span>
+            </div>
+            <p style="font-size:0.9rem;color:var(--muted);margin:0.5rem 0;">${r.comment || ''}</p>
+            <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+                ${status === 'pending' ? `
+                <button class="btn btn-success btn-sm"
+                    onclick="attractionReviewAction(${attrId},${r.id},'approve')">✅ Approve</button>
+                <button class="btn btn-danger btn-sm"
+                    onclick="attractionReviewAction(${attrId},${r.id},'reject')">❌ Reject</button>
+                `: ''}
+                <button class="btn btn-secondary btn-sm"
+                    onclick="deleteAttractionReview(${attrId},${r.id})">🗑 Delete</button>
+            </div>
+        </div>`;
+            }).join('');
+        }
+
+        async function attractionReviewAction(attrId, reviewId, action) {
+            try {
+                await api('POST', `/admin/attractions/${attrId}/reviews/${reviewId}/${action}`);
+                toast(action === 'approve' ? 'Review approved!' : 'Review rejected.', 'success');
+                loadAttractionReviews();
+            } catch (e) { toast('Failed: ' + e.message, 'error'); }
+        }
+
+        async function deleteAttractionReview(attrId, reviewId) {
+            if (!confirm('Delete this review permanently?')) return;
+            try {
+                await api('DELETE', `/admin/attractions/${attrId}/reviews/${reviewId}`);
+                toast('Review deleted.', 'success');
+                loadAttractionReviews();
+            } catch (e) { toast('Failed', 'error'); }
+        }
+
+        // ── HELPERS ───────────────────────────────────────────────────
+        function showPreview(url, id) {
+            const el = document.getElementById(id);
+            if (!el || !url) return;
+            el.src = url; el.classList.add('show');
+        }
+        function showAlert(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg; el.classList.add('show');
+        }
+        function clearAlerts() {
+            ['formSuccess', 'formError'].forEach(id => {
+                const el = document.getElementById(id);
+                el.textContent = ''; el.classList.remove('show');
+            });
+        }
+        function toast(msg, type = 'info') {
+            const c = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast toast-${type}`;
+            el.innerHTML = `<span>${{ success: '✅', error: '❌', info: 'ℹ️' }[type]}</span> ${msg}`;
+            c.appendChild(el);
+            setTimeout(() => el.remove(), 4000);
+        }
+    </script>
+</body>
+
+</html>

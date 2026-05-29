@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Admin — Discover Uzbekistan</title>
+    <script src="/config.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --success: #059669;
+            --success-light: #d1fae5;
+            --danger: #dc2626;
+            --danger-light: #fee2e2;
+            --bg: #fffbf0;
+            --surface: #fff;
+            --border: #fde68a;
+            --text: #1c1917;
+            --muted: #78716c;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+        }
+
+        .login-sub {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-error {
+            background: var(--danger-light);
+            color: var(--danger);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .header {
+            background: var(--surface);
+            border-bottom: 2px solid var(--border);
+            padding: 0 1.5rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-logo {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .layout {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            gap: 1.5rem;
+        }
+
+        .sidebar {
+            width: 190px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-sticky {
+            position: sticky;
+            top: 76px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--muted);
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .nav-item:hover {
+            background: #fef3c7;
+            color: var(--primary-dark);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group.full {
+            grid-column: 1/-1;
+        }
+
+        label {
+            font-size: 0.73rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text);
+        }
+
+        .optional-lbl {
+            font-weight: 400;
+            text-transform: none;
+            color: var(--muted);
+            font-size: 0.7rem;
+        }
+
+        input,
+        select,
+        textarea {
+            padding: 0.65rem 0.9rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--bg);
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 0.55rem 1.2rem;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid #fca5a5;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.78rem;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .news-card {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .news-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+        }
+
+        .news-card.inactive {
+            opacity: 0.55;
+        }
+
+        .news-card-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background: #fef3c7;
+        }
+
+        .news-card-body {
+            padding: 1rem;
+        }
+
+        .news-card-title {
+            font-weight: 800;
+            font-size: 0.95rem;
+            margin-bottom: 0.35rem;
+            line-height: 1.3;
+        }
+
+        .news-card-desc {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.5;
+            margin-bottom: 0.6rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .news-card-meta {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .news-card-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 0.18rem 0.55rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .cat-news {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .cat-event {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .cat-holiday {
+            background: #fce7f3;
+            color: #9d174d;
+        }
+
+        .cat-announcement {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .img-preview {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 10px;
+            margin-top: 0.5rem;
+            display: none;
+            object-fit: cover;
+            border: 2px solid var(--border);
+        }
+
+        .img-preview.show {
+            display: block;
+        }
+
+        .upload-progress {
+            display: none;
+            margin-top: 0.5rem;
+            background: #fef3c7;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .upload-progress.show {
+            display: block;
+        }
+
+        .section-divider {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin: 1.25rem 0 0.75rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .stat-box {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .stat-lbl {
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.2rem;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .toast {
+            padding: 0.875rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            max-width: 300px;
+        }
+
+        .toast-success {
+            background: var(--success-light);
+            color: var(--success);
+            border: 2px solid #6ee7b7;
+        }
+
+        .toast-error {
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 2px solid #fca5a5;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 2.5rem;
+            color: var(--muted);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        #news-map {
+            height: 280px;
+            border-radius: 12px;
+            margin-top: 0.75rem;
+            border: 2px solid var(--border);
+            display: none;
+        }
+
+        #news-map.show {
+            display: block;
+        }
+
+        .map-toggle {
+            background: #fef3c7;
+            border: 2px solid var(--border);
+            color: var(--primary-dark);
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .map-toggle:hover {
+            background: #fde68a;
+        }
+
+        @media(max-width:768px) {
+            .layout {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .sidebar-sticky {
+                position: static;
+                display: flex;
+                gap: 0.4rem;
+                flex-wrap: wrap;
+            }
+
+            .nav-item {
+                width: auto;
+                padding: 0.5rem 0.875rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: 1;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div class="login-icon">📰</div>
+            <h2 class="login-title">News Admin</h2>
+            <p class="login-sub">Discover Uzbekistan — News & Events Manager</p>
+            <div class="login-error" id="loginError">❌ Incorrect password</div>
+            <input type="password" id="loginInput" class="login-input" placeholder="Enter password"
+                onkeydown="if(event.key==='Enter') doLogin()">
+            <button class="login-btn" onclick="doLogin()">Sign In →</button>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-logo">📰 News & Events Manager</div>
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-sticky">
+                <button class="nav-item active" onclick="showSection('all',this)">📋 All</button>
+                <button class="nav-item" onclick="showSection('create',this);resetForm()">➕ Create New</button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <!-- ALL -->
+            <div id="section-all" class="section active">
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-num" id="statTotal">—</div>
+                        <div class="stat-lbl">Total</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num" id="statActive">—</div>
+                        <div class="stat-lbl">Active</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num" id="statExpired">—</div>
+                        <div class="stat-lbl">Expired</div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap;">
+                    <select id="filterCategory" onchange="filterNews()"
+                        style="padding:0.5rem 0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit;background:white;">
+                        <option value="">All Categories</option>
+                        <option value="news">📰 News</option>
+                        <option value="event">🎉 Event</option>
+                        <option value="holiday">🎊 Holiday</option>
+                        <option value="announcement">📢 Announcement</option>
+                    </select>
+                    <select id="filterStatus" onchange="filterNews()"
+                        style="padding:0.5rem 0.8rem;border:2px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit;background:white;">
+                        <option value="">All Status</option>
+                        <option value="active">✅ Active</option>
+                        <option value="inactive">⏸ Hidden</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" onclick="loadNews()">↻ Refresh</button>
+                    <button class="btn btn-primary btn-sm"
+                        onclick="showSection('create',document.querySelector('[onclick*=create]'));resetForm()">➕
+                        New</button>
+                </div>
+                <div class="news-grid" id="newsGrid">
+                    <div class="empty">Loading…</div>
+                </div>
+            </div>
+
+            <!-- CREATE / EDIT -->
+            <div id="section-create" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" id="formTitle">Create News / Event</h2>
+                        <button class="btn btn-secondary btn-sm"
+                            onclick="showSection('all',document.querySelector('[onclick*=all]'));loadNews()">←
+                            Back</button>
+                    </div>
+                    <div class="alert alert-success" id="formSuccess"></div>
+                    <div class="alert alert-error" id="formError"></div>
+                    <input type="hidden" id="editId">
+
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label>Title *</label>
+                            <input type="text" id="nTitle" placeholder="Navruz Festival 2026…">
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="nCategory">
+                                <option value="news">📰 News</option>
+                                <option value="event">🎉 Event</option>
+                                <option value="holiday">🎊 Holiday</option>
+                                <option value="announcement">📢 Announcement</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Visible on Homepage</label>
+                            <select id="nActive">
+                                <option value="true" selected>✅ Yes — show on homepage</option>
+                                <option value="false">⏸ No — hidden</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Date *</label>
+                            <input type="date" id="nStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label>End Date <span class="optional-lbl">(optional — for events)</span></label>
+                            <input type="date" id="nEndDate">
+                        </div>
+                        <div class="form-group full">
+                            <label>Short Description</label>
+                            <textarea id="nDescription" placeholder="Brief summary shown on the homepage…"></textarea>
+                        </div>
+                        <div class="form-group full">
+                            <label>Photo <span class="optional-lbl">(optional)</span></label>
+                            <input type="file" id="nImageFile" accept="image/*" onchange="uploadNewsImage(this)">
+                            <input type="text" id="nImageUrl" placeholder="Or paste image URL"
+                                style="margin-top:0.5rem;" oninput="showPreview(this.value,'nImagePreview')">
+                            <div class="upload-progress" id="uploadProgress">⏳ Uploading…</div>
+                            <img id="nImagePreview" class="img-preview" alt="Preview">
+                        </div>
+                    </div>
+
+                    <div class="section-divider">📍 Location & Contact <span class="optional-lbl">(all optional)</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label>Location Name <span class="optional-lbl">(e.g. Registan Square,
+                                    Samarkand)</span></label>
+                            <input type="text" id="nLocationName" placeholder="Venue or city name">
+                        </div>
+                        <div class="form-group">
+                            <label>Latitude <span class="optional-lbl">(click map to set)</span></label>
+                            <input type="number" id="nLat" step="0.000001" placeholder="39.654671"
+                                oninput="updateMapFromInputs()">
+                        </div>
+                        <div class="form-group">
+                            <label>Longitude</label>
+                            <input type="number" id="nLng" step="0.000001" placeholder="66.975965"
+                                oninput="updateMapFromInputs()">
+                        </div>
+                        <div class="form-group full">
+                            <button type="button" class="map-toggle" onclick="toggleMap()">
+                                🗺️ Pick location on map
+                            </button>
+                            <div id="news-map"></div>
+                            <p style="font-size:0.72rem;color:var(--muted);margin-top:0.4rem;">
+                                Click anywhere on the map to set the exact coordinates
+                            </p>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone <span class="optional-lbl">(contact number)</span></label>
+                            <input type="tel" id="nPhone" placeholder="+998 90 123 4567">
+                        </div>
+                        <div class="form-group">
+                            <label>Telegram <span class="optional-lbl">(@username)</span></label>
+                            <input type="text" id="nTelegram" placeholder="@eventname">
+                        </div>
+                        <div class="form-group">
+                            <label>Instagram <span class="optional-lbl">(@username)</span></label>
+                            <input type="text" id="nInstagram" placeholder="@eventname">
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="saveNews()">💾 Save</button>
+                        <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const SESSION_KEY = 'news_admin_auth';
+        let allNews = [];
+
+        (function () {
+            if (sessionStorage.getItem(SESSION_KEY)) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                init();
+            }
+        })();
+
+        async function doLogin() {
+            const pw = document.getElementById('loginInput').value;
+            const err = document.getElementById('loginError');
+            err.style.display = 'none';
+            try {
+                const res = await fetch(`${API}/admin/news-admin/verify-login`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pw })
+                });
+                if (res.ok) {
+                    const d = await res.json();
+                    sessionStorage.setItem(SESSION_KEY, d.token);
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    init();
+                } else {
+                    err.style.display = 'block';
+                    document.getElementById('loginInput').value = '';
+                }
+            } catch (e) {
+                err.textContent = '❌ Cannot connect to server.';
+                err.style.display = 'block';
+            }
+        }
+
+        function logout() { sessionStorage.removeItem(SESSION_KEY); location.reload(); }
+        function init() { loadNews(); }
+
+        function showSection(name, btn) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.getElementById(`section-${name}`).classList.add('active');
+            if (btn) btn.classList.add('active');
+            if (name === 'all') loadNews();
+        }
+
+        async function loadNews() {
+            const grid = document.getElementById('newsGrid');
+            grid.innerHTML = '<div class="empty">Loading…</div>';
+            try {
+                const res = await fetch(`${API}/api/news/admin/all`);
+                allNews = await res.json();
+                updateStats();
+                renderNews(allNews);
+            } catch (e) {
+                grid.innerHTML = '<div class="empty" style="color:var(--danger);">Failed to load.</div>';
+            }
+        }
+
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            let active = 0, expired = 0;
+            allNews.forEach(n => {
+                if (!n.is_active) return;
+                if (n.end_date && n.end_date < today) expired++;
+                else active++;
+            });
+            document.getElementById('statTotal').textContent = allNews.length;
+            document.getElementById('statActive').textContent = active;
+            document.getElementById('statExpired').textContent = expired;
+        }
+
+        function filterNews() {
+            const cat = document.getElementById('filterCategory').value;
+            const status = document.getElementById('filterStatus').value;
+            let list = allNews;
+            if (cat) list = list.filter(n => n.category === cat);
+            if (status === 'active') list = list.filter(n => n.is_active);
+            if (status === 'inactive') list = list.filter(n => !n.is_active);
+            renderNews(list);
+        }
+
+        function renderNews(list) {
+            const grid = document.getElementById('newsGrid');
+            if (!list.length) { grid.innerHTML = '<div class="empty">No items found.</div>'; return; }
+            const today = new Date().toISOString().split('T')[0];
+            const catClass = { news: 'cat-news', event: 'cat-event', holiday: 'cat-holiday', announcement: 'cat-announcement' };
+            const catLabel = { news: '📰 News', event: '🎉 Event', holiday: '🎊 Holiday', announcement: '📢 Announcement' };
+
+            grid.innerHTML = list.map(n => {
+                const isExpired = n.end_date && n.end_date < today;
+                const dateStr = n.end_date
+                    ? `${fmtDate(n.start_date)} → ${fmtDate(n.end_date)}`
+                    : fmtDate(n.start_date);
+                const imgSrc = n.image_url
+                    ? (n.image_url.startsWith('http') ? n.image_url : API + n.image_url)
+                    : null;
+                return `
+        <div class="news-card ${!n.is_active ? 'inactive' : ''}">
+            ${imgSrc
+                        ? `<img class="news-card-img" src="${imgSrc}" alt="${n.title}" onerror="this.style.display='none'">`
+                        : `<div class="news-card-img" style="display:flex;align-items:center;justify-content:center;font-size:3rem;">
+                       ${{ news: '📰', event: '🎉', holiday: '🎊', announcement: '📢' }[n.category] || '📰'}
+                   </div>`}
+            <div class="news-card-body">
+                <span class="badge ${catClass[n.category] || 'cat-news'}">${catLabel[n.category] || n.category}</span>
+                ${isExpired ? '<span class="badge" style="background:#fee2e2;color:#dc2626;margin-left:4px;">Expired</span>' : ''}
+                ${!n.is_active ? '<span class="badge" style="background:#f3f4f6;color:#6b7280;margin-left:4px;">Hidden</span>' : ''}
+                <div class="news-card-title">${n.title}</div>
+                <div class="news-card-desc">${n.description || ''}</div>
+                <div class="news-card-meta">
+                    <span>📅 ${dateStr}</span>
+                    ${n.location_name ? `<span>📍 ${n.location_name}</span>` : ''}
+                    ${n.phone ? `<span>📞 ${n.phone}</span>` : ''}
+                    ${n.telegram ? `<span>✈️ ${n.telegram}</span>` : ''}
+                </div>
+                <div class="news-card-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="editNews(${n.id})">✏ Edit</button>
+                    <button class="btn btn-secondary btn-sm" onclick="toggleActive(${n.id},${!n.is_active})">
+                        ${n.is_active ? '⏸ Hide' : '✅ Show'}
+                    </button>
+                    <button class="btn btn-danger btn-sm"
+                        onclick="deleteNews(${n.id},'${n.title.replace(/'/g, "\\'")}')">✕</button>
+                </div>
+            </div>
+        </div>`;
+            }).join('');
+        }
+
+        async function saveNews() {
+            clearAlerts();
+            const id = document.getElementById('editId').value;
+            const title = document.getElementById('nTitle').value.trim();
+            const start_date = document.getElementById('nStartDate').value;
+            if (!title) { showAlert('formError', 'Title is required.'); return; }
+            if (!start_date) { showAlert('formError', 'Start date is required.'); return; }
+
+            const lat = parseFloat(document.getElementById('nLat').value) || null;
+            const lng = parseFloat(document.getElementById('nLng').value) || null;
+
+            const body = {
+                title,
+                description: document.getElementById('nDescription').value || null,
+                image_url: document.getElementById('nImageUrl').value || null,
+                category: document.getElementById('nCategory').value,
+                start_date,
+                end_date: document.getElementById('nEndDate').value || null,
+                is_active: document.getElementById('nActive').value === 'true',
+                location_name: document.getElementById('nLocationName').value || null,
+                location_lat: lat,
+                location_lng: lng,
+                phone: document.getElementById('nPhone').value || null,
+                telegram: document.getElementById('nTelegram').value || null,
+                instagram: document.getElementById('nInstagram').value || null,
+            };
+
+            try {
+                const url = id ? `${API}/api/news/admin/${id}` : `${API}/api/news/admin/create`;
+                const method = id ? 'PUT' : 'POST';
+                const res = await fetch(url, {
+                    method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+                });
+                if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Failed'); }
+                showAlert('formSuccess', id ? '✅ Updated!' : '✅ Created!');
+                if (!id) resetForm();
+                loadNews();
+            } catch (e) { showAlert('formError', '❌ ' + e.message); }
+        }
+
+        async function editNews(id) {
+            const n = allNews.find(x => x.id === id);
+            if (!n) return;
+            document.getElementById('editId').value = n.id;
+            document.getElementById('formTitle').textContent = 'Edit News / Event';
+            document.getElementById('nTitle').value = n.title || '';
+            document.getElementById('nCategory').value = n.category || 'news';
+            document.getElementById('nActive').value = n.is_active ? 'true' : 'false';
+            document.getElementById('nStartDate').value = n.start_date || '';
+            document.getElementById('nEndDate').value = n.end_date || '';
+            document.getElementById('nDescription').value = n.description || '';
+            document.getElementById('nImageUrl').value = n.image_url || '';
+            document.getElementById('nLocationName').value = n.location_name || '';
+            document.getElementById('nLat').value = n.location_lat || '';
+            document.getElementById('nLng').value = n.location_lng || '';
+            document.getElementById('nPhone').value = n.phone || '';
+            document.getElementById('nTelegram').value = n.telegram || '';
+            document.getElementById('nInstagram').value = n.instagram || '';
+            if (n.image_url) showPreview(n.image_url.startsWith('http') ? n.image_url : API + n.image_url, 'nImagePreview');
+            showSection('create', document.querySelector('[onclick*=create]'));
+        }
+
+        async function deleteNews(id, title) {
+            if (!confirm(`Delete "${title}"?`)) return;
+            try {
+                await fetch(`${API}/api/news/admin/${id}`, { method: 'DELETE' });
+                toast('Deleted', 'success');
+                loadNews();
+            } catch (e) { toast('Failed', 'error'); }
+        }
+
+        async function toggleActive(id, newState) {
+            const n = allNews.find(x => x.id === id);
+            if (!n) return;
+            try {
+                await fetch(`${API}/api/news/admin/${id}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...n, is_active: newState,
+                        start_date: n.start_date, end_date: n.end_date || null
+                    })
+                });
+                toast(newState ? '✅ Now visible' : '⏸ Now hidden', 'success');
+                loadNews();
+            } catch (e) { toast('Failed', 'error'); }
+        }
+
+        async function uploadNewsImage(input) {
+            const file = input.files[0]; if (!file) return;
+            const prog = document.getElementById('uploadProgress');
+            prog.classList.add('show'); prog.textContent = '⏳ Uploading…';
+            try {
+                const fd = new FormData(); fd.append('file', file);
+                const r = await fetch(`${API}/api/news/admin/upload-image`, { method: 'POST', body: fd });
+                const d = await r.json(); if (!r.ok) throw new Error(d.detail);
+                document.getElementById('nImageUrl').value = d.url;
+                showPreview(API + d.url, 'nImagePreview');
+                prog.textContent = '✅ Uploaded!';
+                setTimeout(() => prog.classList.remove('show'), 2000);
+            } catch (e) { prog.classList.remove('show'); toast('Upload failed', 'error'); }
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = '';
+            document.getElementById('formTitle').textContent = 'Create News / Event';
+            ['nTitle', 'nStartDate', 'nEndDate', 'nDescription', 'nImageUrl',
+                'nLocationName', 'nLat', 'nLng', 'nPhone', 'nTelegram', 'nInstagram']
+                .forEach(id => document.getElementById(id).value = '');
+            document.getElementById('nCategory').selectedIndex = 0;
+            document.getElementById('nActive').selectedIndex = 0;
+            document.getElementById('nImagePreview').classList.remove('show');
+            // Hide map and clear pin
+            document.getElementById('news-map').classList.remove('show');
+            mapVisible = false;
+            resetMap();
+            clearAlerts();
+        }
+
+        // ── MAP ──────────────────────────────────────────────────────
+        let nMap = null, nMarker = null, mapVisible = false;
+
+        function toggleMap() {
+            const mapEl = document.getElementById('news-map');
+            mapVisible = !mapVisible;
+            mapEl.classList.toggle('show', mapVisible);
+
+            if (mapVisible) {
+                // Init map on first open
+                if (!nMap) {
+                    // Center on Uzbekistan
+                    const lat = parseFloat(document.getElementById('nLat').value) || 39.7084;
+                    const lng = parseFloat(document.getElementById('nLng').value) || 66.9975;
+                    nMap = L.map('news-map').setView([lat, lng], 6);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap'
+                    }).addTo(nMap);
+
+                    // Click to set pin
+                    nMap.on('click', function (e) {
+                        setNewsMapPin(e.latlng.lat, e.latlng.lng);
+                        document.getElementById('nLat').value = e.latlng.lat.toFixed(6);
+                        document.getElementById('nLng').value = e.latlng.lng.toFixed(6);
+                    });
+
+                    // If coords already set, show pin
+                    if (parseFloat(document.getElementById('nLat').value)) {
+                        setNewsMapPin(
+                            parseFloat(document.getElementById('nLat').value),
+                            parseFloat(document.getElementById('nLng').value)
+                        );
+                    }
+                }
+                // Fix map size after CSS display change
+                setTimeout(() => nMap.invalidateSize(), 100);
+            }
+        }
+
+        function setNewsMapPin(lat, lng) {
+            if (nMarker) nMap.removeLayer(nMarker);
+            nMarker = L.marker([lat, lng]).addTo(nMap);
+            nMap.setView([lat, lng], 13);
+        }
+
+        function updateMapFromInputs() {
+            const lat = parseFloat(document.getElementById('nLat').value);
+            const lng = parseFloat(document.getElementById('nLng').value);
+            if (lat && lng && nMap) {
+                setNewsMapPin(lat, lng);
+            }
+        }
+
+        function resetMap() {
+            if (nMarker && nMap) { nMap.removeLayer(nMarker); nMarker = null; }
+            // Don't destroy map — just clear pin
+        }
+
+        function fmtDate(d) { if (!d) return '—'; return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); }
+        function showPreview(url, id) { const el = document.getElementById(id); if (!el || !url) return; el.src = url; el.classList.add('show'); }
+        function showAlert(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.classList.add('show'); }
+        function clearAlerts() { ['formSuccess', 'formError'].forEach(id => { const el = document.getElementById(id); el.textContent = ''; el.classList.remove('show'); }); }
+        function toast(msg, type = 'info') {
+            const c = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast toast-${type}`;
+            el.innerHTML = `<span>${{ success: '✅', error: '❌', info: 'ℹ️' }[type] || 'ℹ️'}</span> ${msg}`;
+            c.appendChild(el);
+            setTimeout(() => el.remove(), 4000);
+        }
+    </script>
+</body>
+
+</html>

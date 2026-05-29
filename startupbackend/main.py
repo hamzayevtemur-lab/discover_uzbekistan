@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from routers import (
     restaurants, hotels, attractions, likes, admin,
     partner_restaurants, partner_auth, admin_approval, partner_hotels,
-    travel_agency, partner_agency, partner_application, subscription
+    travel_agency, partner_agency, partner_application, subscription ,news, attractions_admin
 )
 
 app = FastAPI(title="Discover Uzbekistan API")
@@ -36,7 +36,8 @@ app.include_router(travel_agency.router)
 app.include_router(partner_agency.router)
 app.include_router(partner_application.router)
 app.include_router(subscription.router)
-
+app.include_router(news.router)
+app.include_router(attractions_admin.router)
 # ── STATIC FILES ──────────────────────────────────────────────
 # Absolute paths so it works both locally and on Railway
 BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
