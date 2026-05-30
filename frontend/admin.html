@@ -4,1056 +4,1383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Discover Uzbekistan</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="admin.css" />
+    <title>CEO Admin — Discover Uzbekistan</title>
+    <script src="/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0f0f13;
+            --surface: #18181f;
+            --surface2: #1e1e27;
+            --border: #2a2a38;
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --info: #3b82f6;
+            --info-bg: rgba(59, 130, 246, 0.1);
+            --text: #f1f5f9;
+            --text2: #94a3b8;
+            --text3: #64748b;
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* LOGIN */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0f0f13 0%, #1a1a2e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .login-logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .login-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+        }
+
+        .login-sub {
+            color: var(--text3);
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-error {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--text);
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: opacity 0.2s;
+        }
+
+        .login-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* LAYOUT */
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: transform 0.3s;
+        }
+
+        .sidebar-logo {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo-text {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .sidebar-logo-sub {
+            font-size: 0.7rem;
+            color: var(--text3);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .nav-section-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text3);
+            padding: 0.5rem 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 0.875rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text2);
+            transition: all 0.15s;
+            margin-bottom: 2px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary-light);
+        }
+
+        .nav-item .nav-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .nav-badge {
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.4rem;
+            border-radius: 20px;
+            margin-left: auto;
+            display: none;
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 0.875rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text3);
+            transition: all 0.15s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        /* MAIN */
+        .main {
+            margin-left: 240px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 64px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .content {
+            padding: 2rem;
+            flex: 1;
+        }
+
+        /* SECTIONS */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-color, var(--primary));
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent-color, var(--primary));
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            background: var(--accent-bg, rgba(99, 102, 241, 0.1));
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            color: var(--success);
+            margin-top: 0.4rem;
+            font-weight: 600;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        /* PENDING ITEMS */
+        .pending-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1.25rem;
+            align-items: flex-start;
+            transition: border-color 0.2s;
+        }
+
+        .pending-card:hover {
+            border-color: var(--primary);
+        }
+
+        .pending-img {
+            width: 80px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+            background: var(--border);
+        }
+
+        .pending-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pending-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .pending-meta {
+            font-size: 0.8rem;
+            color: var(--text2);
+            line-height: 1.6;
+        }
+
+        .pending-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        .pending-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .pending-section-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text3);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pending-count {
+            background: var(--warning-bg);
+            color: var(--warning);
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        /* TABLE */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--surface2);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text3);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+            color: var(--text2);
+        }
+
+        td strong {
+            color: var(--text);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(99, 102, 241, 0.03);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 0.55rem 1.1rem;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text2);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary-light);
+        }
+
+        .btn-warning {
+            background: var(--warning-bg);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.75rem;
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-flex;
+            padding: 0.2rem 0.55rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .badge-success {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background: var(--info-bg);
+            color: var(--info);
+        }
+
+        .badge-muted {
+            background: rgba(100, 116, 139, 0.15);
+            color: var(--text3);
+        }
+
+        /* ANALYTICS */
+        .analytics-frame {
+            width: 100%;
+            height: 1200px;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--surface2);
+        }
+
+        /* SEARCH */
+        .search-input {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-input::placeholder {
+            color: var(--text3);
+        }
+
+        /* PARTNER FILTERS */
+        .filter-bar {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+            align-items: center;
+        }
+
+        select.filter-select {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            padding: 0.55rem 0.9rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+
+        select.filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* PARTNER STATS */
+        .partner-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .partner-stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .partner-stat-num {
+            font-size: 1.75rem;
+            font-weight: 800;
+        }
+
+        .partner-stat-lbl {
+            font-size: 0.72rem;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+            font-weight: 600;
+        }
+
+        /* RENEWAL */
+        .renewal-counts {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .renewal-count-box {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.875rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .renewal-count-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .renewal-count-lbl {
+            font-size: 0.75rem;
+            color: var(--text3);
+            font-weight: 600;
+        }
+
+        /* EMPTY */
+        .empty {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text3);
+        }
+
+        .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* TOAST */
+        .toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 0.875rem 1.25rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            animation: slideIn 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            max-width: 320px;
+            border: 1px solid;
+        }
+
+        .toast-success {
+            background: #0d2d1f;
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .toast-error {
+            background: #2d0d0d;
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .toast-info {
+            background: #0d1a2d;
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* MOBILE */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        @media(max-width:1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .partner-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width:640px) {
+            .content {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .partner-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .topbar {
+                padding: 0 1rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div class="admin-panel">
-        <div class="sidebar">
-            <div class="logo">🇺🇿 CEO Admin</div>
-            <div class="nav-menu">
-                <div class="nav-item active" onclick="showSection('dashboard')">
-                    <span>📊 Dashboard</span>
-                    <span class="pending-badge" id="nav-pending-badge" style="display: none;"></span>
+
+    <!-- LOGIN -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <div class="login-logo">🔐</div>
+            <h2 class="login-title">CEO Admin Panel</h2>
+            <p class="login-sub">Discover Uzbekistan — Restricted Access</p>
+            <div class="login-error" id="loginError">❌ Incorrect password. Try again.</div>
+            <input type="password" id="adminPasswordInput" class="login-input" placeholder="Enter admin password"
+                autocomplete="current-password" onkeydown="if(event.key==='Enter') checkAdminLogin()">
+            <button class="login-btn" id="loginBtn" onclick="checkAdminLogin()">Sign In →</button>
+            <p style="margin-top:1.25rem;font-size:0.72rem;color:var(--text3);">
+                Unauthorized access is prohibited
+            </p>
+        </div>
+    </div>
+
+    <div class="app">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">🌍</div>
+                <div>
+                    <div class="sidebar-logo-text">CEO Admin</div>
+                    <div class="sidebar-logo-sub">Discover Uzbekistan</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Overview</div>
+                <button class="nav-item active" onclick="showSection('dashboard',this)">
+                    <span class="nav-icon">📊</span> Dashboard
+                    <span class="nav-badge" id="nav-pending-badge">0</span>
+                </button>
+
+                <div class="nav-section-label">Approvals</div>
+                <button class="nav-item" onclick="showSection('approvals',this)">
+                    <span class="nav-icon">✅</span> Pending Approvals
+                    <span class="nav-badge" id="nav-pending-badge2">0</span>
+                </button>
+
+                <div class="nav-section-label">Partners</div>
+                <button class="nav-item" onclick="showSection('partners',this);loadPartners()">
+                    <span class="nav-icon">🤝</span> Partner Management
+                </button>
+                <button class="nav-item" onclick="showSection('renewals',this);loadRenewals()">
+                    <span class="nav-icon">💳</span> Renewals
+                </button>
+
+                <div class="nav-section-label">Listings</div>
+                <button class="nav-item" onclick="showSection('restaurants',this);loadRestaurants()">
+                    <span class="nav-icon">🍽️</span> Restaurants
+                </button>
+                <button class="nav-item" onclick="showSection('hotels',this);loadHotels()">
+                    <span class="nav-icon">🏨</span> Hotels
+                </button>
+                <button class="nav-item" onclick="showSection('agencies',this);loadAgencies()">
+                    <span class="nav-icon">🗺️</span> Tour Agencies
+                </button>
+
+                <div class="nav-section-label">Insights</div>
+                <button class="nav-item" onclick="showSection('analytics',this)">
+                    <span class="nav-icon">📈</span> Analytics
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="adminLogout()">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <div class="main">
+            <div class="topbar">
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                    <div class="topbar-title" id="topbarTitle">Dashboard</div>
+                </div>
+                <div class="topbar-right">
+                    <span style="font-size:0.8rem;color:var(--text3);" id="topbarDate"></span>
+                </div>
+            </div>
+
+            <div class="content">
+
+                <!-- DASHBOARD -->
+                <div id="section-dashboard" class="section active">
+                    <div id="stats-grid" class="stats-grid">
+                        <div class="stat-card" style="--accent-color:var(--primary);--accent-bg:rgba(99,102,241,0.1);">
+                            <div class="stat-icon">🍽️</div>
+                            <div class="stat-value" id="s-restaurants">—</div>
+                            <div class="stat-label">Restaurants</div>
+                        </div>
+                        <div class="stat-card" style="--accent-color:var(--success);--accent-bg:rgba(16,185,129,0.1);">
+                            <div class="stat-icon">🏨</div>
+                            <div class="stat-value" id="s-hotels">—</div>
+                            <div class="stat-label">Hotels</div>
+                        </div>
+                        <div class="stat-card" style="--accent-color:var(--warning);--accent-bg:rgba(245,158,11,0.1);">
+                            <div class="stat-icon">🏛️</div>
+                            <div class="stat-value" id="s-attractions">—</div>
+                            <div class="stat-label">Attractions</div>
+                        </div>
+                        <div class="stat-card" style="--accent-color:#8b5cf6;--accent-bg:rgba(139,92,246,0.1);">
+                            <div class="stat-icon">🗺️</div>
+                            <div class="stat-value" id="s-agencies">—</div>
+                            <div class="stat-label">Tour Agencies</div>
+                        </div>
+                        <div class="stat-card" style="--accent-color:var(--info);--accent-bg:rgba(59,130,246,0.1);">
+                            <div class="stat-icon">⭐</div>
+                            <div class="stat-value" id="s-reviews">—</div>
+                            <div class="stat-label">Reviews</div>
+                        </div>
+                        <div class="stat-card" style="--accent-color:#ec4899;--accent-bg:rgba(236,72,153,0.1);">
+                            <div class="stat-icon">🤝</div>
+                            <div class="stat-value" id="s-partners">—</div>
+                            <div class="stat-label">Active Partners</div>
+                        </div>
+                    </div>
+
+                    <!-- Pending alert on dashboard -->
+                    <div id="dashboard-pending" class="card"></div>
+
+                    <!-- Analytics embed on dashboard -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">📈 Platform Analytics</div>
+                            <a href="https://analytics.google.com" target="_blank" class="btn btn-secondary btn-sm">
+                                Open Full GA →
+                            </a>
+                        </div>
+                        <iframe
+                            src="https://lookerstudio.google.com/embed/reporting/41a6d4c1-aed0-4ce8-a814-a1716b0acfee/page/kIV1C"
+                            class="analytics-frame" style="height:600px;" loading="lazy">
+                        </iframe>
+                    </div>
                 </div>
 
-                <div class="nav-item" onclick="showSection('partners')">🤝 Partners</div>
-                <div class="nav-item" onclick="showSection('renewals')">💳 Renewals</div>
-                <div class="nav-item" onclick="showSection('restaurants')">🍽️ Restaurants</div>
-                <div class="nav-item" onclick="showSection('hotels')">🏨 Hotels</div>
-                <div class="nav-item" onclick="showSection('agencies')">🗺️ Tour Agencies</div>
-                <div class="nav-item" onclick="showSection('platform-analytics')">📈 Analytics</div>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div class="content-wrapper">
-                <!-- Dashboard -->
-                <div id="dashboard" class="section active">
-                    <h1 class="page-title">CEO Dashboard</h1>
-                    <div class="stats-grid" id="stats-grid"></div>
-
-                    <div id="pending-items"></div>
-
-                    <section id="sec-partner-applications" style="margin-bottom:2.5rem">
-                        <div
-                            style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;flex-wrap:wrap;gap:.75rem">
-                            <h2 style="font-size:1.2rem;font-weight:700;color:#1e293b">Partner Applications</h2>
-                            <button class="pa-refresh-btn" onclick="loadPartnerApplications()">↻ Refresh</button>
+                <!-- APPROVALS -->
+                <div id="section-approvals" class="section">
+                    <div id="pending-items">
+                        <div class="empty">
+                            <div class="empty-icon">⏳</div>
+                            <p>Loading pending approvals…</p>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Status tabs + type filter -->
-                        <div class="pa-filter-bar">
-                            <button class="pa-tab-btn active" onclick="paSetStatus('all',this)">All <span class="n"
-                                    id="pcnt-all">0</span></button>
-                            <button class="pa-tab-btn" onclick="paSetStatus('email_verified',this)">Awaiting Review
-                                <span class="n" id="pcnt-email_verified">0</span></button>
-                            <button class="pa-tab-btn" onclick="paSetStatus('pending',this)">Email Unverified <span
-                                    class="n" id="pcnt-pending">0</span></button>
-                            <button class="pa-tab-btn" onclick="paSetStatus('approved',this)">Approved <span class="n"
-                                    id="pcnt-approved">0</span></button>
-                            <button class="pa-tab-btn" onclick="paSetStatus('rejected',this)">Rejected <span class="n"
-                                    id="pcnt-rejected">0</span></button>
-                            <select id="paTypeFilter" onchange="paRender()" style="margin-left:auto">
+                <!-- PARTNERS -->
+                <div id="section-partners" class="section">
+                    <div class="partner-stats">
+                        <div class="partner-stat">
+                            <div class="partner-stat-num" id="ps-total">—</div>
+                            <div class="partner-stat-lbl">Total Partners</div>
+                        </div>
+                        <div class="partner-stat">
+                            <div class="partner-stat-num" style="color:var(--success);" id="ps-active">—</div>
+                            <div class="partner-stat-lbl">Active</div>
+                        </div>
+                        <div class="partner-stat">
+                            <div class="partner-stat-num" style="color:var(--warning);" id="ps-expiring">—</div>
+                            <div class="partner-stat-lbl">Expiring (7d)</div>
+                        </div>
+                        <div class="partner-stat">
+                            <div class="partner-stat-num" style="color:var(--danger);" id="ps-expired">—</div>
+                            <div class="partner-stat-lbl">Expired</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="filter-bar">
+                            <input type="text" id="partnerSearch" class="search-input"
+                                placeholder="🔍 Search by name or email…" oninput="filterPartners()"
+                                style="max-width:300px;">
+                            <select id="partnerStatusFilter" class="filter-select" onchange="filterPartners()">
+                                <option value="">All Status</option>
+                                <option value="active">✅ Active</option>
+                                <option value="expiring">⚠️ Expiring</option>
+                                <option value="expired">❌ Expired</option>
+                            </select>
+                            <select id="partnerTypeFilter" class="filter-select" onchange="filterPartners()">
                                 <option value="">All Types</option>
                                 <option value="restaurant">🍽️ Restaurant</option>
                                 <option value="hotel">🏨 Hotel</option>
-                                <option value="travel_agency">🌍 Travel Agency</option>
-                                <option value="attraction">🏛️ Attraction</option>
-                                <option value="multiple">📦 Multiple</option>
+                                <option value="travel_agency">🗺️ Agency</option>
                             </select>
+                            <button class="btn btn-secondary btn-sm" onclick="loadPartners()">↻ Refresh</button>
                         </div>
-
-                        <div class="pa-grid" id="paGrid">
-                            <div class="pa-empty">
-                                <div class="ei">📋</div>
-                                <p>Loading…</p>
-                            </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Business</th>
+                                        <th>Type</th>
+                                        <th>Email</th>
+                                        <th>Plan</th>
+                                        <th>Expires</th>
+                                        <th>Days</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="partnersTableBody">
+                                    <tr>
+                                        <td colspan="8" class="empty">Loading…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                    </section>
-                </div>
-
-                <!-- Restaurants -->
-                <div id="restaurants" class="section">
-                    <h1 class="page-title">Restaurants Management</h1>
-
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h2>All Restaurants</h2>
-                            <button class="btn-create" onclick="openCreateRestaurant()">➕ Create New</button>
-                        </div>
-
-                        <!-- Restaurants Table -->
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Cuisine</th>
-                                    <th>Rating</th>
-                                    <th>Status</th>
-                                    <th>Partner</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="restaurants-table">
-                                <tr>
-                                    <td colspan="7" style="text-align: center; padding: 2rem;">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- Pagination Controls -->
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-top: 1px solid #e5e7eb;">
-                            <div style="color: #6b7280;">
-                                Showing <span id="restaurants-showing">0</span> of <span id="restaurants-total">0</span>
-                                restaurants
-                            </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button id="restaurants-prev-btn" class="btn-secondary"
-                                    onclick="changeRestaurantsPage(-1)" disabled>
-                                    ← Previous
-                                </button>
-                                <div id="restaurants-page-numbers" style="display: flex; gap: 0.5rem;"></div>
-                                <button id="restaurants-next-btn" class="btn-secondary"
-                                    onclick="changeRestaurantsPage(1)">
-                                    Next →
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Restaurant Details Panel (shows when clicking a restaurant) -->
-                    <div id="restaurant-details-panel" class="table-container" style="display: none; margin-top: 2rem;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #e5e7eb;">
-                            <h2 style="margin: 0;">Restaurant Details</h2>
-                            <button onclick="closeRestaurantDetails()"
-                                style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9ca3af;">×</button>
-                        </div>
-
-                        <div id="restaurant-details-content" style="padding: 2rem;">
-                            <!-- Details will be loaded here -->
-                        </div>
-                    </div>
-
-                </div>
-
-
-                <!-- Hotels -->
-                <div id="hotels" class="section">
-                    <h1 class="page-title">Hotels Management</h1>
-
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h2>All Hotels</h2>
-                            <button class="btn-create" onclick="openCreateHotel()">➕ Create New</button>
-                        </div>
-
-                        <!-- Hotels Table -->
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Type</th>
-                                    <th>Rating</th>
-                                    <th>Rooms</th>
-                                    <th>Status</th>
-                                    <th>Partner</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="hotels-table">
-                                <tr>
-                                    <td colspan="8" style="text-align: center; padding: 2rem;">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- Pagination Controls -->
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-top: 1px solid #e5e7eb;">
-                            <div style="color: #6b7280;">
-                                Showing <span id="hotels-showing">0</span> of <span id="hotels-total">0</span> hotels
-                            </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button id="hotels-prev-btn" class="btn-secondary" onclick="changeHotelsPage(-1)"
-                                    disabled>
-                                    ← Previous
-                                </button>
-                                <div id="hotels-page-numbers" style="display: flex; gap: 0.5rem;"></div>
-                                <button id="hotels-next-btn" class="btn-secondary" onclick="changeHotelsPage(1)">
-                                    Next →
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Hotel Details Panel -->
-                    <div id="hotel-details-panel" class="table-container" style="display: none; margin-top: 2rem;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #e5e7eb;">
-                            <h2 style="margin: 0;">Hotel Details</h2>
-                            <button onclick="closeHotelDetails()"
-                                style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9ca3af;">×</button>
-                        </div>
-
-                        <div id="hotel-details-content" style="padding: 2rem;">
-                            <!-- Details will be loaded here -->
-                        </div>
+                        <div id="partnersPagination" style="margin-top:1rem;font-size:0.82rem;color:var(--text3);
+                        display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;"></div>
                     </div>
                 </div>
 
-                <!-- Attractions -->
-                <div id="attractions" class="section">
-                    <h1 class="page-title">Attractions Management</h1>
-
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h2>All Attractions</h2>
-                            <button class="btn-create" onclick="openCreateAttraction()">➕ Create New</button>
-                        </div>
-
-                        <!-- Attractions Table -->
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Category</th>
-                                    <th>Rating</th>
-                                    <th>Price</th>
-                                    <th>Status</th>
-                                    <th>Partner</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="attractions-table">
-                                <tr>
-                                    <td colspan="8" style="text-align: center; padding: 2rem;">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- Pagination Controls -->
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-top: 1px solid #e5e7eb;">
-                            <div style="color: #6b7280;">
-                                Showing <span id="attractions-showing">0</span> of <span id="attractions-total">0</span>
-                                attractions
-                            </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button id="attractions-prev-btn" class="btn-secondary"
-                                    onclick="changeAttractionsPage(-1)" disabled>
-                                    ← Previous
-                                </button>
-                                <div id="attractions-page-numbers" style="display: flex; gap: 0.5rem;"></div>
-                                <button id="attractions-next-btn" class="btn-secondary"
-                                    onclick="changeAttractionsPage(1)">
-                                    Next →
-                                </button>
+                <!-- RENEWALS -->
+                <div id="section-renewals" class="section">
+                    <div class="renewal-counts">
+                        <div class="renewal-count-box">
+                            <div>
+                                <div class="renewal-count-num" id="renewal-pending-count" style="color:var(--warning);">
+                                    0</div>
+                                <div class="renewal-count-lbl">Pending</div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Attraction Details Panel -->
-                    <div id="attraction-details-panel" class="table-container" style="display: none; margin-top: 2rem;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #e5e7eb;">
-                            <h2 style="margin: 0;">Attraction Details</h2>
-                            <button onclick="closeAttractionDetails()"
-                                style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9ca3af;">×</button>
-                        </div>
-
-                        <div id="attraction-details-content" style="padding: 2rem;">
-                            <!-- Details will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tour Agencies -->
-                <div id="agencies" class="section">
-                    <h1 class="page-title">Tour Agencies Management</h1>
-
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h2>All Tour Agencies</h2>
-                            <button class="btn-create" onclick="openCreateAgency()">➕ Create New</button>
-                        </div>
-
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Agency</th>
-                                    <th>Type</th>
-                                    <th>City</th>
-                                    <th>Rating</th>
-                                    <th>Tours</th>
-                                    <th>Partner</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="agencies-table">
-                                <tr>
-                                    <td colspan="9" style="text-align:center;padding:2rem;">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div
-                            style="display:flex;justify-content:space-between;align-items:center;padding:1.5rem;border-top:1px solid #e5e7eb;">
-                            <div style="color:#6b7280;">
-                                Showing <span id="agencies-showing">0</span> of <span id="agencies-total">0</span>
-                                agencies
-                            </div>
-                            <div style="display:flex;gap:0.5rem;">
-                                <button id="agencies-prev-btn" class="btn-secondary" onclick="changeAgenciesPage(-1)"
-                                    disabled>← Previous</button>
-                                <div id="agencies-page-numbers" style="display:flex;gap:0.5rem;"></div>
-                                <button id="agencies-next-btn" class="btn-secondary"
-                                    onclick="changeAgenciesPage(1)">Next →</button>
+                        <div class="renewal-count-box">
+                            <div>
+                                <div class="renewal-count-num" id="renewal-approved-count"
+                                    style="color:var(--success);">0</div>
+                                <div class="renewal-count-lbl">Approved</div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Agency Details Panel -->
-                    <div id="agency-details-panel" class="table-container" style="display:none;margin-top:2rem;">
-                        <div
-                            style="display:flex;justify-content:space-between;align-items:center;padding:1.5rem;border-bottom:1px solid #e5e7eb;">
-                            <h2 style="margin:0;">Agency Details</h2>
-                            <button onclick="closeAgencyDetails()"
-                                style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#9ca3af;">×</button>
-                        </div>
-                        <div id="agency-details-content" style="padding:2rem;"></div>
-                    </div>
-                </div>
-
-                <!-- Create / Edit Agency Modal -->
-                <div id="agencyModal" class="modal">
-                    <div class="modal-content" style="max-width:900px;">
-                        <div class="modal-header">
-                            <h2 id="agencyModalTitle">Create New Tour Agency</h2>
-                            <button class="modal-close" onclick="closeAgencyModal()">×</button>
-                        </div>
-                        <form id="agencyForm" onsubmit="saveAgency(event)">
-                            <div class="modal-body">
-                                <input type="hidden" id="agency-id">
-
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Agency Name *</label>
-                                        <input type="text" id="agency-name" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Agency Type</label>
-                                        <select id="agency-type">
-                                            <option value="">Select type…</option>
-                                            <option value="Adventure">Adventure</option>
-                                            <option value="Luxury">Luxury</option>
-                                            <option value="Cultural">Cultural</option>
-                                            <option value="Budget">Budget</option>
-                                            <option value="Family">Family</option>
-                                            <option value="Eco Tourism">Eco Tourism</option>
-                                            <option value="Tour Operator">Tour Operator</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Description *</label>
-                                    <textarea id="agency-description" style="min-height:90px;" required></textarea>
-                                </div>
-
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>City</label>
-                                        <input type="text" id="agency-city" placeholder="Tashkent">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Country</label>
-                                        <input type="text" id="agency-country" placeholder="Uzbekistan">
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Address</label>
-                                    <input type="text" id="agency-address"
-                                        placeholder="25 Mustaqillik Avenue, Tashkent">
-                                </div>
-
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Phone</label>
-                                        <input type="text" id="agency-phone" placeholder="+998 71 567 8901">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Email</label>
-                                        <input type="text" id="agency-email" placeholder="info@agency.com">
-                                    </div>
-                                </div>
-
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Website</label>
-                                        <input type="url" id="agency-website" placeholder="https://agency.com">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Languages</label>
-                                        <input type="text" id="agency-languages"
-                                            placeholder="English, Russian, Chinese">
-                                    </div>
-                                </div>
-
-                                <!-- Location map — same pattern as hotel/attraction -->
-                                <div class="form-group">
-                                    <label>Location (Click on map)</label>
-                                    <div id="agency-map"
-                                        style="height:280px;border-radius:8px;border:2px solid #e5e7eb;margin-top:0.5rem;">
-                                    </div>
-                                    <div
-                                        style="margin-top:0.5rem;padding:0.75rem;background:#f0f9ff;border-radius:8px;font-size:0.875rem;color:#1e40af;">
-                                        📍 <span id="agency-coords">Click on map to set location</span>
-                                    </div>
-                                    <input type="hidden" id="agency-lat">
-                                    <input type="hidden" id="agency-lng">
-                                </div>
-
-                                <!-- Image upload — same pattern as hotel -->
-                                <div class="form-group">
-                                    <label>Agency Photo</label>
-                                    <div class="file-upload-wrapper">
-                                        <label for="agency-image-upload" class="file-upload-button">
-                                            📸 Choose Image
-                                        </label>
-                                        <input type="file" id="agency-image-upload" accept="image/*"
-                                            onchange="uploadAgencyImage(this)">
-                                    </div>
-                                    <div class="upload-progress" id="agency-upload-progress">Uploading...</div>
-                                    <input type="hidden" id="agency-image-url">
-                                    <div class="image-preview-container" id="agency-image-preview-container">
-                                        <img id="agency-image-preview" class="image-preview">
-                                    </div>
-                                </div>
-
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>
-                                            <input type="checkbox" id="agency-is-partner"
-                                                style="width:auto;margin-right:0.5rem;">
-                                            ⭐ Mark as Partner
-                                        </label>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>
-                                            <input type="checkbox" id="agency-is-verified"
-                                                style="width:auto;margin-right:0.5rem;">
-                                            ✅ Mark as Verified
-                                        </label>
-                                    </div>
-                                </div>
+                        <div class="renewal-count-box">
+                            <div>
+                                <div class="renewal-count-num" id="renewal-rejected-count" style="color:var(--danger);">
+                                    0</div>
+                                <div class="renewal-count-lbl">Rejected</div>
                             </div>
-
-                            <div class="modal-footer">
-                                <button type="button" class="btn-secondary" onclick="closeAgencyModal()">Cancel</button>
-                                <button type="submit" class="btn-primary">Save Agency</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- ════════════════ CHANGE 3A: PARTNERS SECTION ════════════════ -->
-                <div id="partners" class="section">
-                    <h1 class="page-title">🤝 Partner Management</h1>
-
-                    <!-- Stats row -->
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;"
-                        id="partnerStats">
-                        <div class="stat-card" style="border-left-color:#6366f1">
-                            <div class="stat-label">Total Partners</div>
-                            <div class="stat-value" id="ps-total">—</div>
                         </div>
-                        <div class="stat-card" style="border-left-color:#10b981">
-                            <div class="stat-label">Active</div>
-                            <div class="stat-value" id="ps-active">—</div>
-                        </div>
-                        <div class="stat-card" style="border-left-color:#f59e0b">
-                            <div class="stat-label">Expiring (7 days)</div>
-                            <div class="stat-value" id="ps-expiring">—</div>
-                        </div>
-                        <div class="stat-card" style="border-left-color:#ef4444">
-                            <div class="stat-label">Expired</div>
-                            <div class="stat-value" id="ps-expired">—</div>
-                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadRenewals()" style="margin-left:auto;">↻
+                            Refresh</button>
                     </div>
-
-                    <!-- Filter bar -->
-                    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;">
-                        <input type="text" id="partnerSearch" placeholder="🔍 Search by name or email…"
-                            oninput="filterPartners()"
-                            style="padding:0.6rem 1rem;border:2px solid #e2e8f0;border-radius:10px;font-size:0.875rem;font-family:inherit;flex:1;min-width:200px;">
-                        <select id="partnerStatusFilter" onchange="filterPartners()"
-                            style="padding:0.6rem 1rem;border:2px solid #e2e8f0;border-radius:10px;font-size:0.875rem;font-family:inherit;">
-                            <option value="">All Statuses</option>
-                            <option value="active">✅ Active</option>
-                            <option value="expiring">⚠️ Expiring Soon</option>
-                            <option value="expired">❌ Expired</option>
-                        </select>
-                        <select id="partnerTypeFilter" onchange="filterPartners()"
-                            style="padding:0.6rem 1rem;border:2px solid #e2e8f0;border-radius:10px;font-size:0.875rem;font-family:inherit;">
-                            <option value="">All Types</option>
-                            <option value="restaurant">🍽️ Restaurant</option>
-                            <option value="hotel">🏨 Hotel</option>
-                            <option value="travel_agency">🌍 Travel Agency</option>
-                            <option value="attraction">🏛️ Attraction</option>
-                        </select>
-                        <button onclick="loadPartners()"
-                            style="padding:0.6rem 1rem;border:2px solid #e2e8f0;border-radius:10px;font-size:0.875rem;cursor:pointer;font-family:inherit;background:white;transition:all 0.2s;"
-                            onmouseover="this.style.borderColor='#6366f1'"
-                            onmouseout="this.style.borderColor='#e2e8f0'">
-                            ↻ Refresh
-                        </button>
-                    </div>
-
-                    <!-- Table -->
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Business</th>
-                                    <th>Type</th>
-                                    <th>Email</th>
-                                    <th>Plan</th>
-                                    <th>Expires</th>
-                                    <th>Days Left</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="partnersTableBody">
-                                <tr>
-                                    <td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8;">Loading…</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="partnersPagination"
-                        style="margin-top:1rem;text-align:center;font-size:0.875rem;color:#64748b;"></div>
-                </div>
-
-
-                <!-- ════════════════ CHANGE 3B: RENEWALS SECTION ════════════════ -->
-                <div id="renewals" class="section">
-                    <h1 class="page-title">💳 Renewal Requests</h1>
-
-                    <!-- Filter tabs -->
-                    <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
-                        <button class="pa-tab-btn active" onclick="renewalSetStatus('pending',this)">
-                            Pending <span id="rcnt-pending"
-                                style="background:#fef3c7;color:#92400e;border-radius:20px;padding:0.1rem 0.5rem;font-size:0.75rem;font-weight:700;">0</span>
-                        </button>
-                        <button class="pa-tab-btn" onclick="renewalSetStatus('approved',this)">
-                            Approved <span id="rcnt-approved"
-                                style="background:#d1fae5;color:#065f46;border-radius:20px;padding:0.1rem 0.5rem;font-size:0.75rem;font-weight:700;">0</span>
-                        </button>
-                        <button class="pa-tab-btn" onclick="renewalSetStatus('rejected',this)">
-                            Rejected <span id="rcnt-rejected"
-                                style="background:#fee2e2;color:#991b1b;border-radius:20px;padding:0.1rem 0.5rem;font-size:0.75rem;font-weight:700;">0</span>
-                        </button>
-                        <button class="pa-tab-btn" onclick="renewalSetStatus('all',this)">All</button>
-                        <button onclick="loadRenewals()"
-                            style="margin-left:auto;padding:0.4rem 0.95rem;border:1px solid #e2e8f0;border-radius:8px;font-size:0.76rem;cursor:pointer;font-family:inherit;background:white;">
-                            ↻ Refresh
-                        </button>
-                    </div>
-
-                    <div id="renewalsGrid">
-                        <div class="pa-empty">
-                            <div class="ei">💳</div>
+                    <div id="renewals-container">
+                        <div class="empty">
+                            <div class="empty-icon">⏳</div>
                             <p>Loading renewals…</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Reviews -->
-                <div id="reviews" class="section">
-                    <h1 class="page-title">Reviews</h1>
-                    <div class="table-container">
-                        <h2>All Reviews</h2>
-                        <div id="reviews-container"></div>
+                <!-- RESTAURANTS -->
+                <div id="section-restaurants" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">All Restaurants</div>
+                            <button class="btn btn-primary btn-sm" onclick="openCreateRestaurant()">+ Create
+                                New</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Cuisine</th>
+                                        <th>Rating</th>
+                                        <th>Status</th>
+                                        <th>Partner</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="restaurants-table">
+                                    <tr>
+                                        <td colspan="7" class="empty">Loading…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:0.75rem;font-size:0.82rem;color:var(--text3);">
+                            Showing <span id="restaurants-showing">0</span> of <span id="restaurants-total">0</span>
+                            restaurants
+                        </div>
                     </div>
                 </div>
 
-                <!-- Likes -->
-                <div id="likes" class="section">
-                    <h1 class="page-title">Popular Places</h1>
-                    <div class="table-container">
-                        <h2>By Likes</h2>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Place</th>
-                                    <th>Type</th>
-                                    <th>Likes</th>
-                                    <th>Updated</th>
-                                </tr>
-                            </thead>
-                            <tbody id="likes-table"></tbody>
-                        </table>
+                <!-- HOTELS -->
+                <div id="section-hotels" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">All Hotels</div>
+                            <button class="btn btn-primary btn-sm" onclick="openCreateHotel()">+ Create New</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Rating</th>
+                                        <th>Status</th>
+                                        <th>Partner</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hotels-table">
+                                    <tr>
+                                        <td colspan="7" class="empty">Loading…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:0.75rem;font-size:0.82rem;color:var(--text3);">
+                            Showing <span id="hotels-showing">0</span> of <span id="hotels-total">0</span> hotels
+                        </div>
                     </div>
                 </div>
 
-                <!-- Platform Analytics Section -->
-                <div id="platform-analytics" class="section">
-                    <h1 class="page-title">Platform Analytics</h1>
+                <!-- AGENCIES -->
+                <div id="section-agencies" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">All Tour Agencies</div>
+                            <button class="btn btn-primary btn-sm" onclick="openCreateAgency()">+ Create New</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>City</th>
+                                        <th>Tours</th>
+                                        <th>Rating</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agencies-table">
+                                    <tr>
+                                        <td colspan="7" class="empty">Loading…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-                    <!-- Info Card -->
-                    <div class="table-container" style="margin-bottom: 2rem;">
-                        <div style="padding: 2rem;">
-                            <h3 style="color: #1f2937; margin-bottom: 1rem;">📈 Complete Platform Analytics</h3>
-                            <p style="color: #6b7280; margin-bottom: 1.5rem;">
-                                Track all visitor activity across your entire platform - restaurants, hotels, and
-                                attractions.
-                                See real-time stats, traffic sources, user behavior, and more.
-                            </p>
-                            <div
-                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                                <div
-                                    style="background: #f0f9ff; padding: 1rem; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                                    <div style="font-size: 0.875rem; color: #1e40af; margin-bottom: 0.5rem;">✅ What You
-                                        Can Track:</div>
-                                    <div style="font-size: 0.875rem; color: #1e3a8a; line-height: 1.8;">
-                                        Total page views<br>
-                                        Unique visitors<br>
-                                        Real-time active users
-                                    </div>
+                <!-- ANALYTICS -->
+                <div id="section-analytics" class="section">
+                    <div class="card" style="margin-bottom:1.5rem;">
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+                            <div style="background:var(--info-bg);border:1px solid rgba(59,130,246,0.2);
+                                    border-radius:10px;padding:1.25rem;">
+                                <div style="font-size:0.8rem;font-weight:700;color:var(--info);margin-bottom:0.5rem;">✅
+                                    What You Can Track</div>
+                                <div style="font-size:0.82rem;color:var(--text2);line-height:1.8;">
+                                    Total page views<br>Unique visitors<br>Real-time users
                                 </div>
+                            </div>
+                            <div style="background:var(--success-bg);border:1px solid rgba(16,185,129,0.2);
+                                    border-radius:10px;padding:1.25rem;">
                                 <div
-                                    style="background: #f0fdf4; padding: 1rem; border-radius: 8px; border-left: 4px solid #10b981;">
-                                    <div style="font-size: 0.875rem; color: #065f46; margin-bottom: 0.5rem;">📊 Platform
-                                        Insights:</div>
-                                    <div style="font-size: 0.875rem; color: #064e3b; line-height: 1.8;">
-                                        Most popular pages<br>
-                                        Traffic by country<br>
-                                        Mobile vs desktop
-                                    </div>
+                                    style="font-size:0.8rem;font-weight:700;color:var(--success);margin-bottom:0.5rem;">
+                                    📊 Platform Insights</div>
+                                <div style="font-size:0.82rem;color:var(--text2);line-height:1.8;">
+                                    Most popular pages<br>Traffic by country<br>Mobile vs desktop
                                 </div>
+                            </div>
+                            <div style="background:var(--warning-bg);border:1px solid rgba(245,158,11,0.2);
+                                    border-radius:10px;padding:1.25rem;">
                                 <div
-                                    style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                                    <div style="font-size: 0.875rem; color: #92400e; margin-bottom: 0.5rem;">🎯 Partner
-                                        Performance:</div>
-                                    <div style="font-size: 0.875rem; color: #78350f; line-height: 1.8;">
-                                        Top restaurants by views<br>
-                                        Top hotels by views<br>
-                                        Engagement time
-                                    </div>
+                                    style="font-size:0.8rem;font-weight:700;color:var(--warning);margin-bottom:0.5rem;">
+                                    🎯 Partner Performance</div>
+                                <div style="font-size:0.82rem;color:var(--text2);line-height:1.8;">
+                                    Top listings by views<br>Engagement time<br>Conversion data
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Embedded Looker Studio Dashboard -->
-                    <div class="table-container">
-                        <iframe
-                            src="https://lookerstudio.google.com/embed/reporting/41a6d4c1-aed0-4ce8-a814-a1716b0acfee/page/kIV1C"
-                            width="100%" height="1200" frameborder="0" style="border:0; border-radius: 8px;">
-                        </iframe>
-                    </div>
-
-                    <!-- Quick Access to Google Analytics -->
-                    <div class="table-container" style="margin-top: 2rem;">
-                        <div style="padding: 2rem; text-align: center;">
-                            <h3 style="margin-bottom: 1rem;">Need More Detailed Reports?</h3>
-                            <p style="color: #6b7280; margin-bottom: 1.5rem;">
-                                Access the full Google Analytics dashboard for advanced reports, custom segments, and
-                                export options.
-                            </p>
-                            <a href="https://analytics.google.com" target="_blank" class="btn-create"
-                                style="display: inline-block; text-decoration: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">📊 Looker Studio Dashboard</div>
+                            <a href="https://analytics.google.com" target="_blank" class="btn btn-secondary btn-sm">
                                 🚀 Open Full Google Analytics
                             </a>
                         </div>
+                        <iframe
+                            src="https://lookerstudio.google.com/embed/reporting/41a6d4c1-aed0-4ce8-a814-a1716b0acfee/page/kIV1C"
+                            class="analytics-frame" loading="lazy">
+                        </iframe>
                     </div>
                 </div>
 
-            </div>
-        </div>
+            </div><!-- /content -->
+        </div><!-- /main -->
+    </div><!-- /app -->
+
+    <!-- Modals kept from original (restaurant, hotel, agency create modals) -->
+    <div id="restaurantModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+    z-index:1000;align-items:center;justify-content:center;" onclick="if(event.target===this)closeRestaurantModal()">
+    </div>
+    <div id="hotelModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+    z-index:1000;align-items:center;justify-content:center;" onclick="if(event.target===this)closeHotelModal()">
+    </div>
+    <div id="agencyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+    z-index:1000;align-items:center;justify-content:center;" onclick="if(event.target===this)closeAgencyModal()">
     </div>
 
-    <!-- Restaurant Modal (Create)-->
-    <div id="restaurantModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Create Restaurant</h2>
-                <button class="modal-close" onclick="closeRestaurantModal()">×</button>
-            </div>
-            <form id="restaurantForm" onsubmit="saveRestaurant(event)">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">Name *</label>
-                        <input type="text" name="name" class="form-input" required>
-                    </div>
+    <div class="toast-container" id="toastContainer"></div>
 
-                    <div class="form-group">
-                        <label class="form-label">Description *</label>
-                        <textarea name="description" class="form-input form-textarea" required></textarea>
-                    </div>
+    <script src="/config.js"></script>
+    <script>
+        // ── AUTH ──────────────────────────────────────────────────────
+        const SESSION_KEY = 'ceo_admin_auth';
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Cuisine Type</label>
-                            <input type="text" name="cuisine_type" class="form-input">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Phone</label>
-                            <input type="text" name="phone" class="form-input">
-                        </div>
-                    </div>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (sessionStorage.getItem(SESSION_KEY)) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                initAdmin();
+            }
+            document.getElementById('topbarDate').textContent =
+                new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+        });
 
-                    <div class="form-group">
-                        <label class="form-label">Address *</label>
-                        <input type="text" name="address" class="form-input" required>
-                    </div>
+        async function checkAdminLogin() {
+            const input = document.getElementById('adminPasswordInput').value;
+            const err = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+            err.style.display = 'none';
+            btn.textContent = '⏳ Checking…'; btn.disabled = true;
+            try {
+                const res = await fetch(`${API_BASE}/admin/verify-login`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: input })
+                });
+                if (res.ok) {
+                    const d = await res.json();
+                    sessionStorage.setItem(SESSION_KEY, d.token);
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    initAdmin();
+                } else {
+                    err.style.display = 'block';
+                    document.getElementById('adminPasswordInput').value = '';
+                }
+            } catch (e) {
+                err.textContent = '❌ Cannot connect to server.';
+                err.style.display = 'block';
+            } finally { btn.textContent = 'Sign In →'; btn.disabled = false; }
+        }
 
-                    <div class="form-group">
-                        <label class="form-label">Location * (Click map)</label>
-                        <div class="map-container" id="restaurant-map"></div>
-                        <div class="map-info">
-                            📍 <span id="restaurant-coords">Click to set location</span>
-                        </div>
-                        <input type="hidden" name="latitude" id="restaurant-lat" required>
-                        <input type="hidden" name="longitude" id="restaurant-lng" required>
-                    </div>
+        function adminLogout() {
+            if (!confirm('Logout?')) return;
+            sessionStorage.removeItem(SESSION_KEY);
+            location.reload();
+        }
 
-                    <div class="form-group">
-                        <label class="form-label">Photo *</label>
-                        <div class="file-upload-wrapper">
-                            <label for="restaurant-image-upload" class="file-upload-button">
-                                📸 Choose Image
-                            </label>
-                            <input type="file" id="restaurant-image-upload" accept="image/*"
-                                onchange="uploadImage(this, 'restaurant')">
-                        </div>
-                        <div class="upload-progress" id="restaurant-upload-progress">Uploading...</div>
-                        <input type="hidden" name="image_url" id="restaurant-image-url" required>
-                        <div class="image-preview-container" id="restaurant-image-preview-container">
-                            <img id="restaurant-image-preview" class="image-preview">
-                        </div>
-                    </div>
+        function initAdmin() {
+            loadDashboard();
+        }
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Website</label>
-                            <input type="url" name="website" class="form-input" maxlength="255">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Hours</label>
-                            <input type="text" name="opening_hours" class="form-input">
-                        </div>
-                    </div>
+        // ── NAVIGATION ────────────────────────────────────────────────
+        function showSection(name, btn) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.getElementById(`section-${name}`).classList.add('active');
+            if (btn) btn.classList.add('active');
+            const titles = {
+                dashboard: 'Dashboard', approvals: 'Pending Approvals',
+                partners: 'Partner Management', renewals: 'Renewals',
+                restaurants: 'Restaurants', hotels: 'Hotels',
+                agencies: 'Tour Agencies', analytics: 'Analytics'
+            };
+            document.getElementById('topbarTitle').textContent = titles[name] || name;
+            if (name === 'approvals') loadPendingApprovals();
+            // Close sidebar on mobile
+            document.getElementById('sidebar').classList.remove('open');
+        }
 
-                    <div class="form-group">
-                        <label class="form-checkbox">
-                            <input type="checkbox" name="is_partner">
-                            <span>⭐ Partner</span>
-                        </label>
-                    </div>
-                </div>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
 
-                <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeRestaurantModal()">Cancel</button>
-                    <button type="submit" class="btn-submit">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
+        // ── TOAST ─────────────────────────────────────────────────────
+        function toast(msg, type = 'info') {
+            const c = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast toast-${type}`;
+            el.innerHTML = `<span>${{ success: '✅', error: '❌', info: 'ℹ️' }[type] || 'ℹ️'}</span> ${msg}`;
+            c.appendChild(el);
+            setTimeout(() => el.remove(), 4000);
+        }
 
-    <!-- Create Hotel Modal -->
-    <div id="hotelModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="hotelModalTitle">Create New Hotel</h2>
-                <button class="modal-close" onclick="closeHotelModal()">×</button>
-            </div>
-            <form id="hotelForm" onsubmit="saveHotel(event)">
-                <div class="modal-body">
-                    <input type="hidden" id="hotel-id">
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Hotel Name *</label>
-                            <input type="text" id="hotel-name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Hotel Type *</label>
-                            <select id="hotel-type" required>
-                                <option value="">Select Type</option>
-                                <option value="5 Star Hotel">5 Star Hotel</option>
-                                <option value="4 Star Hotel">4 Star Hotel</option>
-                                <option value="3 Star Hotel">3 Star Hotel</option>
-                                <option value="Boutique Hotel">Boutique Hotel</option>
-                                <option value="Resort">Resort</option>
-                                <option value="Guesthouse">Guesthouse</option>
-                                <option value="Hostel">Hostel</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Description *</label>
-                        <textarea id="hotel-description" required></textarea>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Phone</label>
-                            <input type="text" id="hotel-phone" placeholder="+998 90 123 4567">
-                        </div>
-                        <div class="form-group">
-                            <label>Website</label>
-                            <input type="url" id="hotel-website" placeholder="https://yourhotel.com">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Special Offer</label>
-                            <input type="text" id="hotel-offer" placeholder="e.g., 20% off weekend stays">
-                        </div>
-                        <div class="form-group">
-                            <label>Opening Hours</label>
-                            <input type="text" id="hotel-hours" placeholder="24/7">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Address *</label>
-                        <input type="text" id="hotel-address" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Location * (Click on map)</label>
-                        <div id="hotel-map" style="height: 300px; border-radius: 8px; margin-top: 0.5rem;"></div>
-                        <div
-                            style="margin-top: 0.5rem; padding: 0.75rem; background: #f0f9ff; border-radius: 8px; font-size: 0.875rem; color: #1e40af;">
-                            📍 <span id="hotel-coords">Click on map to set location</span>
-                        </div>
-                        <input type="hidden" id="hotel-lat" required>
-                        <input type="hidden" id="hotel-lng" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Hotel Image</label>
-                        <div class="file-upload-wrapper">
-                            <label for="hotel-image-upload" class="file-upload-button">
-                                📸 Choose Image
-                            </label>
-                            <input type="file" id="hotel-image-upload" accept="image/*"
-                                onchange="uploadHotelImage(this)">
-                        </div>
-                        <div class="upload-progress" id="hotel-upload-progress">Uploading...</div>
-                        <input type="hidden" id="hotel-image-url">
-                        <div class="image-preview-container" id="hotel-image-preview-container">
-                            <img id="hotel-image-preview" class="image-preview">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="hotel-is-partner" style="width: auto; margin-right: 0.5rem;">
-                            Mark as Partner
-                        </label>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="closeHotelModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Save Hotel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Create Attraction Modal -->
-    <div id="attractionModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="attractionModalTitle">Create New Attraction</h2>
-                <button class="modal-close" onclick="closeAttractionModal()">×</button>
-            </div>
-            <form id="attractionForm" onsubmit="saveAttraction(event)">
-                <div class="modal-body">
-                    <input type="hidden" id="attraction-id">
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Attraction Name *</label>
-                            <input type="text" id="attraction-name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Category *</label>
-                            <select id="attraction-category" required>
-                                <option value="">Select Category</option>
-                                <option value="Historical Site">Historical Site</option>
-                                <option value="Museum">Museum</option>
-                                <option value="Monument">Monument</option>
-                                <option value="Park">Park</option>
-                                <option value="Religious Site">Religious Site</option>
-                                <option value="Architectural Wonder">Architectural Wonder</option>
-                                <option value="Cultural Center">Cultural Center</option>
-                                <option value="Natural Landmark">Natural Landmark</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Description *</label>
-                        <textarea id="attraction-description" required></textarea>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Entrance Fee</label>
-                            <input type="number" id="attraction-price" step="0.01" placeholder="0 for free entry">
-                        </div>
-                        <div class="form-group">
-                            <label>Duration</label>
-                            <input type="text" id="attraction-duration" placeholder="e.g., 2-3 hours">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Best Time to Visit</label>
-                            <input type="text" id="attraction-best-time" placeholder="e.g., Early morning or sunset">
-                        </div>
-                        <div class="form-group">
-                            <label>Opening Hours</label>
-                            <input type="text" id="attraction-hours" placeholder="e.g., 9:00 AM - 6:00 PM">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Historical Significance</label>
-                        <textarea id="attraction-historical"
-                            placeholder="Optional: Describe the historical importance"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Address *</label>
-                        <input type="text" id="attraction-address" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Location * (Click on map)</label>
-                        <div id="attraction-map" style="height: 300px; border-radius: 8px; margin-top: 0.5rem;"></div>
-                        <div
-                            style="margin-top: 0.5rem; padding: 0.75rem; background: #f0f9ff; border-radius: 8px; font-size: 0.875rem; color: #1e40af;">
-                            📍 <span id="attraction-coords">Click on map to set location</span>
-                        </div>
-                        <input type="hidden" id="attraction-lat" required>
-                        <input type="hidden" id="attraction-lng" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Website</label>
-                        <input type="url" id="attraction-website" placeholder="https://example.com">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Attraction Image</label>
-                        <div class="file-upload-wrapper">
-                            <label for="attraction-image-upload" class="file-upload-button">
-                                📸 Choose Image
-                            </label>
-                            <input type="file" id="attraction-image-upload" accept="image/*"
-                                onchange="uploadAttractionImage(this)">
-                        </div>
-                        <div class="upload-progress" id="attraction-upload-progress">Uploading...</div>
-                        <input type="hidden" id="attraction-image-url">
-                        <div class="image-preview-container" id="attraction-image-preview-container">
-                            <img id="attraction-image-preview" class="image-preview">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="attraction-is-partner"
-                                style="width: auto; margin-right: 0.5rem;">
-                            Mark as Partner
-                        </label>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="closeAttractionModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Save Attraction</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="galleryModal" class="modal">
-        <div class="modal-content" style="max-width:760px;">
-            <div class="modal-header">
-                <h2 id="galleryModalTitle">Manage Photos</h2>
-                <button class="modal-close" onclick="closeGalleryModal()">×</button>
-            </div>
-            <div class="modal-body">
-
-                <!-- Current photos grid -->
-                <div id="galleryCurrentPhotos"
-                    style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:24px;min-height:60px;">
-                    <p style="color:#9ca3af;grid-column:1/-1;">Loading photos…</p>
-                </div>
-
-                <!-- Upload new photo -->
-                <div style="border-top:1px solid #e5e7eb;padding-top:20px;">
-                    <div class="form-group">
-                        <label style="font-weight:600;color:#374151;display:block;margin-bottom:8px;">Add New
-                            Photo</label>
-                        <div class="file-upload-wrapper">
-                            <label for="gallery-upload-input" class="file-upload-button">
-                                📸 Choose Photo to Upload
-                            </label>
-                            <input type="file" id="gallery-upload-input" accept="image/*"
-                                onchange="handleGalleryUpload(this)">
-                        </div>
-                        <div class="upload-progress" id="gallery-upload-progress">Uploading…</div>
-                    </div>
-                    <div class="form-group">
-                        <label style="font-weight:600;color:#374151;display:block;margin-bottom:8px;">Caption
-                            (optional)</label>
-                        <input type="text" id="gallery-caption-input" placeholder="Describe this photo"
-                            style="width:100%;padding:0.75rem;border:2px solid #e5e7eb;border-radius:8px;font-size:1rem;">
-                    </div>
-                    <div class="image-preview-container" id="gallery-new-preview-container">
-                        <img id="gallery-new-preview" class="image-preview">
-                    </div>
-                    <input type="hidden" id="gallery-new-image-url">
-                    <button type="button" class="btn-primary" onclick="saveGalleryPhoto()" style="margin-top:12px;">
-                        ➕ Add Photo to Gallery
-                    </button>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="/config.js"></script> 
-
-    <script src="admin.js"></script>
-
+        function fixUrl(url) {
+            if (!url) return '';
+            if (url.startsWith('http')) return url;
+            return API_BASE + url;
+        }
+    </script>
+    <script src="/admin.js"></script>
 </body>
 
 </html>
