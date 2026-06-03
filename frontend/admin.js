@@ -624,7 +624,14 @@ function renderRenewals() {
 
 async function approveRenewal(id) {
     try {
-        await fetchAPI(`/api/subscription/admin/renewals/${id}/approve`, { method: 'POST' });
+        const resp = await fetch(`${API_BASE}/api/subscription/admin/renewals/${id}/approve`, {
+            method: 'POST',
+            headers: { 'X-Admin-Key': ADMIN_KEY },
+        });
+        if (!resp.ok) {
+            const d = await resp.json().catch(() => ({}));
+            throw new Error(d.detail || 'Status ' + resp.status);
+        }
         toast('✅ Renewal approved!', 'success'); loadRenewals();
     } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
@@ -632,9 +639,15 @@ async function approveRenewal(id) {
 async function rejectRenewal(id) {
     const reason = prompt('Rejection reason:') || 'Payment not verified.';
     try {
-        await fetchAPI(`/api/subscription/admin/renewals/${id}/reject`, {
-            method: 'POST', body: JSON.stringify({ reason })
+        const resp = await fetch(`${API_BASE}/api/subscription/admin/renewals/${id}/reject`, {
+            method: 'POST',
+            headers: { 'X-Admin-Key': ADMIN_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason })
         });
+        if (!resp.ok) {
+            const d = await resp.json().catch(() => ({}));
+            throw new Error(d.detail || 'Status ' + resp.status);
+        }
         toast('Rejected', 'info'); loadRenewals();
     } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
