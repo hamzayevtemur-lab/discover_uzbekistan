@@ -631,6 +631,7 @@ async function approveRenewal(id) {
                 'X-Admin-Key': ADMIN_KEY,
             },
             body: JSON.stringify({
+                status: 'approved',
                 admin_email: 'ceo@discover-travel-uzbekistan.com',
                 rejection_reason: null,
             }),
@@ -652,6 +653,7 @@ async function rejectRenewal(id) {
                 'X-Admin-Key': ADMIN_KEY,
             },
             body: JSON.stringify({
+                status: 'rejected',
                 admin_email: 'ceo@discover-travel-uzbekistan.com',
                 rejection_reason: reason,
             }),
