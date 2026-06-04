@@ -626,7 +626,8 @@ async function approveRenewal(id) {
     try {
         const resp = await fetch(`${API_BASE}/api/subscription/admin/renewals/${id}/approve`, {
             method: 'POST',
-            headers: { 'X-Admin-Key': ADMIN_KEY },
+            headers: { 'X-Admin-Key': ADMIN_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ admin_email: 'ceo@discover-travel-uzbekistan.com' }),
         });
         if (!resp.ok) {
             const d = await resp.json().catch(() => ({}));
@@ -642,7 +643,11 @@ async function rejectRenewal(id) {
         const resp = await fetch(`${API_BASE}/api/subscription/admin/renewals/${id}/reject`, {
             method: 'POST',
             headers: { 'X-Admin-Key': ADMIN_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reason })
+            body: JSON.stringify({
+                admin_email: 'ceo@discover-travel-uzbekistan.com',
+                rejection_reason: reason,
+                reason: reason,
+            })
         });
         if (!resp.ok) {
             const d = await resp.json().catch(() => ({}));
