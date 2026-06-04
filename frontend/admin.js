@@ -626,14 +626,19 @@ async function approveRenewal(id) {
     try {
         const resp = await fetch(`${API_BASE}/api/subscription/admin/renewals/${id}/approve`, {
             method: 'POST',
-            headers: { 'X-Admin-Key': ADMIN_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ admin_email: 'ceo@discover-travel-uzbekistan.com' }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY,
+            },
+            body: JSON.stringify({
+                admin_email: 'ceo@discover-travel-uzbekistan.com',
+                rejection_reason: null,
+            }),
         });
-        if (!resp.ok) {
-            const d = await resp.json().catch(() => ({}));
-            throw new Error(d.detail || 'Status ' + resp.status);
-        }
-        toast('✅ Renewal approved!', 'success'); loadRenewals();
+        const d = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(d.detail || 'Status ' + resp.status);
+        toast('✅ Renewal approved! ' + (d.message || ''), 'success');
+        loadRenewals();
     } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 
@@ -642,17 +647,18 @@ async function rejectRenewal(id) {
     try {
         const resp = await fetch(`${API_BASE}/api/subscription/admin/renewals/${id}/reject`, {
             method: 'POST',
-            headers: { 'X-Admin-Key': ADMIN_KEY, 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY,
+            },
             body: JSON.stringify({
                 admin_email: 'ceo@discover-travel-uzbekistan.com',
                 rejection_reason: reason,
-                reason: reason,
-            })
+            }),
         });
-        if (!resp.ok) {
-            const d = await resp.json().catch(() => ({}));
-            throw new Error(d.detail || 'Status ' + resp.status);
-        }
-        toast('Rejected', 'info'); loadRenewals();
+        const d = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(d.detail || 'Status ' + resp.status);
+        toast('Rejected: ' + reason, 'info');
+        loadRenewals();
     } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
