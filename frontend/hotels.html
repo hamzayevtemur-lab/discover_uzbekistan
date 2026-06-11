@@ -642,9 +642,9 @@
     }
 
     .rgrid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem
+      display: flex;
+      flex-direction: column;
+      gap: .75rem
     }
 
     .rc {
@@ -652,7 +652,10 @@
       border: 1px solid var(--brd);
       border-radius: var(--r);
       overflow: hidden;
-      transition: all .28s
+      transition: all .28s;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch
     }
 
     .rc:hover {
@@ -662,10 +665,15 @@
     }
 
     .rc-img {
-      height: 155px;
+      width: 130px;
+      min-width: 130px;
+      height: auto;
+      min-height: 130px;
       overflow: hidden;
       background: var(--bg3);
-      position: relative
+      position: relative;
+      border-radius: var(--r) 0 0 var(--r);
+      flex-shrink: 0
     }
 
     .rc-img img {
@@ -691,7 +699,11 @@
     }
 
     .rc-body {
-      padding: .9rem
+      padding: .85rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center
     }
 
     .rc-type {
@@ -1314,7 +1326,7 @@
     <div class="ibinner" id="ibar"></div>
   </div>
   <div class="main">
-    <div class="arow" id="arow"></div>
+    <!-- action buttons removed - links shown in ibar -->
     <div id="offw" style="display:none">
       <div class="offer-strip"><span style="font-size:1.4rem">🎁</span>
         <div><strong id="offtxt"></strong><span>Exclusive partner deal — mention this page when booking</span></div>
@@ -1471,7 +1483,7 @@
     }
     function buildActions() {
       const ar = document.getElementById('arow');
-      let html = `<button class="ab ab-p" onclick="callH()"><i class="fa-solid fa-phone"></i> Call Hotel</button><button class="ab ab-s" onclick="getDir()"><i class="fa-solid fa-diamond-turn-right"></i> Directions</button>`;
+      let html = '';
       if (H?.website) html += `<button class="ab ab-s" onclick="window.open('${esc(H.website)}','_blank')"><i class="fa-solid fa-globe"></i> Website</button>`;
       if (H?.instagram) { const l = H.instagram.startsWith('http') ? H.instagram : `https://instagram.com/${H.instagram.replace('@', '')}`; html += `<button class="ab ab-ig" onclick="window.open('${esc(l)}','_blank')"><i class="fa-brands fa-instagram"></i> Instagram</button>`; }
       if (H?.telegram) { let tl = H.telegram; if (!tl.startsWith('http')) tl = tl.startsWith('@') ? `https://t.me/${tl.replace('@', '')}` : `https://t.me/${tl}`; html += `<button class="ab ab-tg" onclick="window.open('${esc(tl)}','_blank')"><i class="fa-brands fa-telegram"></i> Telegram</button>`; }
