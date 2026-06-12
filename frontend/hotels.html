@@ -642,9 +642,15 @@
     }
 
     .rgrid {
-      display: flex;
-      flex-direction: column;
-      gap: .75rem
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem
+    }
+
+    @media (max-width: 600px) {
+      .rgrid {
+        grid-template-columns: 1fr
+      }
     }
 
     .rc {
@@ -665,15 +671,23 @@
     }
 
     .rc-img {
-      width: 130px;
-      min-width: 130px;
+      width: 140px;
+      min-width: 140px;
       height: auto;
-      min-height: 130px;
+      min-height: 140px;
       overflow: hidden;
       background: var(--bg3);
       position: relative;
       border-radius: var(--r) 0 0 var(--r);
       flex-shrink: 0
+    }
+
+    @media (max-width: 600px) {
+      .rc-img {
+        width: 110px;
+        min-width: 110px;
+        min-height: 110px
+      }
     }
 
     .rc-img img {
@@ -1453,7 +1467,7 @@
     async function init() {
       try {
         const r = await fetch(`${API}/hotels/${hid}`); if (!r.ok) throw new Error(r.status === 404 ? 'Not found' : 'Error');
-        H = await r.json(); buildHero(); buildIBar(); buildAbout(); buildActions();
+        H = await r.json(); buildHero(); buildIBar(); buildAbout();
         if (H.is_partner && H.offer) { document.getElementById('offw').style.display = 'block'; document.getElementById('offtxt').textContent = H.offer; }
         await loadRooms(); initMap();
       } catch (e) { document.getElementById('rgrid').innerHTML = `<div class="gc lc" style="color:var(--ac3)">${esc(e.message)}</div>`; }

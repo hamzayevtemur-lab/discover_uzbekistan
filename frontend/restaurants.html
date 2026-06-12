@@ -614,9 +614,15 @@
 
         /* ── MENU GRID — ALWAYS 2 COLUMNS ── */
         .mgrid {
-            display: flex;
-            flex-direction: column;
-            gap: .75rem
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem
+        }
+
+        @media (max-width: 600px) {
+            .mgrid {
+                grid-template-columns: 1fr
+            }
         }
 
         .mc {
@@ -638,15 +644,23 @@
         }
 
         .mc-img {
-            width: 110px;
-            min-width: 110px;
+            width: 120px;
+            min-width: 120px;
             height: auto;
-            min-height: 110px;
+            min-height: 120px;
             overflow: hidden;
             background: var(--bg3);
             position: relative;
             border-radius: var(--r) 0 0 var(--r);
             flex-shrink: 0
+        }
+
+        @media (max-width: 600px) {
+            .mc-img {
+                width: 100px;
+                min-width: 100px;
+                min-height: 100px
+            }
         }
 
         .mc-img img {
@@ -1350,14 +1364,7 @@
             if (R.telegram) { let tl = R.telegram; if (!tl.startsWith('http')) tl = tl.startsWith('@') ? `https://t.me/${tl.replace('@', '')}` : `https://t.me/${tl}`; items.push(`<a href="${esc(tl)}" target="_blank" class="qi-tg"><i class="fa-brands fa-telegram"></i>${esc(R.telegram.startsWith('@') ? R.telegram : '@' + R.telegram)}</a>`); }
             document.getElementById('ibar').innerHTML = items.join('');
         }
-        function buildActions() {
-            const ar = document.getElementById('arow');
-            let html = '';
-            if (R?.website) html += `<button class="ab ab-s" onclick="window.open('${esc(R.website)}','_blank')"><i class="fa-solid fa-globe"></i> Website</button>`;
-            if (R?.instagram) { const l = R.instagram.startsWith('http') ? R.instagram : `https://instagram.com/${R.instagram.replace('@', '')}`; html += `<button class="ab ab-ig" onclick="window.open('${esc(l)}','_blank')"><i class="fa-brands fa-instagram"></i> Instagram</button>`; }
-            if (R?.telegram) { let tl = R.telegram; if (!tl.startsWith('http')) tl = tl.startsWith('@') ? `https://t.me/${tl.replace('@', '')}` : `https://t.me/${tl}`; html += `<button class="ab ab-tg" onclick="window.open('${esc(tl)}','_blank')"><i class="fa-brands fa-telegram"></i> Telegram</button>`; }
-            ar.innerHTML = html;
-        }
+        /* buildActions removed */
         function setupFav() { const btn = document.getElementById('favBtn'), k = `fav_r_${rid}`; if (localStorage.getItem(k) === '1') { btn.classList.add('liked'); btn.innerHTML = '<i class="fa-solid fa-heart"></i>'; } btn.onclick = () => { const s = btn.classList.toggle('liked'); btn.innerHTML = s ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>'; if (s) localStorage.setItem(k, '1'); else localStorage.removeItem(k); }; }
         function callR() { if (R?.phone) window.location.href = `tel:${R.phone.replace(/\D/g, '')}`; }
         async function loadMenu(cat) {
