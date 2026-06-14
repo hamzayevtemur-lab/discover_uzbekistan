@@ -14,10 +14,6 @@
   </script>
 
   <title>Discover Uzbekistan - Your Complete Travel Guide</title>
-
-  <link rel="icon" type="image/png" href="/images/logo.png">
-  <link rel="apple-touch-icon" href="/images/logo.png">
-
   <style>
     /* ==================== GLOBAL STYLES ==================== */
 
@@ -1045,30 +1041,30 @@
 
     <div class="header-content">
       <div class="logo">
-        <img src="/images/logo.png" alt="Discover Travel Uzbekistan" style="height:44px;width:44px;object-fit:cover;
-                border-radius:50%;vertical-align:middle;">
-        <span data-en="DISCOVER UZBEKISTAN" data-uz="O'ZBEKISTONNI KASHF ETING"
-          style="margin-left:0.6rem;font-size:1rem;font-weight:800;letter-spacing:0.05em;">
-          DISCOVER UZBEKISTAN
-        </span>
+        <div class="logo-dot"></div>
+        <span data-en="DISCOVER UZBEKISTAN" data-uz="O'ZBEKISTONNI KASHF ETING">DISCOVER UZBEKISTAN</span>
       </div>
+
+      <!-- Hamburger Menu Button (Mobile) -->
       <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+        ☰
+      </button>
 
-        <ul id="mainNav">
-          <li><a href="#home" data-en="Home" data-uz="Bosh sahifa">Home</a></li>
-          <li><a href="#about" data-en="About Us" data-uz="Biz haqimizda">About Us</a></li>
-          <li><a href="#categories" data-en="Historical Information" data-uz="Tarixiy ma'lumotlar">Historical
-              Information</a></li>
-          <li><a href="#featured" data-en="Destinations" data-uz="Manzillar">Destinations</a></li>
-          <li><a href="#services" data-en="Services" data-uz="Xizmatlar">Services</a></li>
-          <li><a href="#contact" data-en="Contact" data-uz="Aloqa">Contact</a></li>
-        </ul>
+      <ul id="mainNav">
+        <li><a href="#home" data-en="Home" data-uz="Bosh sahifa">Home</a></li>
+        <li><a href="#about" data-en="About Us" data-uz="Biz haqimizda">About Us</a></li>
+        <li><a href="#categories" data-en="Historical Information" data-uz="Tarixiy ma'lumotlar">Historical
+            Information</a></li>
+        <li><a href="#featured" data-en="Destinations" data-uz="Manzillar">Destinations</a></li>
+        <li><a href="#services" data-en="Services" data-uz="Xizmatlar">Services</a></li>
+        <li><a href="#contact" data-en="Contact" data-uz="Aloqa">Contact</a></li>
+      </ul>
 
-        <div class="header-right">
-          <button class="lang-toggle" onclick="toggleLanguage()">
-            <span id="lang-text">O'zbekcha</span>
-          </button>
-        </div>
+      <div class="header-right">
+        <button class="lang-toggle" onclick="toggleLanguage()">
+          <span id="lang-text">O'zbekcha</span>
+        </button>
+      </div>
 
     </div>
 
@@ -1217,8 +1213,8 @@
         </p>
       </div>
       <div id="newsEventsGrid" style="display:grid;
-                grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-                gap:2rem;align-items:start;">
+                grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+                gap:1.5rem;align-items:start;">
       </div>
     </div>
   </section>
@@ -1812,18 +1808,25 @@
 
         const catIcon = { news: '📰', event: '🎉', holiday: '🎊', announcement: '📢' };
         const catLabel = { news: 'News', event: 'Event', holiday: 'Holiday', announcement: 'Announcement' };
-        const catColor = {
-          news: { bg: 'rgba(219,234,254,0.15)', color: '#93c5fd' },
-          event: { bg: 'rgba(209,250,229,0.15)', color: '#6ee7b7' },
-          holiday: { bg: 'rgba(252,231,243,0.15)', color: '#f9a8d4' },
-          announcement: { bg: 'rgba(254,243,199,0.15)', color: '#fcd34d' },
+        const catGrad = {
+          news: 'linear-gradient(135deg,#1e3a5f,#2d5986)',
+          event: 'linear-gradient(135deg,#1a3d2b,#2d6b47)',
+          holiday: 'linear-gradient(135deg,#4a1942,#7b2d7b)',
+          announcement: 'linear-gradient(135deg,#3d2a00,#7a5500)',
+        };
+        const catBadge = {
+          news: { bg: '#1d4ed8', color: '#fff' },
+          event: { bg: '#059669', color: '#fff' },
+          holiday: { bg: '#9d174d', color: '#fff' },
+          announcement: { bg: '#b45309', color: '#fff' },
         };
 
         grid.innerHTML = items.map(n => {
           const cat = n.category || 'news';
-          const cc = catColor[cat] || catColor.news;
           const icon = catIcon[cat] || '📰';
           const label = catLabel[cat] || cat;
+          const badge = catBadge[cat] || catBadge.news;
+          const grad = catGrad[cat] || catGrad.news;
           const today = new Date().toISOString().split('T')[0];
           const isExpired = n.end_date && n.end_date < today;
           const dateStr = n.end_date
@@ -1833,93 +1836,140 @@
             ? (n.image_url.startsWith('http') ? n.image_url : `${API_BASE_URL}${n.image_url}`)
             : null;
 
-          return `
-                    <div style="background:#1a1a1a;border-radius:20px;overflow:hidden;
-                                 box-shadow:0 4px 24px rgba(0,0,0,0.3);
-                                 border:1px solid #2a2a2a;
-                                 transition:all 0.3s ease;
-                                 display:flex;flex-direction:column;"
-                         onmouseover="this.style.transform='translateY(-5px)';this.style.borderColor='#f59e0b'"
-                         onmouseout="this.style.transform='translateY(0)';this.style.borderColor='#2a2a2a'">
+          // Social links row
+          const links = [];
+          if (n.instagram) links.push(`
+                        <a href="https://instagram.com/${n.instagram.replace('@', '')}"
+                           target="_blank"
+                           style="display:inline-flex;align-items:center;gap:0.35rem;
+                                  background:linear-gradient(135deg,#833ab4,#fd1d1d,#f56040);
+                                  color:#fff;padding:0.35rem 0.75rem;border-radius:50px;
+                                  font-size:0.72rem;font-weight:700;text-decoration:none;
+                                  transition:opacity 0.2s;"
+                           onmouseover="this.style.opacity='0.85'"
+                           onmouseout="this.style.opacity='1'">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+                              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                            ${n.instagram}
+                        </a>`);
+          if (n.telegram) links.push(`
+                        <a href="https://t.me/${n.telegram.replace('@', '')}"
+                           target="_blank"
+                           style="display:inline-flex;align-items:center;gap:0.35rem;
+                                  background:#0088cc;color:#fff;padding:0.35rem 0.75rem;
+                                  border-radius:50px;font-size:0.72rem;font-weight:700;
+                                  text-decoration:none;transition:opacity 0.2s;"
+                           onmouseover="this.style.opacity='0.85'"
+                           onmouseout="this.style.opacity='1'">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+                              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                            </svg>
+                            ${n.telegram}
+                        </a>`);
+          if (n.phone) links.push(`
+                        <a href="tel:${n.phone}"
+                           style="display:inline-flex;align-items:center;gap:0.35rem;
+                                  background:#1f2937;color:#e5e7eb;padding:0.35rem 0.75rem;
+                                  border-radius:50px;font-size:0.72rem;font-weight:700;
+                                  text-decoration:none;border:1px solid #374151;
+                                  transition:opacity 0.2s;"
+                           onmouseover="this.style.opacity='0.75'"
+                           onmouseout="this.style.opacity='1'">
+                            📞 ${n.phone}
+                        </a>`);
 
-                        <!-- Image -->
+          return `
+                    <div style="position:relative;border-radius:20px;overflow:hidden;
+                                 cursor:default;
+                                 box-shadow:0 8px 32px rgba(0,0,0,0.4);
+                                 transition:all 0.35s ease;
+                                 aspect-ratio:4/5;"
+                         onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 20px 50px rgba(0,0,0,0.6)'"
+                         onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 32px rgba(0,0,0,0.4)'">
+
+                        <!-- Full background image -->
                         ${imgUrl
               ? `<img src="${imgUrl}" alt="${n.title}"
-                                    style="width:100%;height:200px;object-fit:cover;display:block;"
+                                    style="position:absolute;inset:0;width:100%;height:100%;
+                                           object-fit:cover;transition:transform 0.5s ease;"
                                     onerror="this.style.display='none'">`
-              : `<div style="width:100%;height:200px;
-                                            background:linear-gradient(135deg,#2a1a00,#3d2800);
-                                            display:flex;align-items:center;justify-content:center;
-                                            font-size:5rem;">${icon}</div>`}
+              : `<div style="position:absolute;inset:0;background:${grad};"></div>`}
 
-                        <!-- Body -->
-                        <div style="padding:1.4rem;flex:1;display:flex;flex-direction:column;">
+                        <!-- Dark gradient overlay -->
+                        <div style="position:absolute;inset:0;
+                                    background:linear-gradient(
+                                        to bottom,
+                                        rgba(0,0,0,0.05) 0%,
+                                        rgba(0,0,0,0.2) 40%,
+                                        rgba(0,0,0,0.85) 75%,
+                                        rgba(0,0,0,0.95) 100%
+                                    );"></div>
 
-                            <!-- Category badge + expired -->
-                            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.85rem;flex-wrap:wrap;">
-                                <span style="background:${cc.bg};color:${cc.color};
-                                              padding:0.25rem 0.7rem;border-radius:50px;
-                                              font-size:0.72rem;font-weight:700;
-                                              border:1px solid ${cc.color}40;">
-                                    ${icon} ${label}
-                                </span>
-                                ${isExpired ? `<span style="background:rgba(220,38,38,0.15);color:#fca5a5;
-                                               padding:0.25rem 0.6rem;border-radius:50px;
-                                               font-size:0.7rem;font-weight:700;
-                                               border:1px solid rgba(220,38,38,0.3);">Past Event</span>` : ''}
+                        <!-- Top badge -->
+                        <div style="position:absolute;top:14px;left:14px;z-index:2;">
+                            <span style="background:${badge.bg};color:${badge.color};
+                                          padding:0.3rem 0.8rem;border-radius:50px;
+                                          font-size:0.72rem;font-weight:800;
+                                          letter-spacing:0.03em;
+                                          box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+                                ${icon} ${label}
+                            </span>
+                            ${isExpired ? `<span style="background:rgba(0,0,0,0.6);color:#fca5a5;
+                                            padding:0.3rem 0.7rem;border-radius:50px;
+                                            font-size:0.7rem;font-weight:700;margin-left:6px;
+                                            border:1px solid rgba(255,100,100,0.4);">Past</span>` : ''}
+                        </div>
+
+                        <!-- Bottom content overlay -->
+                        <div style="position:absolute;bottom:0;left:0;right:0;
+                                    padding:1.25rem;z-index:2;">
+
+                            <!-- Date pill -->
+                            <div style="display:inline-flex;align-items:center;gap:0.4rem;
+                                         background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);
+                                         border:1px solid rgba(255,255,255,0.15);
+                                         padding:0.3rem 0.7rem;border-radius:50px;
+                                         font-size:0.72rem;color:rgba(255,255,255,0.8);
+                                         margin-bottom:0.6rem;">
+                                📅 ${dateStr}
                             </div>
 
                             <!-- Title -->
-                            <h3 style="font-size:1.1rem;font-weight:800;color:#ffffff;
-                                       margin-bottom:0.5rem;line-height:1.35;">${n.title}</h3>
+                            <h3 style="font-size:1.2rem;font-weight:800;color:#ffffff;
+                                       margin-bottom:0.4rem;line-height:1.3;
+                                       text-shadow:0 2px 8px rgba(0,0,0,0.5);">
+                                ${n.title}
+                            </h3>
 
                             <!-- Description -->
-                            ${n.description
-              ? `<p style="font-size:0.875rem;color:#9ca3af;line-height:1.6;
-                                              margin-bottom:0.85rem;display:-webkit-box;
-                                              -webkit-line-clamp:2;-webkit-box-orient:vertical;
-                                              overflow:hidden;flex:1;">${n.description}</p>`
-              : '<div style="flex:1;"></div>'}
+                            ${n.description ? `
+                            <p style="font-size:0.82rem;color:rgba(255,255,255,0.7);
+                                       line-height:1.5;margin-bottom:0.75rem;
+                                       display:-webkit-box;-webkit-line-clamp:2;
+                                       -webkit-box-orient:vertical;overflow:hidden;">
+                                ${n.description}
+                            </p>` : ''}
 
-                            <!-- Date -->
+                            <!-- Location -->
+                            ${n.location_name ? `
                             <div style="display:flex;align-items:center;gap:0.4rem;
-                                         font-size:0.8rem;color:#6b7280;
-                                         padding-bottom:0.75rem;
-                                         border-bottom:1px solid #2a2a2a;
-                                         margin-bottom:0.75rem;">
-                                <span>📅</span><span>${dateStr}</span>
-                            </div>
-
-                            <!-- Contact info -->
-                            <div style="display:flex;flex-direction:column;gap:0.35rem;">
-                                ${n.location_name ? `
-                                <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:#9ca3af;">
-                                    <span>📍</span>
-                                    ${(n.location_lat && n.location_lng)
+                                         font-size:0.78rem;color:rgba(255,255,255,0.65);
+                                         margin-bottom:0.65rem;">
+                                📍
+                                ${(n.location_lat && n.location_lng)
                 ? `<a href="https://www.google.com/maps?q=${n.location_lat},${n.location_lng}"
-                                               target="_blank" style="color:#93c5fd;text-decoration:none;">
-                                               ${n.location_name}
-                                           </a>`
+                                           target="_blank"
+                                           style="color:rgba(255,255,255,0.75);text-decoration:underline;
+                                                  text-underline-offset:2px;">${n.location_name}</a>`
                 : `<span>${n.location_name}</span>`}
-                                </div>` : ''}
-                                ${n.phone ? `
-                                <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:#9ca3af;">
-                                    <span>📞</span>
-                                    <a href="tel:${n.phone}" style="color:#93c5fd;text-decoration:none;">${n.phone}</a>
-                                </div>` : ''}
-                                ${n.telegram ? `
-                                <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:#9ca3af;">
-                                    <span>✈️</span>
-                                    <a href="https://t.me/${n.telegram.replace('@', '')}"
-                                       target="_blank" style="color:#93c5fd;text-decoration:none;">${n.telegram}</a>
-                                </div>` : ''}
-                                ${n.instagram ? `
-                                <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:#9ca3af;">
-                                    <span>📸</span>
-                                    <a href="https://instagram.com/${n.instagram.replace('@', '')}"
-                                       target="_blank" style="color:#e879f9;text-decoration:none;">${n.instagram}</a>
-                                </div>` : ''}
-                            </div>
+                            </div>` : ''}
+
+                            <!-- Social links -->
+                            ${links.length ? `
+                            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                                ${links.join('')}
+                            </div>` : ''}
                         </div>
                     </div>`;
         }).join('');
