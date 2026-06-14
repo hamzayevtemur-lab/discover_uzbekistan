@@ -642,15 +642,9 @@
     }
 
     .rgrid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem
-    }
-
-    @media (max-width: 600px) {
-      .rgrid {
-        grid-template-columns: 1fr
-      }
+      display: flex;
+      flex-direction: column;
+      gap: .85rem
     }
 
     .rc {
@@ -658,10 +652,7 @@
       border: 1px solid var(--brd);
       border-radius: var(--r);
       overflow: hidden;
-      transition: all .28s;
-      display: flex;
-      flex-direction: row;
-      align-items: stretch
+      transition: all .28s
     }
 
     .rc:hover {
@@ -671,23 +662,10 @@
     }
 
     .rc-img {
-      width: 140px;
-      min-width: 140px;
-      height: auto;
-      min-height: 140px;
+      height: 200px;
       overflow: hidden;
       background: var(--bg3);
-      position: relative;
-      border-radius: var(--r) 0 0 var(--r);
-      flex-shrink: 0
-    }
-
-    @media (max-width: 600px) {
-      .rc-img {
-        width: 110px;
-        min-width: 110px;
-        min-height: 110px
-      }
+      position: relative
     }
 
     .rc-img img {
@@ -713,11 +691,7 @@
     }
 
     .rc-body {
-      padding: .85rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center
+      padding: .9rem
     }
 
     .rc-type {
@@ -1350,14 +1324,17 @@
     <div class="section" id="sr">
       <div class="shd">
         <h2 class="stitle"><i class="fa-solid fa-bed"></i>Rooms</h2>
-        <div class="srule"></div><span class="spill" id="rpill">All</span>
+        <div class="srule"></div>
       </div>
       <div class="rfilter">
         <button class="rfb active" data-f="all"><i class="fa-solid fa-border-all"></i> All</button>
-        <button class="rfb" data-f="solo"><i class="fa-solid fa-person"></i> Solo</button>
+        <button class="rfb active" data-f="all"><i class="fa-solid fa-border-all"></i> All</button>
+        <button class="rfb" data-f="single"><i class="fa-solid fa-person"></i> Single</button>
         <button class="rfb" data-f="double"><i class="fa-solid fa-person-dress"></i> Double</button>
-        <button class="rfb" data-f="family"><i class="fa-solid fa-people-roof"></i> Family</button>
+        <button class="rfb" data-f="twin"><i class="fa-solid fa-bed"></i> Twin</button>
+        <button class="rfb" data-f="deluxe"><i class="fa-solid fa-star-half-stroke"></i> Deluxe</button>
         <button class="rfb" data-f="suite"><i class="fa-solid fa-star"></i> Suite</button>
+        <button class="rfb" data-f="family"><i class="fa-solid fa-people-roof"></i> Family</button>
       </div>
       <div class="rgrid" id="rgrid">
         <div class="gc lc">
@@ -1510,11 +1487,11 @@
       try { const r = await fetch(`${API}/hotels/${H.id}/rooms`); rooms = await r.json(); renderRooms(); }
       catch (e) { document.getElementById('rgrid').innerHTML = '<div class="gc lc" style="color:var(--ac3)">Could not load rooms</div>'; }
     }
-    const FKW = { all: null, solo: ['single', 'solo', 'standard', 'economy', '1'], double: ['double', 'twin', 'couple', 'two', '2'], family: ['family', 'triple', 'quad', 'connect', 'group', '4', '3'], suite: ['suite', 'deluxe', 'penthouse', 'executive', 'vip', 'presidential', 'premium', 'junior', 'lux'] };
+    const FKW = { all: null, single: ['single', 'solo', 'standard', 'economy'], double: ['double', 'couple', 'two'], twin: ['twin'], deluxe: ['deluxe', 'premium', 'executive', 'vip', 'junior'], suite: ['suite', 'penthouse', 'presidential', 'lux'], family: ['family', 'triple', 'quad', 'connect', 'group'] };
     function rmatch(r, f) { if (f === 'all') return true; const kw = FKW[f]; if (!kw) return true; const t = (r.room_type || '').toLowerCase(); return kw.some(k => t.includes(k)); }
     function renderRooms() {
       const gr = document.getElementById('rgrid'); const fl = rooms.filter(r => rmatch(r, rf));
-      document.getElementById('rpill').textContent = rf === 'all' ? `${rooms.length} rooms` : `${fl.length} ${rf}`;
+      // document.getElementById('rpill') removed = rf === 'all' ? `${rooms.length} rooms` : `${fl.length} ${rf}`;
       if (!fl.length) { gr.innerHTML = `<div class="gc lc" style="color:var(--txt3)">No ${rf === 'all' ? '' : rf + ' '}rooms available</div>`; return; }
       gr.innerHTML = fl.map(r => `<div class="rc">
     <div class="rc-img">${r.image_url ? `<img src="${esc(r.image_url)}" alt="${esc(r.room_type)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=rc-ph>🛏</div>'"/>` : `<div class="rc-ph">🛏</div>`}</div>
