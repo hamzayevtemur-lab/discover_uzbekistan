@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Contacts — Discover Uzbekistan</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        :root{
+            --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a24;
+            --border:#2a2a38;--text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+            --red:#ef4444;--orange:#f97316;--blue:#3b82f6;--green:#10b981;
+            --yellow:#f59e0b;--purple:#8b5cf6;
+        }
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+        /* HEADER */
+        .header{background:var(--surface);border-bottom:1px solid var(--border);
+            padding:0 2rem;height:60px;display:flex;align-items:center;
+            justify-content:space-between;position:sticky;top:0;z-index:100;}
+        .header-logo{display:flex;align-items:center;gap:0.6rem;text-decoration:none;}
+        .header-logo img{width:36px;height:36px;border-radius:50%;object-fit:cover;}
+        .header-logo span{font-weight:800;font-size:0.9rem;color:var(--text);}
+        .back-btn{display:flex;align-items:center;gap:0.4rem;color:var(--text2);
+            text-decoration:none;font-size:0.875rem;font-weight:600;
+            padding:0.4rem 0.875rem;border-radius:8px;border:1px solid var(--border);
+            transition:all 0.2s;}
+        .back-btn:hover{border-color:var(--blue);color:var(--blue);}
+
+        /* HERO */
+        .hero{background:linear-gradient(135deg,#1a0505,#2d0a0a);
+            border-bottom:1px solid rgba(239,68,68,0.2);
+            padding:3rem 2rem;text-align:center;}
+        .hero-icon{font-size:3.5rem;margin-bottom:1rem;}
+        .hero h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;margin-bottom:0.75rem;
+            background:linear-gradient(135deg,#ef4444,#f97316);
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .hero p{color:var(--text2);font-size:1rem;max-width:500px;margin:0 auto 1.5rem;}
+        .hero-tip{display:inline-flex;align-items:center;gap:0.5rem;
+            background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+            border-radius:50px;padding:0.5rem 1.25rem;font-size:0.82rem;
+            color:#fca5a5;font-weight:600;}
+
+        /* LAYOUT */
+        .container{max-width:900px;margin:0 auto;padding:3rem 1.5rem;}
+
+        /* SECTION */
+        .section{margin-bottom:3rem;}
+        .section-header{display:flex;align-items:center;gap:0.75rem;
+            margin-bottom:1.25rem;padding-bottom:0.75rem;
+            border-bottom:1px solid var(--border);}
+        .section-icon{width:40px;height:40px;border-radius:10px;display:flex;
+            align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+        .section-title{font-size:1.15rem;font-weight:800;}
+        .section-sub{font-size:0.8rem;color:var(--text3);margin-top:0.15rem;}
+
+        /* EMERGENCY CARDS */
+        .emergency-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;}
+        .emergency-card{border-radius:16px;padding:1.5rem;text-align:center;
+            border:1px solid;transition:all 0.2s;cursor:pointer;text-decoration:none;
+            display:block;}
+        .emergency-card:hover{transform:translateY(-3px);}
+        .emergency-card.red{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.3);}
+        .emergency-card.red:hover{background:rgba(239,68,68,0.15);}
+        .emergency-card.orange{background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.3);}
+        .emergency-card.orange:hover{background:rgba(249,115,22,0.15);}
+        .emergency-card.blue{background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.3);}
+        .emergency-card.blue:hover{background:rgba(59,130,246,0.15);}
+        .emergency-card.green{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.3);}
+        .emergency-card.green:hover{background:rgba(16,185,129,0.15);}
+        .ec-icon{font-size:2rem;margin-bottom:0.75rem;}
+        .ec-name{font-weight:800;font-size:0.95rem;margin-bottom:0.25rem;}
+        .ec-number{font-size:1.6rem;font-weight:900;letter-spacing:0.05em;}
+        .ec-number.red{color:#ef4444;}
+        .ec-number.orange{color:#f97316;}
+        .ec-number.blue{color:#3b82f6;}
+        .ec-number.green{color:#10b981;}
+        .ec-tap{font-size:0.7rem;color:var(--text3);margin-top:0.4rem;}
+
+        /* INFO CARDS */
+        .info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
+        .info-card{background:var(--surface);border:1px solid var(--border);
+            border-radius:14px;padding:1.25rem;}
+        .info-card-head{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.875rem;}
+        .info-card-icon{font-size:1.3rem;}
+        .info-card-title{font-weight:700;font-size:0.95rem;}
+        .info-item{display:flex;justify-content:space-between;align-items:center;
+            padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.85rem;}
+        .info-item:last-child{border-bottom:none;}
+        .info-item-label{color:var(--text2);}
+        .info-item-value{font-weight:700;color:var(--text);}
+        .info-item-value a{color:#60a5fa;text-decoration:none;}
+        .info-item-value a:hover{text-decoration:underline;}
+
+        /* TIPS */
+        .tips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
+        .tip-card{background:var(--surface);border:1px solid var(--border);
+            border-radius:14px;padding:1.25rem;}
+        .tip-card-head{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;}
+        .tip-icon{font-size:1.4rem;}
+        .tip-title{font-weight:700;font-size:0.95rem;}
+        .tip-body{font-size:0.82rem;color:var(--text2);line-height:1.7;}
+        .tip-body strong{color:var(--text);font-weight:600;}
+
+        /* HOSPITAL TABLE */
+        .hospital-list{display:flex;flex-direction:column;gap:0.75rem;}
+        .hospital-item{background:var(--surface);border:1px solid var(--border);
+            border-radius:12px;padding:1rem 1.25rem;
+            display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;}
+        .hospital-name{font-weight:700;font-size:0.9rem;}
+        .hospital-city{font-size:0.78rem;color:var(--text3);margin-top:0.15rem;}
+        .hospital-phone{font-weight:700;color:#60a5fa;font-size:0.9rem;}
+
+        /* EMBASSY */
+        .embassy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.875rem;}
+        .embassy-card{background:var(--surface);border:1px solid var(--border);
+            border-radius:12px;padding:1rem;}
+        .embassy-flag{font-size:1.5rem;margin-bottom:0.4rem;}
+        .embassy-country{font-weight:700;font-size:0.9rem;margin-bottom:0.35rem;}
+        .embassy-info{font-size:0.78rem;color:var(--text2);line-height:1.7;}
+        .embassy-info a{color:#60a5fa;text-decoration:none;}
+
+        /* PULSE ANIMATION */
+        @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
+        .pulse{animation:pulse 2s infinite;}
+
+        @media(max-width:600px){
+            .container{padding:2rem 1rem;}
+            .emergency-grid{grid-template-columns:repeat(2,1fr);}
+            .hero{padding:2rem 1rem;}
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <a href="/index.html" class="header-logo">
+        <img src="/images/logo.png" alt="Logo">
+        <span>Discover Uzbekistan</span>
+    </a>
+    <a href="/index.html" class="back-btn">← Back to Home</a>
+</header>
+
+<div class="hero">
+    <div class="hero-icon pulse">🚨</div>
+    <h1>Emergency Contacts</h1>
+    <p>Keep this page bookmarked. In an emergency, every second counts.</p>
+    <div class="hero-tip">📌 Save these numbers in your phone before exploring</div>
+</div>
+
+<div class="container">
+
+    <!-- EMERGENCY NUMBERS -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon" style="background:rgba(239,68,68,0.15);">🆘</div>
+            <div>
+                <div class="section-title">Emergency Numbers</div>
+                <div class="section-sub">Tap to call directly from your phone</div>
+            </div>
+        </div>
+        <div class="emergency-grid">
+            <a href="tel:102" class="emergency-card red">
+                <div class="ec-icon">👮</div>
+                <div class="ec-name">Police</div>
+                <div class="ec-number red">102</div>
+                <div class="ec-tap">Tap to call</div>
+            </a>
+            <a href="tel:103" class="emergency-card orange">
+                <div class="ec-icon">🚑</div>
+                <div class="ec-name">Ambulance</div>
+                <div class="ec-number orange">103</div>
+                <div class="ec-tap">Tap to call</div>
+            </a>
+            <a href="tel:101" class="emergency-card red">
+                <div class="ec-icon">🚒</div>
+                <div class="ec-name">Fire Brigade</div>
+                <div class="ec-number red">101</div>
+                <div class="ec-tap">Tap to call</div>
+            </a>
+            <a href="tel:1050" class="emergency-card blue">
+                <div class="ec-icon">🛡️</div>
+                <div class="ec-name">Tourist Police</div>
+                <div class="ec-number blue">1050</div>
+                <div class="ec-tap">Tap to call</div>
+            </a>
+            <a href="tel:109" class="emergency-card green">
+                <div class="ec-icon">⛽</div>
+                <div class="ec-name">Gas Emergency</div>
+                <div class="ec-number green">109</div>
+                <div class="ec-tap">Tap to call</div>
+            </a>
+            <a href="tel:1006" class="emergency-card blue">
+                <div class="ec-icon">📞</div>
+                <div class="ec-name">General Emergency</div>
+                <div class="ec-number blue">1006</div>
+                <div class="ec-tap">Tap to call</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- HOSPITALS BY CITY -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon" style="background:rgba(16,185,129,0.15);">🏥</div>
+            <div>
+                <div class="section-title">Main Hospitals</div>
+                <div class="section-sub">Major medical centers across Uzbekistan</div>
+            </div>
+        </div>
+        <div class="hospital-list">
+            <div class="hospital-item">
+                <div>
+                    <div class="hospital-name">Republican Clinical Hospital #1</div>
+                    <div class="hospital-city">📍 Tashkent — Mirzo Ulugbek district</div>
+                </div>
+                <a href="tel:+998712354242" class="hospital-phone">+998 71 235-42-42</a>
+            </div>
+            <div class="hospital-item">
+                <div>
+                    <div class="hospital-name">Tashkent City Emergency Hospital</div>
+                    <div class="hospital-city">📍 Tashkent — Yunusabad district</div>
+                </div>
+                <a href="tel:+998712777777" class="hospital-phone">+998 71 277-77-77</a>
+            </div>
+            <div class="hospital-item">
+                <div>
+                    <div class="hospital-name">Samarkand Regional Hospital</div>
+                    <div class="hospital-city">📍 Samarkand — Amir Temur Ave</div>
+                </div>
+                <a href="tel:+998662330011" class="hospital-phone">+998 66 233-00-11</a>
+            </div>
+            <div class="hospital-item">
+                <div>
+                    <div class="hospital-name">Bukhara Regional Hospital</div>
+                    <div class="hospital-city">📍 Bukhara — Muhammad Iqbol St</div>
+                </div>
+                <a href="tel:+998652240055" class="hospital-phone">+998 65 224-00-55</a>
+            </div>
+            <div class="hospital-item">
+                <div>
+                    <div class="hospital-name">Fergana Regional Hospital</div>
+                    <div class="hospital-city">📍 Fergana — Al-Fergani Ave</div>
+                </div>
+                <a href="tel:+998732240011" class="hospital-phone">+998 73 224-00-11</a>
+            </div>
+            <div class="hospital-item">
+                <div>
+                    <div class="hospital-name">Namangan Regional Hospital</div>
+                    <div class="hospital-city">📍 Namangan — Istiklol St</div>
+                </div>
+                <a href="tel:+998692270033" class="hospital-phone">+998 69 227-00-33</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- USEFUL INFO -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon" style="background:rgba(59,130,246,0.15);">ℹ️</div>
+            <div>
+                <div class="section-title">Useful Information</div>
+                <div class="section-sub">Important contacts and services for travelers</div>
+            </div>
+        </div>
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-card-head">
+                    <div class="info-card-icon">🚔</div>
+                    <div class="info-card-title">Tourist Police Hotline</div>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Hotline (24/7)</span>
+                    <span class="info-item-value"><a href="tel:1050">1050</a></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">WhatsApp</span>
+                    <span class="info-item-value"><a href="https://wa.me/998712335050">+998 71 233-50-50</a></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Languages</span>
+                    <span class="info-item-value">Uzbek, Russian, English</span>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-head">
+                    <div class="info-card-icon">✈️</div>
+                    <div class="info-card-title">Tashkent Airport</div>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Main number</span>
+                    <span class="info-item-value"><a href="tel:+998712886600">+998 71 288-66-00</a></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Lost & Found</span>
+                    <span class="info-item-value"><a href="tel:+998712886601">+998 71 288-66-01</a></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Open</span>
+                    <span class="info-item-value">24 hours</span>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-head">
+                    <div class="info-card-icon">🏦</div>
+                    <div class="info-card-title">Banking & Money</div>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">NBU Hotline</span>
+                    <span class="info-item-value"><a href="tel:1006">1006</a></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Card blocked</span>
+                    <span class="info-item-value"><a href="tel:+998781400000">+998 78 140-00-00</a></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Currency</span>
+                    <span class="info-item-value">Uzbek Som (UZS)</span>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-head">
+                    <div class="info-card-icon">📱</div>
+                    <div class="info-card-title">SIM & Internet</div>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Ucell</span>
+                    <span class="info-item-value"><a href="tel:0800">0800</a></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">Beeline</span>
+                    <span class="info-item-value"><a href="tel:0777">0777</a></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item-label">UzMobile</span>
+                    <span class="info-item-value"><a href="tel:0888">0888</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMBASSIES -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon" style="background:rgba(139,92,246,0.15);">🏛️</div>
+            <div>
+                <div class="section-title">Embassies in Tashkent</div>
+                <div class="section-sub">Contact your embassy if passport is lost or in serious trouble</div>
+            </div>
+        </div>
+        <div class="embassy-grid">
+            <div class="embassy-card">
+                <div class="embassy-flag">🇺🇸</div>
+                <div class="embassy-country">United States</div>
+                <div class="embassy-info">
+                    3 Moyqorghon St, 5th Block<br>
+                    <a href="tel:+998712391000">+998 71 239-10-00</a><br>
+                    uz.usembassy.gov
+                </div>
+            </div>
+            <div class="embassy-card">
+                <div class="embassy-flag">🇬🇧</div>
+                <div class="embassy-country">United Kingdom</div>
+                <div class="embassy-info">
+                    67 Gulyamov St, Tashkent<br>
+                    <a href="tel:+998712306070">+998 71 230-60-70</a><br>
+                    gov.uk/world/uzbekistan
+                </div>
+            </div>
+            <div class="embassy-card">
+                <div class="embassy-flag">🇩🇪</div>
+                <div class="embassy-country">Germany</div>
+                <div class="embassy-info">
+                    15 Sharaf Rashidov St<br>
+                    <a href="tel:+998712756000">+998 71 275-60-00</a><br>
+                    taschkent.diplo.de
+                </div>
+            </div>
+            <div class="embassy-card">
+                <div class="embassy-flag">🇫🇷</div>
+                <div class="embassy-country">France</div>
+                <div class="embassy-info">
+                    25 Academician Sobirov St<br>
+                    <a href="tel:+998712335882">+998 71 233-58-82</a><br>
+                    uz.ambafrance.org
+                </div>
+            </div>
+            <div class="embassy-card">
+                <div class="embassy-flag">🇨🇳</div>
+                <div class="embassy-country">China</div>
+                <div class="embassy-info">
+                    79 Gogol St, Tashkent<br>
+                    <a href="tel:+998712336073">+998 71 233-60-73</a><br>
+                    uz.china-embassy.org
+                </div>
+            </div>
+            <div class="embassy-card">
+                <div class="embassy-flag">🇷🇺</div>
+                <div class="embassy-country">Russia</div>
+                <div class="embassy-info">
+                    83 Nukus St, Tashkent<br>
+                    <a href="tel:+998712860003">+998 71 286-00-03</a><br>
+                    uzbekistan.mid.ru
+                </div>
+            </div>
+            <div class="embassy-card">
+                <div class="embassy-flag">🇹🇷</div>
+                <div class="embassy-country">Turkey</div>
+                <div class="embassy-info">
+                    1 Afrosiyob St, Tashkent<br>
+                    <a href="tel:+998712520178">+998 71 252-01-78</a><br>
+                    taskent.be.mfa.gov.tr
+                </div>
+            </div>
+            <div class="embassy-card">
+                <div class="embassy-flag">🇰🇷</div>
+                <div class="embassy-country">South Korea</div>
+                <div class="embassy-info">
+                    18 Afrosiyob St, Tashkent<br>
+                    <a href="tel:+998712525151">+998 71 252-51-51</a><br>
+                    uzb.mofa.go.kr
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon" style="background:rgba(245,158,11,0.15);">💡</div>
+            <div>
+                <div class="section-title">What To Do In An Emergency</div>
+                <div class="section-sub">Step-by-step guide for common situations</div>
+            </div>
+        </div>
+        <div class="tips-grid">
+            <div class="tip-card">
+                <div class="tip-card-head">
+                    <div class="tip-icon">🪪</div>
+                    <div class="tip-title">Lost Passport</div>
+                </div>
+                <div class="tip-body">
+                    1. <strong>Call your embassy</strong> immediately (see list above)<br>
+                    2. File a report at the <strong>nearest police station</strong> (call 102)<br>
+                    3. Contact <strong>Tourist Police: 1050</strong><br>
+                    4. Keep a <strong>digital copy</strong> of your passport in email/cloud at all times
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-card-head">
+                    <div class="tip-icon">💳</div>
+                    <div class="tip-title">Stolen Wallet / Cards</div>
+                </div>
+                <div class="tip-body">
+                    1. <strong>Block your card immediately</strong> — call your bank's international number<br>
+                    2. File a police report: <strong>call 102</strong><br>
+                    3. Contact your embassy for emergency funds if needed<br>
+                    4. Western Union / MoneyGram available in Tashkent
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-card-head">
+                    <div class="tip-icon">🏥</div>
+                    <div class="tip-title">Medical Emergency</div>
+                </div>
+                <div class="tip-body">
+                    1. <strong>Call ambulance: 103</strong><br>
+                    2. Tell them your location — use Google Maps pin<br>
+                    3. Keep your <strong>travel insurance</strong> info accessible<br>
+                    4. Most pharmacies (apteka) are open until 22:00
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-card-head">
+                    <div class="tip-icon">🚗</div>
+                    <div class="tip-title">Road Accident</div>
+                </div>
+                <div class="tip-body">
+                    1. <strong>Call police: 102</strong> — do not move vehicles<br>
+                    2. <strong>Ambulance: 103</strong> if anyone is injured<br>
+                    3. Take photos of the scene and all vehicles<br>
+                    4. Get the other driver's ID and insurance details
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-card-head">
+                    <div class="tip-icon">🌡️</div>
+                    <div class="tip-title">Heat & Dehydration</div>
+                </div>
+                <div class="tip-body">
+                    Uzbekistan gets very hot (40°C+) in summer.<br>
+                    <strong>Drink 2–3 litres of water daily.</strong><br>
+                    Avoid being outside 12:00–16:00 in July–August.<br>
+                    If dizzy — find shade, drink water, call 103 if serious.
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-card-head">
+                    <div class="tip-icon">📶</div>
+                    <div class="tip-title">No Internet / Lost</div>
+                </div>
+                <div class="tip-body">
+                    1. Ask locals — Uzbeks are very helpful to tourists<br>
+                    2. <strong>Download offline maps</strong> (Maps.me) before travelling<br>
+                    3. Most hotels have free WiFi<br>
+                    4. Buy a local SIM — Ucell, Beeline or UzMobile (~$3)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NOTE -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;
+                padding:1.5rem;text-align:center;margin-top:1rem;">
+        <div style="font-size:1.5rem;margin-bottom:0.5rem;">🙏</div>
+        <div style="font-weight:700;margin-bottom:0.4rem;">Stay Safe & Enjoy Uzbekistan</div>
+        <div style="font-size:0.85rem;color:var(--text2);line-height:1.7;">
+            Uzbekistan is generally a very safe country for tourists.<br>
+            The people are warm and hospitable — don't hesitate to ask locals for help.<br>
+            <strong style="color:var(--text);">Xavfsiz sayohat!</strong> — Safe travels!
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
