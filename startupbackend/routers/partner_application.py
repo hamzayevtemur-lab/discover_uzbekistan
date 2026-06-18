@@ -2,7 +2,7 @@
 partner_application.py
 ======================
 Universal partner-application flow for all business types:
-  restaurant | hotel | travel_agency | attraction | multiple
+# restaurant | hotel | travel_agency | guide | attraction | multiple
 
 Flow:
   1. Applicant submits signup form  → POST /signup
@@ -62,7 +62,7 @@ DASHBOARD_URLS: dict[str, str] = {
     "restaurant":    "restaurants-admin-portal.html",
     "hotel":         "hotel-admin-dashboard.html",
     "travel_agency": "travel-agency-admin-dashboard.html",
-    "attraction":    "attraction-admin-dashboard.html",
+    "guide":         "guide-admin-dashboard.html",   # ← add this
     # "spa": "spa-admin-dashboard.html",  ← just add a line
 }
 
@@ -70,7 +70,7 @@ BUSINESS_LABELS: dict[str, str] = {
     "restaurant":    "🍽️ Restaurant / Café",
     "hotel":         "🏨 Hotel / Guesthouse",
     "travel_agency": "🌍 Travel Agency",
-    "attraction":    "🏛️ Tourist Attraction",
+    "guide":         "🧭 Local Guide",  
     "multiple":      "📦 Multiple Businesses",
 }
 

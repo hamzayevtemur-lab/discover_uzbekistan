@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Guides — Discover Uzbekistan</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <script src="/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        :root{
+            --bg:#0a0a0f;--surface:#13131a;--surface2:#1a1a24;--border:#2a2a38;
+            --primary:#6366f1;--primary-light:#818cf8;
+            --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+            --success:#10b981;--warning:#f59e0b;
+        }
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+        /* HEADER */
+        .header{background:var(--surface);border-bottom:1px solid var(--border);
+            padding:0 2rem;height:60px;display:flex;align-items:center;
+            justify-content:space-between;position:sticky;top:0;z-index:100;}
+        .header-logo{display:flex;align-items:center;gap:0.6rem;text-decoration:none;}
+        .header-logo img{width:36px;height:36px;border-radius:50%;object-fit:cover;}
+        .header-logo span{font-weight:800;font-size:0.9rem;color:var(--text);}
+        .back-btn{display:flex;align-items:center;gap:0.4rem;color:var(--text2);
+            text-decoration:none;font-size:0.875rem;font-weight:600;
+            padding:0.4rem 0.875rem;border-radius:8px;border:1px solid var(--border);
+            transition:all 0.2s;}
+        .back-btn:hover{border-color:var(--primary);color:var(--primary-light);}
+
+        /* HERO */
+        .hero{padding:4rem 2rem;text-align:center;
+            background:linear-gradient(180deg,#0d0d1a 0%,var(--bg) 100%);}
+        .hero-icon{font-size:3.5rem;margin-bottom:1rem;}
+        .hero h1{font-size:clamp(2rem,5vw,3rem);font-weight:900;margin-bottom:0.75rem;
+            background:linear-gradient(135deg,var(--primary-light),#c4b5fd);
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .hero p{color:var(--text2);font-size:1rem;max-width:520px;margin:0 auto 2rem;}
+
+        /* FILTERS */
+        .filters{background:var(--surface);border-bottom:1px solid var(--border);
+            padding:1rem 2rem;position:sticky;top:60px;z-index:90;}
+        .filters-inner{max-width:1200px;margin:0 auto;
+            display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;}
+        .filter-select{background:var(--surface2);border:1px solid var(--border);
+            color:var(--text2);padding:0.55rem 0.875rem;border-radius:8px;
+            font-family:inherit;font-size:0.82rem;cursor:pointer;min-width:160px;}
+        .filter-select:focus{outline:none;border-color:var(--primary);}
+        .filter-btn{background:var(--surface2);border:1px solid var(--border);
+            color:var(--text2);padding:0.55rem 1rem;border-radius:8px;
+            font-family:inherit;font-size:0.82rem;cursor:pointer;font-weight:600;
+            transition:all 0.2s;}
+        .filter-btn:hover{border-color:var(--primary);color:var(--primary-light);}
+        .results-count{font-size:0.82rem;color:var(--text3);margin-left:auto;}
+
+        /* GRID */
+        .container{max-width:1200px;margin:0 auto;padding:2rem 1.5rem;}
+        .guides-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;}
+
+        /* GUIDE CARD */
+        .guide-card{background:var(--surface);border:1px solid var(--border);
+            border-radius:20px;overflow:hidden;transition:all 0.3s;cursor:pointer;
+            text-decoration:none;display:block;}
+        .guide-card:hover{border-color:var(--primary);transform:translateY(-4px);
+            box-shadow:0 12px 40px rgba(99,102,241,0.2);}
+        .guide-photo{width:100%;height:220px;object-fit:cover;background:var(--surface2);
+            display:block;}
+        .guide-photo-placeholder{width:100%;height:220px;background:linear-gradient(135deg,#1e1e2e,#2a2a3a);
+            display:flex;align-items:center;justify-content:center;font-size:5rem;}
+        .guide-body{padding:1.25rem;}
+        .guide-top{display:flex;justify-content:space-between;align-items:flex-start;
+            margin-bottom:0.75rem;}
+        .guide-name{font-size:1.1rem;font-weight:800;color:var(--text);}
+        .guide-exp{font-size:0.75rem;color:var(--text3);margin-top:0.15rem;}
+        .guide-rating{display:flex;align-items:center;gap:0.35rem;flex-shrink:0;}
+        .guide-stars{color:#fbbf24;font-size:0.85rem;}
+        .guide-rating-num{font-weight:700;font-size:0.875rem;}
+        .guide-rating-count{font-size:0.72rem;color:var(--text3);}
+        .guide-bio{font-size:0.82rem;color:var(--text2);line-height:1.6;
+            margin-bottom:0.875rem;display:-webkit-box;-webkit-line-clamp:2;
+            -webkit-box-orient:vertical;overflow:hidden;}
+        .tags{display:flex;flex-wrap:wrap;gap:0.35rem;margin-bottom:0.875rem;}
+        .tag{background:var(--surface2);border:1px solid var(--border);
+            color:var(--text2);padding:0.2rem 0.55rem;border-radius:20px;
+            font-size:0.7rem;font-weight:600;}
+        .tag.lang{border-color:rgba(99,102,241,0.3);color:var(--primary-light);}
+        .tag.city{border-color:rgba(16,185,129,0.3);color:#6ee7b7;}
+        .guide-footer{display:flex;justify-content:space-between;align-items:center;
+            padding-top:0.875rem;border-top:1px solid var(--border);}
+        .guide-price{font-size:1.2rem;font-weight:800;color:var(--primary-light);}
+        .guide-price span{font-size:0.72rem;color:var(--text3);font-weight:400;}
+        .contact-btns{display:flex;gap:0.4rem;}
+        .contact-btn{display:flex;align-items:center;justify-content:center;
+            width:34px;height:34px;border-radius:8px;text-decoration:none;
+            font-size:0.95rem;transition:all 0.2s;border:1px solid var(--border);}
+        .contact-btn:hover{transform:scale(1.1);}
+        .contact-btn.phone{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);}
+        .contact-btn.telegram{background:rgba(0,136,204,0.1);border-color:rgba(0,136,204,0.3);}
+        .contact-btn.instagram{background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.3);}
+
+        /* EMPTY */
+        .empty{text-align:center;padding:5rem 2rem;color:var(--text3);}
+        .empty-icon{font-size:3rem;margin-bottom:1rem;}
+
+        /* MODAL */
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+            backdrop-filter:blur(8px);z-index:1000;align-items:center;
+            justify-content:center;padding:1rem;}
+        .modal.active{display:flex;}
+        .modal-box{background:var(--surface);border:1px solid var(--border);
+            border-radius:24px;max-width:600px;width:100%;max-height:90vh;
+            overflow-y:auto;}
+        .modal-head{padding:1.5rem;border-bottom:1px solid var(--border);
+            display:flex;gap:1.25rem;align-items:flex-start;}
+        .modal-photo{width:80px;height:80px;border-radius:16px;object-fit:cover;
+            flex-shrink:0;background:var(--surface2);}
+        .modal-photo-ph{width:80px;height:80px;border-radius:16px;background:var(--surface2);
+            display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;}
+        .modal-info{flex:1;}
+        .modal-name{font-size:1.4rem;font-weight:800;margin-bottom:0.25rem;}
+        .modal-close{background:none;border:none;color:var(--text3);font-size:1.5rem;
+            cursor:pointer;flex-shrink:0;line-height:1;}
+        .modal-close:hover{color:var(--text);}
+        .modal-body{padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem;}
+        .modal-section-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;
+            letter-spacing:0.08em;color:var(--text3);margin-bottom:0.6rem;}
+        .review-form{background:var(--surface2);border:1px solid var(--border);
+            border-radius:14px;padding:1.25rem;}
+        .stars-input{display:flex;gap:0.4rem;margin-bottom:0.875rem;}
+        .star-btn{background:none;border:none;font-size:1.75rem;cursor:pointer;
+            color:var(--border);transition:color 0.15s;line-height:1;}
+        .star-btn.active,.star-btn:hover{color:#fbbf24;}
+        .review-textarea{width:100%;padding:0.75rem;background:var(--surface);
+            border:1px solid var(--border);border-radius:10px;color:var(--text);
+            font-family:inherit;font-size:0.875rem;resize:vertical;min-height:80px;}
+        .review-textarea:focus{outline:none;border-color:var(--primary);}
+        .submit-review-btn{background:var(--primary);color:white;border:none;
+            border-radius:10px;padding:0.65rem 1.25rem;font-family:inherit;
+            font-weight:700;font-size:0.875rem;cursor:pointer;margin-top:0.75rem;
+            transition:all 0.2s;width:100%;}
+        .submit-review-btn:hover{background:#4f46e5;}
+        .review-item{padding:0.875rem 0;border-bottom:1px solid var(--border);}
+        .review-item:last-child{border-bottom:none;}
+
+        @media(max-width:768px){
+            .hero{padding:3rem 1rem;}
+            .container{padding:1.5rem 1rem;}
+            .guides-grid{grid-template-columns:1fr;}
+            .filters{padding:0.875rem 1rem;}
+            .filters-inner{gap:0.5rem;}
+            .filter-select{min-width:130px;}
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <a href="/index.html" class="header-logo">
+        <img src="/images/logo.png" alt="Logo">
+        <span>Discover Uzbekistan</span>
+    </a>
+    <a href="/index.html" class="back-btn">← Home</a>
+</header>
+
+<div class="hero">
+    <div class="hero-icon">🧭</div>
+    <h1>Local Guides</h1>
+    <p>Explore Uzbekistan with expert local guides who know every hidden gem, story, and shortcut</p>
+</div>
+
+<div class="filters">
+    <div class="filters-inner">
+        <select class="filter-select" id="filterCity" onchange="applyFilters()">
+            <option value="">📍 All Cities</option>
+            <option value="Tashkent">Tashkent</option>
+            <option value="Samarkand">Samarkand</option>
+            <option value="Bukhara">Bukhara</option>
+            <option value="Khiva">Khiva</option>
+            <option value="Fergana">Fergana Valley</option>
+            <option value="Nukus">Nukus</option>
+            <option value="Namangan">Namangan</option>
+            <option value="Shakhrisabz">Shakhrisabz</option>
+        </select>
+        <select class="filter-select" id="filterLang" onchange="applyFilters()">
+            <option value="">🌐 All Languages</option>
+            <option value="English">English</option>
+            <option value="Russian">Russian</option>
+            <option value="German">German</option>
+            <option value="French">French</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Korean">Korean</option>
+            <option value="Arabic">Arabic</option>
+        </select>
+        <select class="filter-select" id="filterTour" onchange="applyFilters()">
+            <option value="">🗺️ All Tour Types</option>
+            <option value="Historical">Historical</option>
+            <option value="Nature">Nature & Hiking</option>
+            <option value="Food">Food & Culture</option>
+            <option value="Photography">Photography</option>
+            <option value="Religious">Religious Sites</option>
+            <option value="Desert">Desert & Silk Road</option>
+            <option value="Family">Family Tours</option>
+        </select>
+        <button class="filter-btn" onclick="resetFilters()">✕ Reset</button>
+        <span class="results-count" id="resultsCount"></span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="guides-grid" id="guidesGrid">
+        <div class="empty"><div class="empty-icon">⏳</div><p>Loading guides…</p></div>
+    </div>
+</div>
+
+<!-- GUIDE MODAL -->
+<div id="guideModal" class="modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal-box">
+        <div class="modal-head">
+            <div id="modalPhoto"></div>
+            <div class="modal-info">
+                <div class="modal-name" id="modalName"></div>
+                <div id="modalMeta" style="font-size:0.82rem;color:var(--text2);margin-top:0.3rem;"></div>
+                <div id="modalRating" style="margin-top:0.4rem;"></div>
+            </div>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+let allGuides = [], selectedStars = 0, currentGuideId = null;
+
+async function loadGuides() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/guides`);
+        if (!res.ok) throw new Error('Failed');
+        allGuides = await res.json();
+        renderGuides(allGuides);
+    } catch(e) {
+        document.getElementById('guidesGrid').innerHTML =
+            '<div class="empty"><div class="empty-icon">😕</div><p>Could not load guides. Try again later.</p></div>';
+    }
+}
+
+function renderGuides(list) {
+    const grid = document.getElementById('guidesGrid');
+    document.getElementById('resultsCount').textContent =
+        list.length + ' guide' + (list.length !== 1 ? 's' : '') + ' found';
+
+    if (!list.length) {
+        grid.innerHTML = '<div class="empty"><div class="empty-icon">🧭</div><p>No guides match your filters.</p></div>';
+        return;
+    }
+
+    grid.innerHTML = list.map(g => {
+        const stars    = '★'.repeat(Math.round(g.rating||0))+'☆'.repeat(5-Math.round(g.rating||0));
+        const langs    = g.languages ? g.languages.split(',').slice(0,3) : [];
+        const cities   = g.cities    ? g.cities.split(',').slice(0,3)    : [];
+        const photoUrl = g.photo_url
+            ? (g.photo_url.startsWith('http') ? g.photo_url : API_BASE_URL+g.photo_url)
+            : null;
+
+        return `
+        <div class="guide-card" onclick="openGuide(${g.id})">
+            ${photoUrl
+                ? `<img class="guide-photo" src="${photoUrl}" alt="${g.name}" onerror="this.style.display='none'">`
+                : `<div class="guide-photo-placeholder">🧭</div>`}
+            <div class="guide-body">
+                <div class="guide-top">
+                    <div>
+                        <div class="guide-name">${g.name}</div>
+                        <div class="guide-exp">${g.experience_years ? g.experience_years+' yrs experience' : 'Local Expert'}</div>
+                    </div>
+                    <div class="guide-rating">
+                        <div>
+                            <div class="guide-stars">${stars}</div>
+                            <div style="display:flex;gap:0.3rem;align-items:center;">
+                                <span class="guide-rating-num">${Number(g.rating||0).toFixed(1)}</span>
+                                <span class="guide-rating-count">(${g.review_count||0})</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ${g.bio ? `<div class="guide-bio">${g.bio}</div>` : ''}
+                <div class="tags">
+                    ${langs.map(l=>`<span class="tag lang">🌐 ${l.trim()}</span>`).join('')}
+                    ${cities.map(c=>`<span class="tag city">📍 ${c.trim()}</span>`).join('')}
+                </div>
+                <div class="guide-footer">
+                    <div class="guide-price">$${g.price_per_day||'—'} <span>/ day</span></div>
+                    <div class="contact-btns" onclick="event.stopPropagation()">
+                        ${g.phone    ? `<a href="tel:${g.phone}" class="contact-btn phone" title="Call">📞</a>` : ''}
+                        ${g.telegram ? `<a href="https://t.me/${g.telegram.replace('@','')}" target="_blank" class="contact-btn telegram" title="Telegram">✈️</a>` : ''}
+                        ${g.instagram? `<a href="https://instagram.com/${g.instagram.replace('@','')}" target="_blank" class="contact-btn instagram" title="Instagram">📸</a>` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function applyFilters() {
+    const city = document.getElementById('filterCity').value.toLowerCase();
+    const lang = document.getElementById('filterLang').value.toLowerCase();
+    const tour = document.getElementById('filterTour').value.toLowerCase();
+    let list = allGuides;
+    if (city) list = list.filter(g => g.cities    && g.cities.toLowerCase().includes(city));
+    if (lang) list = list.filter(g => g.languages && g.languages.toLowerCase().includes(lang));
+    if (tour) list = list.filter(g => g.tour_types && g.tour_types.toLowerCase().includes(tour));
+    renderGuides(list);
+}
+
+function resetFilters() {
+    ['filterCity','filterLang','filterTour'].forEach(id => document.getElementById(id).value='');
+    renderGuides(allGuides);
+}
+
+// ── GUIDE MODAL ───────────────────────────────────────────────
+async function openGuide(id) {
+    currentGuideId = id;
+    const g = allGuides.find(x => x.id === id);
+    if (!g) return;
+
+    const photoUrl = g.photo_url
+        ? (g.photo_url.startsWith('http') ? g.photo_url : API_BASE_URL+g.photo_url)
+        : null;
+
+    document.getElementById('modalPhoto').innerHTML = photoUrl
+        ? `<img class="modal-photo" src="${photoUrl}" alt="${g.name}">`
+        : `<div class="modal-photo-ph">🧭</div>`;
+
+    document.getElementById('modalName').textContent = g.name;
+    document.getElementById('modalMeta').innerHTML =
+        `${g.experience_years ? `<span>🏅 ${g.experience_years} yrs experience</span> · ` : ''}` +
+        `<span>💰 $${g.price_per_day||'—'}/day</span>`;
+
+    const stars = '★'.repeat(Math.round(g.rating||0))+'☆'.repeat(5-Math.round(g.rating||0));
+    document.getElementById('modalRating').innerHTML =
+        `<span style="color:#fbbf24;">${stars}</span>
+         <span style="font-size:0.82rem;color:var(--text2);margin-left:0.4rem;">
+             ${Number(g.rating||0).toFixed(1)} (${g.review_count||0} reviews)
+         </span>`;
+
+    // Build modal body
+    let html = '';
+
+    // Bio
+    if (g.bio) html += `
+        <div>
+            <div class="modal-section-title">About</div>
+            <p style="font-size:0.875rem;color:var(--text2);line-height:1.7;">${g.bio}</p>
+        </div>`;
+
+    // Details grid
+    html += `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;">`;
+    if (g.languages) html += `
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+            <div class="modal-section-title">Languages</div>
+            <div style="font-size:0.875rem;font-weight:600;">${g.languages}</div>
+        </div>`;
+    if (g.cities) html += `
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;">
+            <div class="modal-section-title">Cities</div>
+            <div style="font-size:0.875rem;font-weight:600;">${g.cities}</div>
+        </div>`;
+    if (g.tour_types) html += `
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;grid-column:1/-1;">
+            <div class="modal-section-title">Tour Specialties</div>
+            <div style="font-size:0.875rem;font-weight:600;">${g.tour_types}</div>
+        </div>`;
+    html += '</div>';
+
+    // Contact buttons
+    const contactLinks = [];
+    if (g.phone)     contactLinks.push(`<a href="tel:${g.phone}" style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;padding:0.6rem 1.1rem;border-radius:10px;font-weight:700;font-size:0.875rem;text-decoration:none;">📞 Call Now</a>`);
+    if (g.telegram)  contactLinks.push(`<a href="https://t.me/${g.telegram.replace('@','')}" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(0,136,204,0.1);border:1px solid rgba(0,136,204,0.3);color:#60a5fa;padding:0.6rem 1.1rem;border-radius:10px;font-weight:700;font-size:0.875rem;text-decoration:none;">✈️ Telegram</a>`);
+    if (g.instagram) contactLinks.push(`<a href="https://instagram.com/${g.instagram.replace('@','')}" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#c4b5fd;padding:0.6rem 1.1rem;border-radius:10px;font-weight:700;font-size:0.875rem;text-decoration:none;">📸 Instagram</a>`);
+
+    if (contactLinks.length) html += `
+        <div>
+            <div class="modal-section-title">Contact Guide</div>
+            <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">${contactLinks.join('')}</div>
+        </div>`;
+
+    // Reviews
+    html += `
+        <div>
+            <div class="modal-section-title">Leave a Review</div>
+            <div class="review-form">
+                <div style="font-size:0.82rem;color:var(--text2);margin-bottom:0.6rem;">Rate your experience:</div>
+                <div class="stars-input" id="starsInput">
+                    ${[1,2,3,4,5].map(n=>`<button class="star-btn" onclick="setStars(${n})" data-star="${n}">★</button>`).join('')}
+                </div>
+                <input type="text" id="reviewName" placeholder="Your name (optional)"
+                    style="width:100%;padding:0.6rem 0.875rem;background:var(--surface);border:1px solid var(--border);
+                           border-radius:10px;color:var(--text);font-family:inherit;font-size:0.875rem;margin-bottom:0.6rem;">
+                <textarea class="review-textarea" id="reviewComment" placeholder="Share your experience…"></textarea>
+                <button class="submit-review-btn" onclick="submitReview()">Submit Review</button>
+                <div id="reviewMsg" style="display:none;margin-top:0.6rem;font-size:0.82rem;font-weight:600;text-align:center;"></div>
+            </div>
+        </div>`;
+
+    // Load approved reviews
+    try {
+        const revRes = await fetch(`${API_BASE_URL}/api/guides/${id}/reviews`);
+        const reviews = (await revRes.json()).filter(r => r.status === 'approved');
+        if (reviews.length) {
+            html += `<div>
+                <div class="modal-section-title">Reviews (${reviews.length})</div>
+                ${reviews.slice(0,5).map(r => {
+                    const s = '★'.repeat(Math.round(r.rating||0))+'☆'.repeat(5-Math.round(r.rating||0));
+                    return `<div class="review-item">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                            <strong style="font-size:0.875rem;">${r.reviewer_name||'Anonymous'}</strong>
+                            <span style="color:#fbbf24;font-size:0.82rem;">${s}</span>
+                        </div>
+                        <p style="font-size:0.82rem;color:var(--text2);">${r.comment||''}</p>
+                    </div>`;
+                }).join('')}
+            </div>`;
+        }
+    } catch(e) {}
+
+    document.getElementById('modalBody').innerHTML = html;
+    selectedStars = 0;
+    document.getElementById('guideModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('guideModal').classList.remove('active');
+    document.body.style.overflow = '';
+    currentGuideId = null;
+}
+
+function setStars(n) {
+    selectedStars = n;
+    document.querySelectorAll('.star-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.star) <= n);
+    });
+}
+
+async function submitReview() {
+    if (!selectedStars) { showMsg('Please select a star rating.', 'error'); return; }
+    const name    = document.getElementById('reviewName')?.value || 'Anonymous';
+    const comment = document.getElementById('reviewComment')?.value || '';
+    try {
+        const r = await fetch(`${API_BASE_URL}/api/guides/${currentGuideId}/reviews`, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({reviewer_name:name, rating:selectedStars, comment})
+        });
+        if (!r.ok) throw new Error('Failed');
+        showMsg('✅ Thank you! Your review is pending approval.', 'success');
+        document.getElementById('reviewName').value = '';
+        document.getElementById('reviewComment').value = '';
+        selectedStars = 0;
+        document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('active'));
+    } catch(e) { showMsg('❌ Failed to submit. Try again.', 'error'); }
+}
+
+function showMsg(msg, type) {
+    const el = document.getElementById('reviewMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.style.color = type === 'success' ? '#6ee7b7' : '#fca5a5';
+}
+
+loadGuides();
+</script>
+</body>
+</html>

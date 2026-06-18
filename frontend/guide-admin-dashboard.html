@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Dashboard — Discover Uzbekistan</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/config.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        :root{
+            --primary:#6366f1;--primary-dark:#4f46e5;--primary-light:#818cf8;
+            --success:#10b981;--success-bg:rgba(16,185,129,0.1);
+            --warning:#f59e0b;--warning-bg:rgba(245,158,11,0.1);
+            --danger:#ef4444;--danger-bg:rgba(239,68,68,0.1);
+            --bg:#f8f7ff;--surface:#fff;--border:#e5e3ff;--text:#1e1b4b;--muted:#6b7280;
+        }
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+        .header{background:var(--surface);border-bottom:2px solid var(--border);padding:0 1.5rem;
+            position:sticky;top:0;z-index:100;height:62px;display:flex;align-items:center;}
+        .header-inner{max-width:1200px;margin:0 auto;width:100%;display:flex;
+            justify-content:space-between;align-items:center;}
+        .logo{display:flex;align-items:center;gap:0.6rem;font-weight:800;color:var(--primary);}
+        .logo img{width:36px;height:36px;border-radius:50%;object-fit:cover;}
+        .header-right{display:flex;align-items:center;gap:0.75rem;}
+        .partner-email{font-size:0.8rem;color:var(--muted);font-weight:500;}
+        .logout-btn{background:var(--bg);border:2px solid var(--border);color:var(--text);
+            padding:0.4rem 0.875rem;border-radius:8px;cursor:pointer;font-family:inherit;
+            font-size:0.82rem;font-weight:600;transition:all 0.2s;}
+        .logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+        .layout{display:flex;max-width:1200px;margin:0 auto;padding:1.5rem;gap:1.5rem;}
+        .sidebar{width:200px;flex-shrink:0;}
+        .sidebar-sticky{position:sticky;top:78px;}
+        .nav-section{font-size:0.68rem;font-weight:700;text-transform:uppercase;
+            letter-spacing:0.08em;color:var(--muted);padding:0.5rem 0.875rem 0.3rem;margin-top:0.4rem;}
+        .nav-item{display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.875rem;
+            border-radius:10px;cursor:pointer;font-weight:600;font-size:0.875rem;color:var(--muted);
+            transition:all 0.18s;margin-bottom:2px;border:none;background:none;
+            width:100%;text-align:left;font-family:inherit;}
+        .nav-item:hover{background:var(--border);color:var(--primary);}
+        .nav-item.active{background:var(--primary);color:white;}
+        .main{flex:1;min-width:0;}
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.875rem;margin-bottom:1.5rem;}
+        .stat-card{background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:1.1rem;}
+        .stat-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+            color:var(--muted);margin-bottom:0.4rem;}
+        .stat-value{font-size:1.7rem;font-weight:800;color:var(--primary);}
+        .section{display:none;}.section.active{display:block;}
+        .card{background:var(--surface);border:2px solid var(--border);border-radius:16px;
+            padding:1.5rem;margin-bottom:1.25rem;}
+        .card-header{display:flex;justify-content:space-between;align-items:center;
+            margin-bottom:1.25rem;flex-wrap:wrap;gap:0.5rem;}
+        .card-title{font-size:1.1rem;font-weight:800;}
+        .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+        .form-group{display:flex;flex-direction:column;gap:0.35rem;}
+        .form-group.full{grid-column:1/-1;}
+        label{font-size:0.73rem;font-weight:700;text-transform:uppercase;
+            letter-spacing:0.04em;color:var(--text);}
+        .opt{font-weight:400;text-transform:none;color:var(--muted);font-size:0.7rem;}
+        input,select,textarea{padding:0.65rem 0.875rem;border:2px solid var(--border);
+            border-radius:10px;font-size:0.875rem;font-family:inherit;color:var(--text);
+            background:var(--bg);transition:all 0.2s;width:100%;}
+        input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);background:white;}
+        textarea{min-height:100px;resize:vertical;}
+        .btn{padding:0.6rem 1.25rem;border:none;border-radius:10px;font-family:inherit;
+            font-weight:700;font-size:0.875rem;cursor:pointer;transition:all 0.2s;
+            display:inline-flex;align-items:center;gap:0.4rem;}
+        .btn-primary{background:var(--primary);color:white;}.btn-primary:hover{background:var(--primary-dark);}
+        .btn-secondary{background:var(--bg);border:2px solid var(--border);color:var(--text);}
+        .btn-secondary:hover{border-color:var(--primary);color:var(--primary);}
+        .btn-success{background:var(--success-bg);color:var(--success);border:2px solid rgba(16,185,129,0.3);}
+        .btn-success:hover{background:var(--success);color:white;}
+        .btn-danger{background:var(--danger-bg);color:var(--danger);border:2px solid rgba(239,68,68,0.3);}
+        .btn-danger:hover{background:var(--danger);color:white;}
+        .btn-sm{padding:0.32rem 0.75rem;font-size:0.78rem;}
+        .badge{display:inline-flex;padding:0.2rem 0.55rem;border-radius:20px;font-size:0.72rem;font-weight:700;}
+        .badge-success{background:var(--success-bg);color:var(--success);}
+        .badge-warning{background:var(--warning-bg);color:var(--warning);}
+        .badge-danger{background:var(--danger-bg);color:var(--danger);}
+        .img-preview{max-width:100%;max-height:160px;border-radius:10px;margin-top:0.5rem;
+            display:none;object-fit:cover;border:2px solid var(--border);}
+        .img-preview.show{display:block;}
+        .review-card{background:var(--bg);border:2px solid var(--border);border-radius:12px;
+            padding:1rem;margin-bottom:0.875rem;}
+        .review-card.pending{border-color:#fcd34d;background:#fffbeb;}
+        .plan-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.875rem;margin-bottom:1rem;}
+        .plan-card{border:2px solid var(--border);border-radius:12px;padding:1rem;
+            cursor:pointer;transition:all 0.2s;text-align:center;}
+        .plan-card:hover{border-color:var(--primary);}
+        .plan-card.selected{border-color:var(--primary);background:#ede9fe;}
+        .plan-name{font-weight:800;font-size:0.95rem;}
+        .plan-price{font-size:1.4rem;font-weight:800;color:var(--primary);margin:0.2rem 0;}
+        .payment-box{background:#eff6ff;border:2px solid #bfdbfe;border-radius:12px;padding:1rem;}
+        .payment-box h4{color:#1d4ed8;margin-bottom:0.75rem;font-size:0.9rem;}
+        .payment-row{display:flex;justify-content:space-between;font-size:0.85rem;
+            padding:0.3rem 0;border-bottom:1px solid #bfdbfe;}
+        .payment-row:last-child{border-bottom:none;}
+        .payment-row span:first-child{color:var(--muted);}
+        .payment-row span:last-child{font-weight:700;}
+        .modal{display:none;position:fixed;inset:0;background:rgba(30,27,75,0.5);
+            backdrop-filter:blur(4px);z-index:2000;align-items:center;justify-content:center;padding:1rem;}
+        .modal.active{display:flex;}
+        .modal-box{background:white;border-radius:20px;max-width:520px;width:100%;
+            max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(79,70,229,0.25);}
+        .modal-head{padding:1.25rem 1.5rem;border-bottom:2px solid var(--border);
+            display:flex;justify-content:space-between;align-items:center;
+            position:sticky;top:0;background:white;z-index:1;}
+        .modal-title{font-size:1.1rem;font-weight:800;}
+        .modal-close{background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;}
+        .modal-close:hover{color:var(--danger);}
+        .modal-body{padding:1.5rem;display:flex;flex-direction:column;gap:0.875rem;}
+        .modal-foot{padding:1rem 1.5rem;border-top:2px solid var(--border);
+            display:flex;justify-content:flex-end;gap:0.75rem;}
+        .alert{padding:0.75rem 1rem;border-radius:8px;font-weight:600;font-size:0.875rem;
+            margin-bottom:0.875rem;display:none;}
+        .alert.show{display:block;}
+        .alert-error{background:var(--danger-bg);color:var(--danger);}
+        .alert-success{background:var(--success-bg);color:var(--success);}
+        .empty-state{text-align:center;padding:2.5rem;color:var(--muted);}
+        .toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
+            display:flex;flex-direction:column;gap:0.5rem;}
+        .toast{padding:0.875rem 1.25rem;border-radius:12px;font-weight:600;font-size:0.875rem;
+            box-shadow:0 8px 32px rgba(0,0,0,0.15);animation:slideIn 0.3s;
+            display:flex;align-items:center;gap:0.5rem;max-width:300px;}
+        .toast-success{background:var(--success-bg);color:var(--success);border:2px solid rgba(16,185,129,0.3);}
+        .toast-error{background:var(--danger-bg);color:var(--danger);border:2px solid rgba(239,68,68,0.3);}
+        .toast-info{background:#dbeafe;color:#1d4ed8;border:2px solid #93c5fd;}
+        @keyframes slideIn{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+        .lang-tags{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem;}
+        .lang-tag{background:var(--border);color:var(--primary);padding:0.2rem 0.6rem;
+            border-radius:20px;font-size:0.75rem;font-weight:600;cursor:pointer;
+            border:2px solid transparent;transition:all 0.15s;}
+        .lang-tag.selected{background:var(--primary);color:white;border-color:var(--primary);}
+        .city-tag{background:var(--border);color:var(--text);padding:0.2rem 0.6rem;
+            border-radius:20px;font-size:0.75rem;font-weight:600;cursor:pointer;
+            border:2px solid transparent;transition:all 0.15s;}
+        .city-tag.selected{background:var(--primary);color:white;}
+        .tour-tag{background:var(--border);color:var(--text);padding:0.2rem 0.6rem;
+            border-radius:20px;font-size:0.75rem;font-weight:600;cursor:pointer;
+            border:2px solid transparent;transition:all 0.15s;}
+        .tour-tag.selected{background:var(--primary);color:white;}
+        @media(max-width:900px){
+            .layout{flex-direction:column;padding:1rem;}
+            .sidebar{width:100%;}
+            .sidebar-sticky{position:static;display:grid;grid-template-columns:repeat(4,1fr);gap:0.3rem;}
+            .nav-section{display:none;}
+            .nav-item{flex-direction:column;font-size:0.7rem;padding:0.5rem 0.25rem;
+                justify-content:center;align-items:center;text-align:center;gap:0.2rem;}
+            .stats-grid{grid-template-columns:repeat(2,1fr);}
+            .form-grid{grid-template-columns:1fr;}
+            .form-group.full{grid-column:1;}
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <div class="logo">
+            <img src="/images/logo.png" alt="Logo">
+            <span id="guideNameHeader">Guide Dashboard</span>
+        </div>
+        <div class="header-right">
+            <span class="partner-email" id="partnerEmail">—</span>
+            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        </div>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-sticky">
+            <div class="nav-section">Overview</div>
+            <button class="nav-item active" onclick="showSection('dashboard',this)">
+                <i class="fas fa-chart-bar"></i><span>Dashboard</span>
+            </button>
+            <div class="nav-section">Profile</div>
+            <button class="nav-item" onclick="showSection('profile',this)">
+                <i class="fas fa-user"></i><span>My Profile</span>
+            </button>
+            <div class="nav-section">Feedback</div>
+            <button class="nav-item" onclick="showSection('reviews',this)">
+                <i class="fas fa-star"></i><span>Reviews</span>
+            </button>
+            <div class="nav-section">Account</div>
+            <button class="nav-item" onclick="showSection('subscription',this)">
+                <i class="fas fa-credit-card"></i><span>Subscription</span>
+            </button>
+            <button class="nav-item" onclick="showSection('password',this)">
+                <i class="fas fa-lock"></i><span>Password</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Rating</div>
+                <div class="stat-value" id="statRating">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Reviews</div>
+                <div class="stat-value" id="statReviews">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Price/Day</div>
+                <div class="stat-value" id="statPrice">—</div>
+            </div>
+            <div class="stat-card" id="statSubCard">
+                <div class="stat-label">Days Left</div>
+                <div class="stat-value" id="statDays">—</div>
+            </div>
+        </div>
+
+        <div id="subBanner" style="display:none;"></div>
+
+        <!-- DASHBOARD -->
+        <div id="section-dashboard" class="section active">
+            <div class="card">
+                <div class="card-header"><h2 class="card-title">📊 Dashboard</h2></div>
+                <div id="dashContent">
+                    <div class="empty-state"><div style="font-size:2rem;">⏳</div><p>Loading…</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div id="section-profile" class="section">
+            <div class="card">
+                <div class="card-header"><h2 class="card-title">🧭 My Guide Profile</h2></div>
+                <div id="profileStatusBar"></div>
+                <div class="alert alert-error" id="profileAlert"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="gName" placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label>Experience <span class="opt">(years)</span></label>
+                        <input type="number" id="gExperience" min="0" max="50" placeholder="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone *</label>
+                        <input type="tel" id="gPhone" placeholder="+998 90 123 4567">
+                    </div>
+                    <div class="form-group">
+                        <label>Price Per Day ($) *</label>
+                        <input type="number" id="gPrice" min="0" step="1" placeholder="80">
+                    </div>
+                    <div class="form-group">
+                        <label>Telegram <span class="opt">(optional)</span></label>
+                        <input type="text" id="gTelegram" placeholder="@yourname">
+                    </div>
+                    <div class="form-group">
+                        <label>Instagram <span class="opt">(optional)</span></label>
+                        <input type="text" id="gInstagram" placeholder="@yourname">
+                    </div>
+                    <div class="form-group full">
+                        <label>Bio — Tell tourists about yourself</label>
+                        <textarea id="gBio" placeholder="Describe your experience, specialties, and what makes your tours special…"></textarea>
+                    </div>
+
+                    <!-- LANGUAGES -->
+                    <div class="form-group full">
+                        <label>Languages Spoken <span class="opt">(select all that apply)</span></label>
+                        <input type="hidden" id="gLanguages">
+                        <div class="lang-tags" id="langTags">
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇬🇧 English</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇷🇺 Russian</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇺🇿 Uzbek</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇩🇪 German</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇫🇷 French</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇨🇳 Chinese</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇯🇵 Japanese</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇰🇷 Korean</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇸🇦 Arabic</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇹🇷 Turkish</span>
+                            <span class="lang-tag" onclick="toggleTag(this,'gLanguages')">🇪🇸 Spanish</span>
+                        </div>
+                    </div>
+
+                    <!-- CITIES -->
+                    <div class="form-group full">
+                        <label>Cities / Regions Covered <span class="opt">(select all)</span></label>
+                        <input type="hidden" id="gCities">
+                        <div class="lang-tags" id="cityTags">
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Tashkent</span>
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Samarkand</span>
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Bukhara</span>
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Khiva</span>
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Fergana Valley</span>
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Nukus</span>
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Namangan</span>
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Andijan</span>
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Termez</span>
+                            <span class="city-tag" onclick="toggleTag(this,'gCities')">📍 Shakhrisabz</span>
+                        </div>
+                    </div>
+
+                    <!-- TOUR TYPES -->
+                    <div class="form-group full">
+                        <label>Tour Specialties <span class="opt">(select all)</span></label>
+                        <input type="hidden" id="gTourTypes">
+                        <div class="lang-tags" id="tourTags">
+                            <span class="tour-tag" onclick="toggleTag(this,'gTourTypes')">🏛️ Historical</span>
+                            <span class="tour-tag" onclick="toggleTag(this,'gTourTypes')">🌿 Nature & Hiking</span>
+                            <span class="tour-tag" onclick="toggleTag(this,'gTourTypes')">🍽️ Food & Culture</span>
+                            <span class="tour-tag" onclick="toggleTag(this,'gTourTypes')">📸 Photography</span>
+                            <span class="tour-tag" onclick="toggleTag(this,'gTourTypes')">🕌 Religious Sites</span>
+                            <span class="tour-tag" onclick="toggleTag(this,'gTourTypes')">🎨 Arts & Crafts</span>
+                            <span class="tour-tag" onclick="toggleTag(this,'gTourTypes')">🐪 Desert & Silk Road</span>
+                            <span class="tour-tag" onclick="toggleTag(this,'gTourTypes')">🚗 Day Trips</span>
+                            <span class="tour-tag" onclick="toggleTag(this,'gTourTypes')">👨‍👩‍👧 Family Tours</span>
+                        </div>
+                    </div>
+
+                    <!-- PHOTO -->
+                    <div class="form-group full">
+                        <label>Profile Photo</label>
+                        <input type="file" id="gPhotoFile" accept="image/*" onchange="uploadGuidePhoto(this)">
+                        <input type="text" id="gPhotoUrl" placeholder="Or paste image URL"
+                            style="margin-top:0.5rem;" oninput="showPreview(this.value,'gPhotoPreview')">
+                        <div id="uploadProgress" style="display:none;margin-top:0.5rem;background:#dbeafe;
+                            border-radius:8px;padding:0.5rem 1rem;font-size:0.82rem;font-weight:600;color:#1d4ed8;">
+                            ⏳ Uploading…
+                        </div>
+                        <img id="gPhotoPreview" class="img-preview" alt="Preview">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="saveProfile()">
+                        <i class="fas fa-save"></i> Save Profile
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadProfile()">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- REVIEWS -->
+        <div id="section-reviews" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">⭐ My Reviews</h2>
+                    <div style="display:flex;gap:0.4rem;">
+                        <button class="btn btn-primary btn-sm" onclick="filterReviews('all',this)">All</button>
+                        <button class="btn btn-secondary btn-sm" onclick="filterReviews('pending',this)">⏳ Pending</button>
+                        <button class="btn btn-secondary btn-sm" onclick="filterReviews('approved',this)">✅ Approved</button>
+                    </div>
+                </div>
+                <div id="reviewsList">
+                    <div class="empty-state"><div style="font-size:2rem;">⭐</div><p>Loading…</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUBSCRIPTION -->
+        <div id="section-subscription" class="section">
+            <div class="card">
+                <div class="card-header"><h2 class="card-title">💳 Subscription</h2></div>
+                <div id="subDetails">
+                    <div class="empty-state"><div style="font-size:2rem;">⏳</div><p>Loading…</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSWORD -->
+        <div id="section-password" class="section">
+            <div class="card">
+                <div class="card-header"><h2 class="card-title">🔒 Change Password</h2></div>
+                <div class="alert alert-error" id="pwAlert"></div>
+                <div class="alert alert-success" id="pwSuccess"></div>
+                <div style="max-width:400px;display:flex;flex-direction:column;gap:1rem;">
+                    <div class="form-group"><label>Current Password</label><input type="password" id="pwCurrent"></div>
+                    <div class="form-group"><label>New Password</label><input type="password" id="pwNew" minlength="8"></div>
+                    <div class="form-group"><label>Confirm New Password</label><input type="password" id="pwConfirm"></div>
+                    <button class="btn btn-primary" onclick="changePassword()">
+                        <i class="fas fa-lock"></i> Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- RENEWAL MODAL -->
+<div id="renewalModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h2 class="modal-title">💳 Renew Plan</h2>
+            <button class="modal-close" onclick="closeRenewalModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:var(--muted);font-size:0.875rem;">Choose a plan and upload your payment screenshot.</p>
+            <div class="plan-grid">
+                <div class="plan-card" id="gplan-1month" onclick="selectPlan('1month',20)">
+                    <div class="plan-name">1 Month</div>
+                    <div class="plan-price">$20</div>
+                </div>
+                <div class="plan-card" id="gplan-3months" onclick="selectPlan('3months',50)">
+                    <div class="plan-name">3 Months</div>
+                    <div class="plan-price">$50</div>
+                </div>
+                <div class="plan-card" id="gplan-6months" onclick="selectPlan('6months',110)">
+                    <div class="plan-name">6 Months</div>
+                    <div class="plan-price">$110</div>
+                </div>
+                <div class="plan-card" id="gplan-1year" onclick="selectPlan('1year',220)">
+                    <div class="plan-name">1 Year</div>
+                    <div class="plan-price">$220</div>
+                </div>
+            </div>
+            <div class="payment-box">
+                <h4>💳 Payment Details</h4>
+                <div class="payment-row"><span>Card</span><span id="payCard">Loading…</span></div>
+                <div class="payment-row"><span>Amount</span><span id="payAmount">Select a plan</span></div>
+            </div>
+            <div class="form-group">
+                <label>Payment Screenshot</label>
+                <input type="file" id="renewProofFile" accept="image/*" onchange="uploadRenewalProof(this)">
+                <img id="renewProofPreview" class="img-preview" alt="Proof">
+            </div>
+            <input type="hidden" id="renewProofUrl">
+            <div class="alert alert-error" id="renewalAlert"></div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn btn-secondary" onclick="closeRenewalModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="submitRenewal()">Submit Request</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+if (typeof API === 'undefined') window.API = 'http://localhost:8000';
+const BASE = API;
+
+let guideId = null, partnerEmail = null;
+let allReviews = [], reviewFilter = 'all';
+let selectedPlan = null;
+
+function getToken() { return localStorage.getItem('partner_token'); }
+function authH()    { return {'Content-Type':'application/json','Authorization':'Bearer '+getToken()}; }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const p = new URLSearchParams(window.location.search);
+    guideId      = p.get('id') || localStorage.getItem('guide_id') || localStorage.getItem('partner_record_id');
+    partnerEmail = localStorage.getItem('partner_email');
+    if (!getToken()) { window.location.href = '/partner-login.html'; return; }
+    document.getElementById('partnerEmail').textContent = partnerEmail || '';
+    loadDashboard();
+    loadSubscription();
+});
+
+function handleLogout() {
+    if (!confirm('Logout?')) return;
+    ['partner_token','guide_id','partner_email','partner_type','partner_record_id']
+        .forEach(k => localStorage.removeItem(k));
+    window.location.href = '/partner-login.html';
+}
+
+async function api(method, path, body) {
+    const opts = {method, headers: authH()};
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(BASE + path, opts);
+    if (r.status === 401 || r.status === 403) { window.location.href = '/partner-login.html'; return; }
+    if (!r.ok) { const t = await r.json(); throw new Error(t.detail || 'Failed'); }
+    return method === 'DELETE' ? null : r.json();
+}
+
+function showSection(name, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('section-'+name).classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (name === 'dashboard')    loadDashboard();
+    if (name === 'profile')      loadProfile();
+    if (name === 'reviews')      loadReviews();
+    if (name === 'subscription') loadSubscription();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+async function loadDashboard() {
+    try {
+        const g = await api('GET', `/api/guides/${guideId}`);
+        document.getElementById('guideNameHeader').textContent = g.name || 'Guide Dashboard';
+        document.getElementById('statRating').textContent  = g.rating ? Number(g.rating).toFixed(1) : '0.0';
+        document.getElementById('statReviews').textContent = g.review_count || 0;
+        document.getElementById('statPrice').textContent   = g.price_per_day ? '$'+g.price_per_day : '—';
+
+        const status = g.status || 'pending';
+        const msgs = {
+            pending:  '⏳ Your profile is pending admin approval. You\'ll receive an email once approved.',
+            approved: '✅ Your profile is live! Tourists can now find and contact you.',
+            rejected: '❌ Your profile was rejected. Please update your info and save again.',
+        };
+        document.getElementById('dashContent').innerHTML = `
+            <div style="padding:1rem;border-radius:10px;font-weight:600;font-size:0.875rem;
+                background:${status==='approved'?'var(--success-bg)':status==='rejected'?'var(--danger-bg)':'var(--warning-bg)'};
+                color:${status==='approved'?'var(--success)':status==='rejected'?'var(--danger)':'var(--warning)'};">
+                ${msgs[status] || msgs.pending}
+            </div>
+            <div style="margin-top:1.25rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;">
+                <div style="background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:1rem;">
+                    <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:0.4rem;">Languages</div>
+                    <div style="font-weight:600;font-size:0.875rem;">${g.languages || '—'}</div>
+                </div>
+                <div style="background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:1rem;">
+                    <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:0.4rem;">Cities</div>
+                    <div style="font-weight:600;font-size:0.875rem;">${g.cities || '—'}</div>
+                </div>
+                <div style="background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:1rem;">
+                    <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:0.4rem;">Experience</div>
+                    <div style="font-weight:600;font-size:0.875rem;">${g.experience_years ? g.experience_years+' years' : '—'}</div>
+                </div>
+            </div>`;
+    } catch(e) { console.error(e); }
+}
+
+// ── PROFILE ───────────────────────────────────────────────────
+async function loadProfile() {
+    try {
+        const g = await api('GET', `/api/guides/${guideId}`);
+        document.getElementById('gName').value       = g.name             || '';
+        document.getElementById('gExperience').value = g.experience_years || '';
+        document.getElementById('gPhone').value      = g.phone            || '';
+        document.getElementById('gPrice').value      = g.price_per_day    || '';
+        document.getElementById('gTelegram').value   = g.telegram         || '';
+        document.getElementById('gInstagram').value  = g.instagram        || '';
+        document.getElementById('gBio').value        = g.bio              || '';
+        document.getElementById('gPhotoUrl').value   = g.photo_url        || '';
+        document.getElementById('gLanguages').value  = g.languages        || '';
+        document.getElementById('gCities').value     = g.cities           || '';
+        document.getElementById('gTourTypes').value  = g.tour_types       || '';
+
+        if (g.photo_url) showPreview(
+            g.photo_url.startsWith('http') ? g.photo_url : BASE+g.photo_url,
+            'gPhotoPreview'
+        );
+
+        // Restore tag selections
+        restoreTags('langTags',  'gLanguages');
+        restoreTags('cityTags',  'gCities');
+        restoreTags('tourTags',  'gTourTypes');
+
+        const status = g.status || 'pending';
+        const bar = document.getElementById('profileStatusBar');
+        if (status === 'pending')
+            bar.innerHTML = '<div style="background:var(--warning-bg);border-left:4px solid #fcd34d;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-weight:600;color:var(--warning);">⏳ Profile pending admin approval.</div>';
+        else if (status === 'rejected')
+            bar.innerHTML = '<div style="background:var(--danger-bg);border-left:4px solid #fca5a5;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-weight:600;color:var(--danger);">❌ Rejected. Update and save to resubmit.</div>';
+        else bar.innerHTML = '';
+    } catch(e) { toast('Failed to load profile', 'error'); }
+}
+
+async function saveProfile() {
+    const body = {
+        name:             document.getElementById('gName').value,
+        experience_years: parseInt(document.getElementById('gExperience').value) || 0,
+        phone:            document.getElementById('gPhone').value      || null,
+        price_per_day:    parseFloat(document.getElementById('gPrice').value) || null,
+        telegram:         document.getElementById('gTelegram').value   || null,
+        instagram:        document.getElementById('gInstagram').value  || null,
+        bio:              document.getElementById('gBio').value        || null,
+        photo_url:        document.getElementById('gPhotoUrl').value   || null,
+        languages:        document.getElementById('gLanguages').value  || null,
+        cities:           document.getElementById('gCities').value     || null,
+        tour_types:       document.getElementById('gTourTypes').value  || null,
+    };
+    if (!body.name) { toast('Name is required', 'error'); return; }
+    try {
+        await api('PUT', `/api/guides/${guideId}`, body);
+        toast('Profile saved! Waiting for admin approval.', 'info');
+        loadDashboard();
+    } catch(e) { toast('Save failed: '+e.message, 'error'); }
+}
+
+async function uploadGuidePhoto(input) {
+    const file = input.files[0]; if (!file) return;
+    const prog = document.getElementById('uploadProgress');
+    prog.style.display = 'block';
+    try {
+        const fd = new FormData(); fd.append('file', file);
+        const r = await fetch(BASE+'/admin/upload-image', {method:'POST', body:fd});
+        const d = await r.json(); if (!r.ok) throw new Error(d.detail);
+        document.getElementById('gPhotoUrl').value = d.url;
+        showPreview(BASE+d.url, 'gPhotoPreview');
+        prog.style.display = 'none';
+    } catch(e) { prog.style.display='none'; toast('Upload failed','error'); }
+}
+
+// ── TAG HELPERS ───────────────────────────────────────────────
+function toggleTag(el, hiddenId) {
+    el.classList.toggle('selected');
+    const selected = [...el.parentElement.querySelectorAll('.selected')]
+        .map(t => t.textContent.trim().replace(/^[^\s]+\s/,''));
+    document.getElementById(hiddenId).value = selected.join(', ');
+}
+
+function restoreTags(containerid, hiddenId) {
+    const val = document.getElementById(hiddenId).value;
+    if (!val) return;
+    const vals = val.split(',').map(v => v.trim().toLowerCase());
+    document.getElementById(containerid).querySelectorAll('span').forEach(tag => {
+        const text = tag.textContent.trim().replace(/^[^\s]+\s/,'').toLowerCase();
+        if (vals.some(v => v.includes(text) || text.includes(v))) {
+            tag.classList.add('selected');
+        }
+    });
+}
+
+// ── REVIEWS ───────────────────────────────────────────────────
+async function loadReviews() {
+    const wrap = document.getElementById('reviewsList');
+    try {
+        allReviews = await api('GET', `/api/guides/${guideId}/reviews`);
+        renderReviews();
+    } catch(e) {
+        wrap.innerHTML = '<div class="empty-state" style="color:var(--danger);">Failed to load reviews.</div>';
+    }
+}
+
+function filterReviews(f, btn) {
+    reviewFilter = f;
+    document.querySelectorAll('#section-reviews .btn').forEach(b => {
+        b.classList.add('btn-secondary'); b.classList.remove('btn-primary');
+    });
+    if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-primary'); }
+    renderReviews();
+}
+
+function renderReviews() {
+    const wrap = document.getElementById('reviewsList');
+    const list = reviewFilter === 'all' ? allReviews
+        : allReviews.filter(r => (r.status||'approved') === reviewFilter);
+    if (!list.length) {
+        wrap.innerHTML = '<div class="empty-state"><div style="font-size:2rem;">⭐</div><p>No reviews here.</p></div>';
+        return;
+    }
+    wrap.innerHTML = list.map(r => {
+        const stars  = '★'.repeat(Math.round(r.rating||0))+'☆'.repeat(5-Math.round(r.rating||0));
+        const status = r.status || 'approved';
+        return `
+        <div class="review-card ${status==='pending'?'pending':''}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
+                <div>
+                    <div style="font-weight:700;">${r.reviewer_name||'Anonymous'}</div>
+                    <div style="color:#fbbf24;">${stars}</div>
+                    <div style="font-size:0.75rem;color:var(--muted);">
+                        ${r.created_at?new Date(r.created_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):''}
+                    </div>
+                </div>
+                <span class="badge ${status==='approved'?'badge-success':status==='rejected'?'badge-danger':'badge-warning'}">
+                    ${status==='approved'?'✅ Approved':status==='rejected'?'❌ Rejected':'⏳ Pending'}
+                </span>
+            </div>
+            <p style="font-size:0.875rem;color:var(--muted);margin:0.4rem 0;">${r.comment||''}</p>
+            ${status==='pending'?`
+            <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+                <button class="btn btn-success btn-sm" onclick="reviewAction(${r.id},'approve')">✅ Approve</button>
+                <button class="btn btn-danger btn-sm" onclick="reviewAction(${r.id},'reject')">❌ Reject</button>
+            </div>`:''}
+        </div>`;
+    }).join('');
+}
+
+async function reviewAction(rid, action) {
+    try {
+        await api('POST', `/api/guides/${guideId}/reviews/${rid}/${action}`);
+        toast(action==='approve'?'Approved!':'Rejected.','success');
+        loadReviews();
+    } catch(e) { toast('Failed: '+e.message,'error'); }
+}
+
+// ── SUBSCRIPTION ──────────────────────────────────────────────
+async function loadSubscription() {
+    if (!partnerEmail) return;
+    try {
+        const res = await fetch(BASE+'/api/subscription/status?email='+encodeURIComponent(partnerEmail));
+        if (!res.ok) return;
+        const s = await res.json();
+        const dEl = document.getElementById('statDays');
+        const card = document.getElementById('statSubCard');
+        dEl.textContent = s.days_remaining != null ? s.days_remaining : '—';
+        if (s.is_expired) { dEl.className='stat-value'; dEl.style.color='var(--danger)'; card.style.borderColor='#fca5a5'; }
+        else if (s.days_remaining <= 7) { dEl.style.color='var(--warning)'; card.style.borderColor='#fcd34d'; }
+
+        const banner = document.getElementById('subBanner');
+        if (s.is_expired) {
+            banner.style.display='flex'; banner.style.cssText='display:flex;justify-content:space-between;align-items:center;background:var(--danger-bg);border:2px solid #fca5a5;border-radius:12px;padding:0.875rem 1.125rem;margin-bottom:1.25rem;font-weight:600;color:var(--danger);gap:0.75rem;';
+            banner.innerHTML = `<span>⚠️ Plan expired!</span><button onclick="openRenewalModal()" style="background:var(--primary);color:white;border:none;border-radius:8px;padding:0.4rem 1rem;font-weight:700;cursor:pointer;font-family:inherit;">Renew Now</button>`;
+        } else if (s.days_remaining <= 7) {
+            banner.style.cssText='display:flex;justify-content:space-between;align-items:center;background:var(--warning-bg);border:2px solid #fcd34d;border-radius:12px;padding:0.875rem 1.125rem;margin-bottom:1.25rem;font-weight:600;color:var(--warning);gap:0.75rem;';
+            banner.innerHTML = `<span>⏰ Expires in ${s.days_remaining} days</span><button onclick="openRenewalModal()" style="background:var(--primary);color:white;border:none;border-radius:8px;padding:0.4rem 1rem;font-weight:700;cursor:pointer;font-family:inherit;">Renew Plan</button>`;
+        } else banner.style.display='none';
+
+        const planLabel = {'1month':'1 Month','3months':'3 Months','6months':'6 Months','1year':'1 Year'};
+        document.getElementById('subDetails').innerHTML = `
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.875rem;margin-bottom:1.25rem;">
+                <div style="background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:1.1rem;">
+                    <div class="stat-label">Plan</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:var(--primary);">${planLabel[s.plan]||s.plan||'—'}</div>
+                    <div style="font-size:0.82rem;color:var(--muted);">$${s.plan_amount||'—'}</div>
+                </div>
+                <div style="background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:1.1rem;">
+                    <div class="stat-label">Days Left</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:${s.is_expired?'var(--danger)':s.days_remaining<=7?'var(--warning)':'var(--success)'};">${s.days_remaining??'—'}</div>
+                    <div style="font-size:0.82rem;color:var(--muted);">Expires ${fmt(s.plan_end_date)}</div>
+                </div>
+            </div>
+            ${s.renewal_pending
+                ? '<div style="background:#dbeafe;border:2px solid #93c5fd;border-radius:12px;padding:1rem;font-weight:600;color:#1d4ed8;">⏳ Renewal pending admin review.</div>'
+                : '<button class="btn btn-primary" onclick="openRenewalModal()"><i class="fas fa-redo"></i> Renew Plan</button>'}`;
+
+        const plans = await fetch(BASE+'/api/subscription/plans').then(r=>r.json());
+        window._payInfo = plans.payment_info || {};
+        document.getElementById('payCard').textContent = window._payInfo.card_number || 'Contact admin';
+    } catch(e) {}
+}
+
+function openRenewalModal() {
+    selectedPlan = null;
+    document.querySelectorAll('.plan-card').forEach(c=>c.classList.remove('selected'));
+    document.getElementById('renewProofUrl').value='';
+    document.getElementById('renewProofPreview').classList.remove('show');
+    document.getElementById('renewalAlert').classList.remove('show');
+    document.getElementById('payAmount').textContent='Select a plan';
+    document.getElementById('renewalModal').classList.add('active');
+}
+function closeRenewalModal() { document.getElementById('renewalModal').classList.remove('active'); }
+function selectPlan(key, amount) {
+    selectedPlan = {key, amount};
+    document.querySelectorAll('.plan-card').forEach(c=>c.classList.remove('selected'));
+    document.getElementById('gplan-'+key).classList.add('selected');
+    document.getElementById('payAmount').textContent='$'+amount;
+}
+async function uploadRenewalProof(input) {
+    const file = input.files[0]; if (!file) return;
+    try {
+        const fd = new FormData(); fd.append('file', file);
+        const r = await fetch(BASE+'/admin/upload-image', {method:'POST', body:fd});
+        const d = await r.json(); if (!r.ok) throw new Error(d.detail);
+        document.getElementById('renewProofUrl').value = BASE+d.url;
+        showPreview(BASE+d.url, 'renewProofPreview');
+    } catch(e) { toast('Upload failed','error'); }
+}
+async function submitRenewal() {
+    if (!selectedPlan) { showAlert('renewalAlert','Please select a plan.'); return; }
+    const proof = document.getElementById('renewProofUrl').value;
+    if (!proof) { showAlert('renewalAlert','Please upload payment screenshot.'); return; }
+    try {
+        const r = await fetch(BASE+'/api/subscription/renew', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({email:partnerEmail, plan:selectedPlan.key, payment_proof_url:proof})
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.detail||'Failed');
+        closeRenewalModal();
+        toast('✅ Renewal submitted! Admin will review shortly.','success');
+        loadSubscription();
+    } catch(e) { showAlert('renewalAlert', e.message); }
+}
+
+// ── CHANGE PASSWORD ───────────────────────────────────────────
+async function changePassword() {
+    ['pwAlert','pwSuccess'].forEach(id => document.getElementById(id).classList.remove('show'));
+    const cur = document.getElementById('pwCurrent').value;
+    const nw  = document.getElementById('pwNew').value;
+    const cfm = document.getElementById('pwConfirm').value;
+    if (!cur||!nw||!cfm) { showAlert('pwAlert','All fields required.'); return; }
+    if (nw !== cfm)       { showAlert('pwAlert','Passwords do not match.'); return; }
+    if (nw.length < 8)    { showAlert('pwAlert','Min 8 characters.'); return; }
+    try {
+        const r = await fetch(BASE+'/api/partner-applications/change-password', {
+            method:'POST', headers:authH(),
+            body: JSON.stringify({email:partnerEmail, current_password:cur, new_password:nw})
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.detail||'Failed');
+        const el = document.getElementById('pwSuccess');
+        el.textContent='✅ Password changed!'; el.classList.add('show');
+        ['pwCurrent','pwNew','pwConfirm'].forEach(id=>document.getElementById(id).value='');
+    } catch(e) { showAlert('pwAlert',e.message); }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function showPreview(url,id){ const el=document.getElementById(id); if(!el||!url)return; el.src=url; el.classList.add('show'); }
+function fmt(d){ if(!d)return'—'; return new Date(d).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}); }
+function showAlert(id,msg){ const el=document.getElementById(id); el.textContent=msg; el.classList.add('show'); }
+function toast(msg,type='info'){
+    const c=document.getElementById('toastContainer');
+    const el=document.createElement('div');
+    el.className=`toast toast-${type}`;
+    el.innerHTML=`<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]}</span> ${msg}`;
+    c.appendChild(el);
+    setTimeout(()=>el.remove(),4000);
+}
+</script>
+</body>
+</html>
