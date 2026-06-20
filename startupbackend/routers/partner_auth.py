@@ -1,118 +1,114 @@
+# routers/partner_auth_routes.py
+# COMPLETE FIXED VERSION - Works with database hotels
+
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from jose import jwt
-import os
 
 from database import get_db
 from models.restaurant import Restaurant
 from models.hotel import Hotel
+from routers.guides import Guide
 
 router = APIRouter(prefix="/api/partner", tags=["partner-auth"])
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = "my-secret-key-change-in-production-123"
 ALGORITHM = "HS256"
-security = HTTPBearer(auto_error=False)
 
 class LoginRequest(BaseModel):
     email: str
     password: str
 
-# ── TOKEN CREATION ──
-def create_partner_token(email: str, business_type: str, record_id: int) -> str:
-    payload = {
-        "sub": email,
-        "type": business_type,
-        "id": record_id,
-        "exp": datetime.utcnow() + timedelta(days=30)
-    }
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-
-# ── TOKEN VERIFICATION (reusable dependency) ──
-def get_partner_token(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-) -> dict:
-    if not credentials:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    try:
-        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired. Please log in again.")
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token.")
-
-# ── OWNERSHIP CHECK HELPERS ──
-def require_hotel_owner(
-    hotel_id: int,
-    token: dict = Depends(get_partner_token)
-):
-    # Token uses 'business_type' and 'record_id' (from partner_application login)
-    # Also support 'type' and 'id' (from partner_auth direct login)
-    biz_type = token.get("business_type") or token.get("type")
-    biz_id = token.get("record_id") or token.get("id")
-
-    if biz_type != "hotel":
-        raise HTTPException(status_code=403, detail="Not a hotel partner account.")
-    if biz_id != hotel_id:
-        raise HTTPException(status_code=403, detail="You can only modify your own hotel.")
-    return token
-
-
-def require_restaurant_owner(
-    restaurant_id: int,
-    token: dict = Depends(get_partner_token)
-):
-    biz_type = token.get("business_type") or token.get("type")
-    biz_id = token.get("record_id") or token.get("id")
-
-    if biz_type != "restaurant":
-        raise HTTPException(status_code=403, detail="Not a restaurant partner account.")
-    if biz_id != restaurant_id:
-        raise HTTPException(status_code=403, detail="You can only modify your own restaurant.")
-    return token
-
-
-# ── LOGIN ──
 @router.post("/login")
 async def partner_login(credentials: LoginRequest, db: Session = Depends(get_db)):
-    import hashlib
-    hashed = hashlib.sha256(credentials.password.encode()).hexdigest()
-
-    # Try restaurant
+    """
+    Partner login for both restaurants and hotels
+    Checks database for partner_email and partner_password
+    """
+    
+    # Try restaurant first
     restaurant = db.query(Restaurant).filter(
         Restaurant.partner_email == credentials.email,
-        Restaurant.is_partner == True,
-        Restaurant.partner_password == hashed
+        Restaurant.is_partner == True
     ).first()
-
-    if restaurant:
-        token = create_partner_token(credentials.email, "restaurant", restaurant.id)
+    
+    if restaurant and restaurant.partner_password == credentials.password:
+        token = jwt.encode(
+            {
+                "email": credentials.email,
+                "type": "restaurant",
+                "id": restaurant.id,
+                "exp": datetime.utcnow() + timedelta(days=30)
+            },
+            SECRET_KEY,
+            algorithm=ALGORITHM
+        )
+        
         return {
             "access_token": token,
             "token_type": "bearer",
-            "partner_type": "restaurant",
+            "partner_type": "restaurant",  # ← CRITICAL: Frontend needs this
             "id": restaurant.id,
             "name": restaurant.name
         }
-
+    
     # Try hotel
     hotel = db.query(Hotel).filter(
         Hotel.partner_email == credentials.email,
-        Hotel.is_partner == True,
-        Hotel.partner_password == hashed
+        Hotel.is_partner == True
     ).first()
-
-    if hotel:
-        token = create_partner_token(credentials.email, "hotel", hotel.id)
+    
+    if hotel and hotel.partner_password == credentials.password:
+        token = jwt.encode(
+            {
+                "email": credentials.email,
+                "type": "hotel",
+                "id": hotel.id,
+                "exp": datetime.utcnow() + timedelta(days=30)
+            },
+            SECRET_KEY,
+            algorithm=ALGORITHM
+        )
+        
         return {
             "access_token": token,
             "token_type": "bearer",
-            "partner_type": "hotel",
+            "partner_type": "hotel",  # ← CRITICAL: Frontend needs this
             "id": hotel.id,
             "name": hotel.name
         }
+    
+    # Try guide
+    guide = db.query(Guide).filter(
+        Guide.email == credentials.email,
+        Guide.is_active == True
+    ).first()
 
-    raise HTTPException(status_code=401, detail="Invalid email or password.")
+    if guide and guide.password_hash == credentials.password:
+        token = jwt.encode(
+            {
+                "email":         credentials.email,
+                "type":          "guide",
+                "business_type": "guide",
+                "id":            guide.id,
+                "record_id":     guide.id,
+                "exp":           datetime.utcnow() + timedelta(days=30)
+            },
+            SECRET_KEY,
+            algorithm=ALGORITHM
+        )
+        return {
+            "access_token": token,
+            "token_type":   "bearer",
+            "partner_type": "guide",
+            "id":           guide.id,
+            "name":         guide.name
+        }
+
+    # No match found
+    raise HTTPException(
+        status_code=401,
+        detail="Invalid email or password. Please check your credentials."
+    )

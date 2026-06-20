@@ -2,7 +2,7 @@
 partner_application.py
 ======================
 Universal partner-application flow for all business types:
-# restaurant | hotel | travel_agency | guide | attraction | multiple
+  restaurant | hotel | travel_agency | attraction | multiple
 
 Flow:
   1. Applicant submits signup form  → POST /signup
@@ -62,7 +62,8 @@ DASHBOARD_URLS: dict[str, str] = {
     "restaurant":    "restaurants-admin-portal.html",
     "hotel":         "hotel-admin-dashboard.html",
     "travel_agency": "travel-agency-admin-dashboard.html",
-    "guide":         "guide-admin-dashboard.html",   # ← add this
+    "attraction":    "attraction-admin-dashboard.html",
+    "guide":         "guide-admin-dashboard.html",
     # "spa": "spa-admin-dashboard.html",  ← just add a line
 }
 
@@ -70,7 +71,8 @@ BUSINESS_LABELS: dict[str, str] = {
     "restaurant":    "🍽️ Restaurant / Café",
     "hotel":         "🏨 Hotel / Guesthouse",
     "travel_agency": "🌍 Travel Agency",
-    "guide":         "🧭 Local Guide",  
+    "attraction":    "🏛️ Tourist Attraction",
+    "guide":         "🧭 Local Guide",
     "multiple":      "📦 Multiple Businesses",
 }
 
@@ -348,6 +350,25 @@ def _create_business_record(app: PartnerApplication, hashed_pw: str, db: Session
             status           = "pending",
         )
 
+    elif bt == "guide":
+        from routers.guides import Guide
+        existing = db.query(Guide).filter(Guide.email == app.email).first()
+        if existing:
+            existing.password_hash = hashed_pw
+            existing.status = "approved"
+            db.flush()
+            return existing.id
+        record = Guide(
+            name             = app.business_name,
+            email            = app.email,
+            phone            = app.phone,
+            status           = "approved",
+            password_hash    = hashed_pw,
+            rating           = 0.0,
+            review_count     = 0,
+            is_active        = True,
+        )
+
     else:
         # attraction / multiple / future types
         raise HTTPException(
@@ -367,11 +388,18 @@ def _update_business_password(app: PartnerApplication, hashed_pw: str, db: Sessi
     from models.restaurant import Restaurant
     from models.travel_agency import TravelAgency
 
+    from routers.guides import Guide
     model_map = {
         "travel_agency": TravelAgency,
         "restaurant":    Restaurant,
         "hotel":         Hotel,
     }
+    if app.business_type == "guide":
+        rec = db.query(Guide).filter(Guide.id == app.linked_record_id).first()
+        if rec:
+            rec.password_hash = hashed_pw
+            db.flush()
+        return
     model = model_map.get(app.business_type)
     if model is None:
         return  # unsupported type — silently skip
@@ -388,6 +416,10 @@ def _verify_password_for(app: PartnerApplication, plain_pw: str, db: Session) ->
     from models.restaurant import Restaurant
     from models.travel_agency import TravelAgency
 
+    from routers.guides import Guide
+    if app.business_type == "guide":
+        rec = db.query(Guide).filter(Guide.id == app.linked_record_id).first()
+        return rec is not None and rec.password_hash == _hash_password(plain_pw)
     model_map = {
         "travel_agency": TravelAgency,
         "restaurant":    Restaurant,
@@ -410,6 +442,13 @@ def _set_business_status(
     from models.restaurant import Restaurant
     from models.travel_agency import TravelAgency
  
+    from routers.guides import Guide
+    if application.business_type == "guide":
+        rec = db.query(Guide).filter(Guide.id == application.linked_record_id).first()
+        if rec:
+            rec.status = status
+            db.flush()
+        return
     model_map = {
         "hotel":         Hotel,
         "restaurant":    Restaurant,
@@ -430,21 +469,19 @@ def _set_business_status(
 # ══════════════════════════════════════════════════════════════════════════════
 #  SECTION 6 — EMAIL HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
+
 def _send_email(to_email: str, to_name: str, subject: str, html: str) -> None:
-    import resend
-    resend.api_key = os.environ.get("RESEND_API_KEY", "")
-    
-    if not resend.api_key:
-        print("❌ RESEND_API_KEY not set")
-        return
-    
+    """Send a single HTML email via Gmail SMTP SSL. Logs errors rather than raising."""
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"]    = f"{FROM_NAME} <{SMTP_USER}>"
+    msg["To"]      = f"{to_name} <{to_email}>"
+    msg.attach(MIMEText(html, "html"))
     try:
-        resend.Emails.send({
-            "from": "Discover Uzbekistan <noreply@discover-travel-uzbekistan.com>",
-            "to":      [to_email],
-            "subject": subject,
-            "html":    html,
-        })
+        context = ssl.create_default_context(cafile=certifi.where())
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(SMTP_USER, to_email, msg.as_string())
         print(f"✅ Email → {to_email}")
     except Exception as exc:
         print(f"❌ Email failed → {to_email}: {exc}")
@@ -1048,24 +1085,6 @@ async def change_password(
     return {"success": True, "message": "Password changed successfully."}
 
 
-@router.get("/status-check")
-async def check_partner_status(
-    email: str,
-    db:    Session = Depends(get_db),
-):
-    """Called by partner dashboards on load to check if blocked."""
-    app = db.query(PartnerApplication).filter(
-        PartnerApplication.email  == email,
-        PartnerApplication.status == "approved",
-    ).first()
-    if not app:
-        raise HTTPException(404, "Not found.")
-    return {
-        "is_blocked":        app.plan_status == "blocked",
-        "business_name":     app.business_name,
-        "rejection_reason":  app.rejection_reason,
-        "plan_status":       app.plan_status,
-    }
 
 
 # ══════════════════════════════════════════════════════════════

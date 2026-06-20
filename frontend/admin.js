@@ -26,23 +26,23 @@ async function loadDashboard() {
     try {
         const stats = await fetchAPI('/admin/stats');
         document.getElementById('s-restaurants').textContent = stats.restaurants?.total ?? '—';
-        document.getElementById('s-hotels').textContent = stats.hotels?.total ?? '—';
+        document.getElementById('s-hotels').textContent      = stats.hotels?.total      ?? '—';
         document.getElementById('s-attractions').textContent = stats.attractions?.total ?? '—';
-        document.getElementById('s-reviews').textContent = stats.reviews?.total ?? '—';
+        document.getElementById('s-reviews').textContent     = stats.reviews?.total     ?? '—';
 
         // Agencies count
         fetchAPI('/admin/travel-agencies').then(res => {
-            document.getElementById('s-agencies').textContent = (res.agencies || []).length;
-        }).catch(() => { });
+            document.getElementById('s-agencies').textContent = (res.agencies||[]).length;
+        }).catch(() => {});
 
         // Partners count
         fetch(`${API_BASE}/api/partner-applications/admin/list?status=approved`, {
-            headers: { 'X-Admin-Key': ADMIN_KEY }
+            headers: {'X-Admin-Key': ADMIN_KEY}
         }).then(r => r.json()).then(d => {
             document.getElementById('s-partners').textContent = d.length || 0;
-        }).catch(() => { });
+        }).catch(() => {});
 
-    } catch (e) { console.error('Stats error:', e); }
+    } catch(e) { console.error('Stats error:', e); }
 
     // Load pending approvals for badge + dashboard card
     loadPendingApprovals(true);
@@ -52,19 +52,24 @@ async function loadDashboard() {
 async function loadPendingApprovals(dashboardOnly = false) {
     try {
         const [pendingRestaurants, pendingMenuItems, pendingHotels,
-            pendingRooms, pendingTours] = await Promise.all([
-                fetchAPI('/api/admin-approval/restaurants/pending'),
-                fetchAPI('/api/admin-approval/menu-items/pending'),
-                fetchAPI('/api/admin-approval/hotels/pending'),
-                fetchAPI('/api/admin-approval/hotel-rooms/pending'),
-                fetchAPI('/api/admin-approval/tours/pending'),
-            ]);
+               pendingRooms, pendingTours, pendingGuideApps] = await Promise.all([
+            fetchAPI('/api/admin-approval/restaurants/pending'),
+            fetchAPI('/api/admin-approval/menu-items/pending'),
+            fetchAPI('/api/admin-approval/hotels/pending'),
+            fetchAPI('/api/admin-approval/hotel-rooms/pending'),
+            fetchAPI('/api/admin-approval/tours/pending'),
+            fetchAPI('/api/partner-applications/admin/list?status=pending'),
+        ]);
+
+        // Filter only guide applications from partner apps
+        const pendingGuides = pendingGuideApps.filter(a => a.business_type === 'guide');
 
         const total = pendingRestaurants.length + pendingMenuItems.length +
-            pendingHotels.length + pendingRooms.length + pendingTours.length;
+                      pendingHotels.length + pendingRooms.length + pendingTours.length +
+                      pendingGuides.length;
 
         // Update badges
-        ['nav-pending-badge', 'nav-pending-badge2'].forEach(id => {
+        ['nav-pending-badge','nav-pending-badge2'].forEach(id => {
             const el = document.getElementById(id);
             if (el) { el.textContent = total; el.style.display = total > 0 ? 'inline-block' : 'none'; }
         });
@@ -85,10 +90,11 @@ async function loadPendingApprovals(dashboardOnly = false) {
                     </div>
                     <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
                         ${pendingRestaurants.length ? `<div class="badge badge-warning">🍽️ ${pendingRestaurants.length} Restaurants</div>` : ''}
-                        ${pendingMenuItems.length ? `<div class="badge badge-info">🍴 ${pendingMenuItems.length} Menu Items</div>` : ''}
-                        ${pendingHotels.length ? `<div class="badge badge-warning">🏨 ${pendingHotels.length} Hotels</div>` : ''}
-                        ${pendingRooms.length ? `<div class="badge badge-info">🛏 ${pendingRooms.length} Rooms</div>` : ''}
-                        ${pendingTours.length ? `<div class="badge badge-warning">🗺️ ${pendingTours.length} Tours</div>` : ''}
+                        ${pendingMenuItems.length   ? `<div class="badge badge-info">🍴 ${pendingMenuItems.length} Menu Items</div>` : ''}
+                        ${pendingHotels.length      ? `<div class="badge badge-warning">🏨 ${pendingHotels.length} Hotels</div>` : ''}
+                        ${pendingRooms.length       ? `<div class="badge badge-info">🛏 ${pendingRooms.length} Rooms</div>` : ''}
+                        ${pendingTours.length       ? `<div class="badge badge-warning">🗺️ ${pendingTours.length} Tours</div>` : ''}
+                        ${pendingGuides.length      ? `<div class="badge badge-info">🧭 ${pendingGuides.length} Guide Applications</div>` : ''}
                     </div>`;
             } else {
                 dashCard.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--text3);">
@@ -113,13 +119,13 @@ async function loadPendingApprovals(dashboardOnly = false) {
 
         html += pendingSection('🍽️ Restaurants', pendingRestaurants, r => `
             <div class="pending-card">
-                <img class="pending-img" src="${fixUrl(r.image_url) || 'https://via.placeholder.com/80x70?text=R'}" onerror="this.src='https://via.placeholder.com/80x70?text=R'">
+                <img class="pending-img" src="${fixUrl(r.image_url)||'https://via.placeholder.com/80x70?text=R'}" onerror="this.src='https://via.placeholder.com/80x70?text=R'">
                 <div class="pending-info">
                     <div class="pending-name">${r.name}</div>
                     <div class="pending-meta">
                         ${r.cuisine_type ? `🍴 ${r.cuisine_type}` : ''} ${r.phone ? `• 📞 ${r.phone}` : ''}<br>
                         ${r.address || ''}<br>
-                        ${r.description ? r.description.slice(0, 100) + '…' : ''}
+                        ${r.description ? r.description.slice(0,100)+'…' : ''}
                     </div>
                 </div>
                 <div class="pending-actions">
@@ -130,7 +136,7 @@ async function loadPendingApprovals(dashboardOnly = false) {
 
         html += pendingSection('🍴 Menu Items', pendingMenuItems, item => `
             <div class="pending-card">
-                <img class="pending-img" src="${fixUrl(item.image_url) || 'https://via.placeholder.com/80x70?text=M'}" onerror="this.src='https://via.placeholder.com/80x70?text=M'">
+                <img class="pending-img" src="${fixUrl(item.image_url)||'https://via.placeholder.com/80x70?text=M'}" onerror="this.src='https://via.placeholder.com/80x70?text=M'">
                 <div class="pending-info">
                     <div class="pending-name">${item.item_name}</div>
                     <div class="pending-meta">
@@ -146,7 +152,7 @@ async function loadPendingApprovals(dashboardOnly = false) {
 
         html += pendingSection('🏨 Hotels', pendingHotels, item => `
             <div class="pending-card">
-                <img class="pending-img" src="${fixUrl(item.image_url) || 'https://via.placeholder.com/80x70?text=H'}" onerror="this.src='https://via.placeholder.com/80x70?text=H'">
+                <img class="pending-img" src="${fixUrl(item.image_url)||'https://via.placeholder.com/80x70?text=H'}" onerror="this.src='https://via.placeholder.com/80x70?text=H'">
                 <div class="pending-info">
                     <div class="pending-name">${item.name}</div>
                     <div class="pending-meta">
@@ -162,12 +168,12 @@ async function loadPendingApprovals(dashboardOnly = false) {
 
         html += pendingSection('🛏 Hotel Rooms', pendingRooms, item => `
             <div class="pending-card">
-                <img class="pending-img" src="${fixUrl(item.image_url) || 'https://via.placeholder.com/80x70?text=Room'}" onerror="this.src='https://via.placeholder.com/80x70?text=Room'">
+                <img class="pending-img" src="${fixUrl(item.image_url)||'https://via.placeholder.com/80x70?text=Room'}" onerror="this.src='https://via.placeholder.com/80x70?text=Room'">
                 <div class="pending-info">
-                    <div class="pending-name">${item.hotel_name} — ${item.room_type || 'Room'}</div>
+                    <div class="pending-name">${item.hotel_name} — ${item.room_type||'Room'}</div>
                     <div class="pending-meta">
-                        Capacity: ${item.capacity || 'N/A'} • $${item.price}/night<br>
-                        ${item.description || ''}
+                        Capacity: ${item.capacity||'N/A'} • $${item.price}/night<br>
+                        ${item.description||''}
                     </div>
                 </div>
                 <div class="pending-actions">
@@ -178,12 +184,12 @@ async function loadPendingApprovals(dashboardOnly = false) {
 
         html += pendingSection('🗺️ Tours', pendingTours, t => `
             <div class="pending-card">
-                <img class="pending-img" src="${fixUrl(t.image_url) || 'https://via.placeholder.com/80x70?text=Tour'}" onerror="this.src='https://via.placeholder.com/80x70?text=Tour'">
+                <img class="pending-img" src="${fixUrl(t.image_url)||'https://via.placeholder.com/80x70?text=Tour'}" onerror="this.src='https://via.placeholder.com/80x70?text=Tour'">
                 <div class="pending-info">
                     <div class="pending-name">${t.tour_name}</div>
                     <div class="pending-meta">
                         Agency: <strong>${t.agency_name}</strong><br>
-                        📅 ${t.duration_days || '—'} days • 💰 ${t.currency || 'USD'} ${t.price || '—'} • 👥 Max ${t.max_group_size || '—'}
+                        📅 ${t.duration_days||'—'} days • 💰 ${t.currency||'USD'} ${t.price||'—'} • 👥 Max ${t.max_group_size||'—'}
                     </div>
                 </div>
                 <div class="pending-actions">
@@ -192,34 +198,79 @@ async function loadPendingApprovals(dashboardOnly = false) {
                 </div>
             </div>`);
 
+        html += pendingSection('🧭 New Guide Applications', pendingGuides, g => `
+            <div class="pending-card">
+                <div class="pending-img" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);
+                    display:flex;align-items:center;justify-content:center;font-size:2rem;
+                    width:80px;height:70px;border-radius:8px;flex-shrink:0;">🧭</div>
+                <div class="pending-info">
+                    <div class="pending-name">${g.business_name}</div>
+                    <div class="pending-meta">
+                        📧 ${g.email}<br>
+                        📞 ${g.phone || '—'}<br>
+                        📅 Applied: ${g.applied_at ? new Date(g.applied_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '—'}<br>
+                        ${g.city ? `📍 ${g.city}` : ''}
+                    </div>
+                </div>
+                <div class="pending-actions">
+                    <button class="btn btn-success btn-sm" onclick="approvePartnerApp(${g.id})">✅ Approve</button>
+                    <button class="btn btn-danger btn-sm" onclick="rejectPartnerApp(${g.id})">❌ Reject</button>
+                </div>
+            </div>`);
+
         if (total === 0) {
             html = `<div class="empty"><div class="empty-icon">✅</div><p>No pending approvals — all caught up!</p></div>`;
         }
 
         document.getElementById('pending-items').innerHTML = html;
-    } catch (e) { console.error('Pending error:', e); }
+    } catch(e) { console.error('Pending error:', e); }
+}
+
+async function approvePartnerApp(appId) {
+    if (!confirm('Approve this guide application? They will receive login credentials by email.')) return;
+    try {
+        await fetchAPI(`/api/partner-applications/admin/${appId}/approve`, {
+            method:'POST',
+            body: JSON.stringify({admin_note: 'Approved by CEO admin'})
+        });
+        toast('✅ Guide approved! Credentials sent by email.','success');
+        loadPendingApprovals();
+        loadDashboard();
+    } catch(e) { toast('❌ '+e.message,'error'); }
+}
+
+async function rejectPartnerApp(appId) {
+    const reason = prompt('Rejection reason (optional):') || 'Does not meet requirements.';
+    try {
+        await fetchAPI(`/api/partner-applications/admin/${appId}/reject`, {
+            method:'POST',
+            body: JSON.stringify({reason})
+        });
+        toast('Application rejected.','info');
+        loadPendingApprovals();
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 async function approveItem(type, id) {
     try {
         await fetchAPI(`/api/admin-approval/${type}/${id}/approve`, {
-            method: 'POST', body: JSON.stringify({ status: 'approved', admin_email: 'ceo@discover.com' })
+            method:'POST', body:JSON.stringify({status:'approved',admin_email:'ceo@discover.com'})
         });
-        toast('✅ Approved!', 'success');
+        toast('✅ Approved!','success');
         loadPendingApprovals();
         loadDashboard();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 async function rejectItem(type, id) {
     const reason = prompt('Rejection reason (optional):') || 'Did not meet requirements.';
     try {
         await fetchAPI(`/api/admin-approval/${type}/${id}/reject`, {
-            method: 'POST', body: JSON.stringify({ status: 'rejected', rejection_reason: reason })
+            method:'POST', body:JSON.stringify({status:'rejected',rejection_reason:reason})
         });
-        toast('Rejected', 'info');
+        toast('Rejected','info');
         loadPendingApprovals();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 // ── RESTAURANTS ───────────────────────────────────────────────
@@ -232,15 +283,15 @@ async function loadRestaurants() {
         _allRestaurants = data.restaurants || [];
         _restaurantPage = 0;
         renderRestaurantsPage();
-    } catch (e) { console.error(e); }
+    } catch(e) { console.error(e); }
 }
 
 function renderRestaurantsPage() {
-    const tbody = document.getElementById('restaurants-table');
-    const start = _restaurantPage * REST_PAGE;
-    const slice = _allRestaurants.slice(start, start + REST_PAGE);
+    const tbody  = document.getElementById('restaurants-table');
+    const start  = _restaurantPage * REST_PAGE;
+    const slice  = _allRestaurants.slice(start, start + REST_PAGE);
     document.getElementById('restaurants-showing').textContent = _allRestaurants.length;
-    document.getElementById('restaurants-total').textContent = _allRestaurants.length;
+    document.getElementById('restaurants-total').textContent   = _allRestaurants.length;
     if (!slice.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No restaurants.</td></tr>'; return; }
     tbody.innerHTML = slice.map(r => `
         <tr>
@@ -251,9 +302,9 @@ function renderRestaurantsPage() {
                     <strong>${r.name}</strong>
                 </div>
             </td>
-            <td style="color:var(--text2);">${r.cuisine_type || '—'}</td>
-            <td>⭐ ${r.rating || 0}</td>
-            <td><span class="badge ${r.status === 'approved' ? 'badge-success' : r.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${r.status || '—'}</span></td>
+            <td style="color:var(--text2);">${r.cuisine_type||'—'}</td>
+            <td>⭐ ${r.rating||0}</td>
+            <td><span class="badge ${r.status==='approved'?'badge-success':r.status==='rejected'?'badge-danger':'badge-warning'}">${r.status||'—'}</span></td>
             <td>${r.is_partner ? '<span class="badge badge-info">✅ Yes</span>' : '<span class="badge badge-muted">No</span>'}</td>
             <td>
                 <div style="display:flex;gap:0.4rem;">
@@ -274,7 +325,7 @@ async function loadHotels() {
         _allHotels = data.hotels || [];
         _hotelPage = 0;
         renderHotelsPage();
-    } catch (e) { console.error(e); }
+    } catch(e) { console.error(e); }
 }
 
 function renderHotelsPage() {
@@ -282,7 +333,7 @@ function renderHotelsPage() {
     const start = _hotelPage * HOTEL_PAGE;
     const slice = _allHotels.slice(start, start + HOTEL_PAGE);
     document.getElementById('hotels-showing').textContent = _allHotels.length;
-    document.getElementById('hotels-total').textContent = _allHotels.length;
+    document.getElementById('hotels-total').textContent   = _allHotels.length;
     if (!slice.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No hotels.</td></tr>'; return; }
     tbody.innerHTML = slice.map(h => `
         <tr>
@@ -293,9 +344,9 @@ function renderHotelsPage() {
                     <strong>${h.name}</strong>
                 </div>
             </td>
-            <td style="color:var(--text2);">${h.type || '—'}</td>
-            <td>⭐ ${h.rating || 0}</td>
-            <td><span class="badge ${h.status === 'approved' ? 'badge-success' : h.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${h.status || '—'}</span></td>
+            <td style="color:var(--text2);">${h.type||'—'}</td>
+            <td>⭐ ${h.rating||0}</td>
+            <td><span class="badge ${h.status==='approved'?'badge-success':h.status==='rejected'?'badge-danger':'badge-warning'}">${h.status||'—'}</span></td>
             <td>${h.is_partner ? '<span class="badge badge-info">✅ Yes</span>' : '<span class="badge badge-muted">No</span>'}</td>
             <td>
                 <div style="display:flex;gap:0.4rem;">
@@ -315,7 +366,7 @@ async function loadAgencies() {
         const data = await fetchAPI('/admin/travel-agencies');
         _allAgencies = data.agencies || [];
         renderAgenciesPage();
-    } catch (e) { console.error(e); }
+    } catch(e) { console.error(e); }
 }
 
 function renderAgenciesPage() {
@@ -330,54 +381,54 @@ function renderAgenciesPage() {
                     <strong>${a.name}</strong>
                 </div>
             </td>
-            <td style="color:var(--text2);">${a.agency_type || '—'}</td>
-            <td style="color:var(--text2);">${a.city || '—'}</td>
-            <td>${a.tours_count || 0}</td>
-            <td>⭐ ${a.rating || 0}</td>
+            <td style="color:var(--text2);">${a.agency_type||'—'}</td>
+            <td style="color:var(--text2);">${a.city||'—'}</td>
+            <td>${a.tours_count||0}</td>
+            <td>⭐ ${a.rating||0}</td>
             <td>
                 <div style="display:flex;gap:0.4rem;">
                     <button class="btn btn-secondary btn-sm" onclick="editAgency(${a.id})">✏</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteAgency(${a.id},'${a.name.replace(/'/g, "\\'")}')">✕</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAgency(${a.id},'${a.name.replace(/'/g,"\\'")}')">✕</button>
                 </div>
             </td>
         </tr>`).join('');
 }
 
 // Stubs for create/edit modals (kept from original logic)
-function openCreateRestaurant() { toast('Use content-admin to create listings', 'info'); }
-function closeRestaurantModal() { }
-function openCreateHotel() { toast('Use content-admin to create listings', 'info'); }
-function closeHotelModal() { }
-function openCreateAgency() { toast('Use content-admin to create listings', 'info'); }
-function closeAgencyModal() { }
+function openCreateRestaurant()  { toast('Use content-admin to create listings','info'); }
+function closeRestaurantModal()  {}
+function openCreateHotel()       { toast('Use content-admin to create listings','info'); }
+function closeHotelModal()       {}
+function openCreateAgency()      { toast('Use content-admin to create listings','info'); }
+function closeAgencyModal()      {}
 
 async function deleteRestaurant(id) {
     if (!confirm('Delete this restaurant?')) return;
     try {
-        await fetchAPI(`/admin/restaurants/${id}`, { method: 'DELETE' });
-        toast('Deleted', 'success'); loadRestaurants();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+        await fetchAPI(`/admin/restaurants/${id}`, {method:'DELETE'});
+        toast('Deleted','success'); loadRestaurants();
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 async function deleteHotel(id) {
     if (!confirm('Delete this hotel?')) return;
     try {
-        await fetchAPI(`/admin/hotels/${id}`, { method: 'DELETE' });
-        toast('Deleted', 'success'); loadHotels();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+        await fetchAPI(`/admin/hotels/${id}`, {method:'DELETE'});
+        toast('Deleted','success'); loadHotels();
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 async function deleteAgency(id, name) {
     if (!confirm(`Delete "${name}"?`)) return;
     try {
-        await fetchAPI(`/admin/travel-agencies/${id}`, { method: 'DELETE' });
-        toast('Deleted', 'success'); loadAgencies();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+        await fetchAPI(`/admin/travel-agencies/${id}`, {method:'DELETE'});
+        toast('Deleted','success'); loadAgencies();
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
-function editRestaurant(id) { toast('Edit via restaurant admin panel', 'info'); }
-function editHotel(id) { toast('Edit via hotel admin panel', 'info'); }
-function editAgency(id) { toast('Edit via agency admin panel', 'info'); }
+function editRestaurant(id) { toast('Edit via restaurant admin panel','info'); }
+function editHotel(id)      { toast('Edit via hotel admin panel','info'); }
+function editAgency(id)     { toast('Edit via agency admin panel','info'); }
 
 // ── PARTNERS ──────────────────────────────────────────────────
 async function loadPartners() {
@@ -385,10 +436,10 @@ async function loadPartners() {
     tbody.innerHTML = '<tr><td colspan="8" class="empty">Loading…</td></tr>';
     try {
         const data = await fetch(`${API_BASE}/api/partner-applications/admin/list?status=approved`,
-            { headers: { 'X-Admin-Key': ADMIN_KEY } }).then(r => r.json());
+            {headers:{'X-Admin-Key':ADMIN_KEY}}).then(r => r.json());
         _allPartners = data;
         const now = new Date();
-        let active = 0, expiring = 0, expired = 0;
+        let active=0, expiring=0, expired=0;
         data.forEach(p => {
             if (!p.plan_end_date) { active++; return; }
             const days = Math.ceil((new Date(p.plan_end_date) - now) / 86400000);
@@ -396,21 +447,21 @@ async function loadPartners() {
             else if (days <= 7) expiring++;
             else active++;
         });
-        document.getElementById('ps-total').textContent = data.length;
-        document.getElementById('ps-active').textContent = active;
+        document.getElementById('ps-total').textContent    = data.length;
+        document.getElementById('ps-active').textContent   = active;
         document.getElementById('ps-expiring').textContent = expiring;
-        document.getElementById('ps-expired').textContent = expired;
+        document.getElementById('ps-expired').textContent  = expired;
         filterPartners();
-    } catch (e) {
+    } catch(e) {
         tbody.innerHTML = `<tr><td colspan="8" class="empty" style="color:var(--danger);">Failed to load.</td></tr>`;
     }
 }
 
 function filterPartners() {
-    const search = (document.getElementById('partnerSearch')?.value || '').toLowerCase();
-    const statusF = document.getElementById('partnerStatusFilter')?.value || '';
-    const typeF = document.getElementById('partnerTypeFilter')?.value || '';
-    const now = new Date();
+    const search  = (document.getElementById('partnerSearch')?.value||'').toLowerCase();
+    const statusF = document.getElementById('partnerStatusFilter')?.value||'';
+    const typeF   = document.getElementById('partnerTypeFilter')?.value||'';
+    const now     = new Date();
     _filtPartners = _allPartners.filter(p => {
         if (search && !p.business_name?.toLowerCase().includes(search) &&
             !p.email?.toLowerCase().includes(search)) return false;
@@ -418,9 +469,9 @@ function filterPartners() {
         if (statusF) {
             const days = p.plan_end_date
                 ? Math.ceil((new Date(p.plan_end_date) - now) / 86400000) : 999;
-            if (statusF === 'active' && days <= 7) return false;
-            if (statusF === 'expiring' && (days > 7 || days <= 0)) return false;
-            if (statusF === 'expired' && days > 0) return false;
+            if (statusF==='active'   && days<=7)           return false;
+            if (statusF==='expiring' && (days>7||days<=0)) return false;
+            if (statusF==='expired'  && days>0)            return false;
         }
         return true;
     });
@@ -429,47 +480,47 @@ function filterPartners() {
 }
 
 function renderPartnersPage() {
-    const tbody = document.getElementById('partnersTableBody');
+    const tbody  = document.getElementById('partnersTableBody');
     const pagDiv = document.getElementById('partnersPagination');
-    const now = new Date();
-    const start = _partnerPage * PARTNER_PAGE_SIZE;
-    const slice = _filtPartners.slice(start, start + PARTNER_PAGE_SIZE);
-    const total = _filtPartners.length;
-    const pages = Math.ceil(total / PARTNER_PAGE_SIZE);
-    const TYPE_LABELS = { restaurant: '🍽️ Restaurant', hotel: '🏨 Hotel', travel_agency: '🗺️ Agency' };
+    const now    = new Date();
+    const start  = _partnerPage * PARTNER_PAGE_SIZE;
+    const slice  = _filtPartners.slice(start, start + PARTNER_PAGE_SIZE);
+    const total  = _filtPartners.length;
+    const pages  = Math.ceil(total / PARTNER_PAGE_SIZE);
+    const TYPE_LABELS = {restaurant:'🍽️ Restaurant',hotel:'🏨 Hotel',travel_agency:'🗺️ Agency',guide:'🧭 Guide'};
     if (!slice.length) {
         tbody.innerHTML = '<tr><td colspan="8" class="empty">No partners found.</td></tr>';
         pagDiv.innerHTML = ''; return;
     }
     const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB',
-        { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+        {day:'numeric',month:'short',year:'numeric'}) : '—';
 
     tbody.innerHTML = slice.map(p => {
         const isBlocked = p.plan_status === 'blocked';
-        const endDate = p.plan_end_date ? new Date(p.plan_end_date) : null;
-        const days = endDate ? Math.ceil((endDate - now) / 86400000) : null;
-        const planLabel = { '1month': '1M', '3months': '3M', '6months': '6M', '1year': '1Y' }[p.plan] || p.plan || '—';
-        let daysHtml = '—', statusHtml;
+        const endDate   = p.plan_end_date ? new Date(p.plan_end_date) : null;
+        const days      = endDate ? Math.ceil((endDate - now) / 86400000) : null;
+        const planLabel = {'1month':'1M','3months':'3M','6months':'6M','1year':'1Y'}[p.plan]||p.plan||'—';
+        let daysHtml='—', statusHtml;
         if (isBlocked) {
             statusHtml = '<span class="badge" style="background:rgba(100,116,139,0.15);color:var(--text3);">🚫 Blocked</span>';
-        } else if (days === null) {
+        } else if (days===null) {
             statusHtml = '<span class="badge badge-muted">No plan</span>';
-        } else if (days <= 0) {
-            daysHtml = `<span style="color:var(--danger);font-weight:700;">Expired</span>`;
+        } else if (days<=0) {
+            daysHtml   = `<span style="color:var(--danger);font-weight:700;">Expired</span>`;
             statusHtml = '<span class="badge badge-danger">❌ Expired</span>';
-        } else if (days <= 7) {
-            daysHtml = `<span style="color:var(--warning);font-weight:700;">${days}d</span>`;
+        } else if (days<=7) {
+            daysHtml   = `<span style="color:var(--warning);font-weight:700;">${days}d</span>`;
             statusHtml = '<span class="badge badge-warning">⚠️ Expiring</span>';
         } else {
-            daysHtml = `<span style="color:var(--success);font-weight:700;">${days}d</span>`;
+            daysHtml   = `<span style="color:var(--success);font-weight:700;">${days}d</span>`;
             statusHtml = '<span class="badge badge-success">✅ Active</span>';
         }
-        const safeName = p.business_name.replace(/'/g, "\\'");
-        return `<tr style="${isBlocked ? 'opacity:0.6' : ''}">
+        const safeName = p.business_name.replace(/'/g,"\\'");
+        return `<tr style="${isBlocked?'opacity:0.6':''}">
             <td><strong>${p.business_name}</strong><div style="font-size:0.72rem;color:var(--text3);">#${p.id}</div></td>
-            <td>${TYPE_LABELS[p.business_type] || p.business_type}</td>
+            <td>${TYPE_LABELS[p.business_type]||p.business_type}</td>
             <td><a href="mailto:${p.email}" style="color:var(--primary-light);">${p.email}</a></td>
-            <td>${planLabel}${p.plan_amount ? `<br><span style="font-size:0.72rem;color:var(--text3);">$${p.plan_amount}</span>` : ''}</td>
+            <td>${planLabel}${p.plan_amount?`<br><span style="font-size:0.72rem;color:var(--text3);">$${p.plan_amount}</span>`:''}</td>
             <td style="font-size:0.8rem;">${fmtDate(p.plan_end_date)}</td>
             <td>${daysHtml}</td>
             <td>${statusHtml}</td>
@@ -477,29 +528,29 @@ function renderPartnersPage() {
                 <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
                     <button class="btn btn-secondary btn-sm" onclick="paResend(${p.id})">↺</button>
                     ${isBlocked
-                ? `<button class="btn btn-success btn-sm" onclick="unblockPartner(${p.id},'${safeName}')">✅</button>`
-                : `<button class="btn btn-warning btn-sm" onclick="blockPartner(${p.id},'${safeName}')">🚫</button>`}
+                        ? `<button class="btn btn-success btn-sm" onclick="unblockPartner(${p.id},'${safeName}')">✅</button>`
+                        : `<button class="btn btn-warning btn-sm" onclick="blockPartner(${p.id},'${safeName}')">🚫</button>`}
                     <button class="btn btn-danger btn-sm" onclick="deletePartner(${p.id},'${safeName}')">🗑</button>
                 </div>
             </td>
         </tr>`;
     }).join('');
 
-    pagDiv.innerHTML = pages <= 1
-        ? `<span style="color:var(--text3);">Showing ${total} partner${total !== 1 ? 's' : ''}</span>`
-        : `<span style="color:var(--text3);">Showing ${start + 1}–${Math.min(start + PARTNER_PAGE_SIZE, total)} of ${total}</span>
+    pagDiv.innerHTML = pages<=1
+        ? `<span style="color:var(--text3);">Showing ${total} partner${total!==1?'s':''}</span>`
+        : `<span style="color:var(--text3);">Showing ${start+1}–${Math.min(start+PARTNER_PAGE_SIZE,total)} of ${total}</span>
            <button class="btn btn-secondary btn-sm" onclick="_partnerPage=Math.max(0,_partnerPage-1);renderPartnersPage()"
-               ${_partnerPage === 0 ? 'disabled' : ''}>← Prev</button>
-           <span style="color:var(--text3);">Page ${_partnerPage + 1}/${pages}</span>
-           <button class="btn btn-secondary btn-sm" onclick="_partnerPage=Math.min(${pages - 1},_partnerPage+1);renderPartnersPage()"
-               ${_partnerPage >= pages - 1 ? 'disabled' : ''}>Next →</button>`;
+               ${_partnerPage===0?'disabled':''}>← Prev</button>
+           <span style="color:var(--text3);">Page ${_partnerPage+1}/${pages}</span>
+           <button class="btn btn-secondary btn-sm" onclick="_partnerPage=Math.min(${pages-1},_partnerPage+1);renderPartnersPage()"
+               ${_partnerPage>=pages-1?'disabled':''}>Next →</button>`;
 }
 
 async function paResend(id) {
     try {
-        await fetchAPI(`/api/partner-applications/admin/${id}/resend-credentials`, { method: 'POST' });
-        toast('✅ Credentials resent!', 'success');
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+        await fetchAPI(`/api/partner-applications/admin/${id}/resend-credentials`, {method:'POST'});
+        toast('✅ Credentials resent!','success');
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 async function blockPartner(id, name) {
@@ -508,25 +559,25 @@ async function blockPartner(id, name) {
     if (!confirm(`Block "${name}"? They will receive an email.`)) return;
     try {
         const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/block`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-            body: JSON.stringify({ reason: reason.trim() || null })
+            method:'POST', headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},
+            body: JSON.stringify({reason: reason.trim()||null})
         });
         const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || 'Failed');
-        toast(`✅ ${name} blocked`, 'success'); loadPartners();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+        if (!resp.ok) throw new Error(data.detail||'Failed');
+        toast(`✅ ${name} blocked`,'success'); loadPartners();
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 async function unblockPartner(id, name) {
     if (!confirm(`Unblock "${name}"?`)) return;
     try {
         const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/unblock`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+            method:'POST', headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY},
         });
         const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || 'Failed');
-        toast(`✅ ${name} unblocked`, 'success'); loadPartners();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+        if (!resp.ok) throw new Error(data.detail||'Failed');
+        toast(`✅ ${name} unblocked`,'success'); loadPartners();
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 async function deletePartner(id, name) {
@@ -535,16 +586,16 @@ async function deletePartner(id, name) {
     if (typed !== 'DELETE') { alert('Cancelled.'); return; }
     try {
         const resp = await fetch(`${API_BASE}/api/partner-applications/admin/${id}/delete`, {
-            method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY }
+            method:'DELETE', headers:{'Content-Type':'application/json','X-Admin-Key':ADMIN_KEY}
         });
         const data = await resp.json();
-        if (!resp.ok) throw new Error(data.detail || 'Failed');
-        toast(`✅ ${name} deleted`, 'success'); loadPartners();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+        if (!resp.ok) throw new Error(data.detail||'Failed');
+        toast(`✅ ${name} deleted`,'success'); loadPartners();
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 // ── RENEWALS ──────────────────────────────────────────────────
-let _allRenewals = [], _renewalStatus = 'pending';
+let _allRenewals=[], _renewalStatus='pending';
 
 async function loadRenewals() {
     try {
@@ -552,13 +603,13 @@ async function loadRenewals() {
         _allRenewals = data;
         updateRenewalCounts();
         renderRenewals();
-    } catch (e) { console.error(e); }
+    } catch(e) { console.error(e); }
 }
 
 function updateRenewalCounts() {
-    document.getElementById('renewal-pending-count').textContent = _allRenewals.filter(r => r.status === 'pending').length;
-    document.getElementById('renewal-approved-count').textContent = _allRenewals.filter(r => r.status === 'approved').length;
-    document.getElementById('renewal-rejected-count').textContent = _allRenewals.filter(r => r.status === 'rejected').length;
+    document.getElementById('renewal-pending-count').textContent  = _allRenewals.filter(r=>r.status==='pending').length;
+    document.getElementById('renewal-approved-count').textContent = _allRenewals.filter(r=>r.status==='approved').length;
+    document.getElementById('renewal-rejected-count').textContent = _allRenewals.filter(r=>r.status==='rejected').length;
 }
 
 function renewalSetStatus(s) {
@@ -577,18 +628,18 @@ function renderRenewals() {
         return;
     }
 
-    const planLabel = { '1month': '1 Month', '3months': '3 Months', '6months': '6 Months', '1year': '1 Year' };
-    const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+    const planLabel = {'1month':'1 Month','3months':'3 Months','6months':'6 Months','1year':'1 Year'};
+    const fmtDate   = d => d ? new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
 
     container.innerHTML = `
         <div class="card" style="margin-bottom:1rem;">
             <div class="card-header">
                 <div style="display:flex;gap:0.5rem;">
-                    ${['pending', 'approved', 'rejected', 'all'].map(s => `
-                    <button class="btn btn-sm ${_renewalStatus === s ? 'btn-primary' : 'btn-secondary'}"
+                    ${['pending','approved','rejected','all'].map(s => `
+                    <button class="btn btn-sm ${_renewalStatus===s?'btn-primary':'btn-secondary'}"
                         onclick="renewalSetStatus('${s}')">
-                        ${s === 'pending' ? '⏳' : s === 'approved' ? '✅' : s === 'rejected' ? '❌' : '📋'}
-                        ${s.charAt(0).toUpperCase() + s.slice(1)}
+                        ${s==='pending'?'⏳':s==='approved'?'✅':s==='rejected'?'❌':'📋'}
+                        ${s.charAt(0).toUpperCase()+s.slice(1)}
                     </button>`).join('')}
                 </div>
             </div>
@@ -597,10 +648,10 @@ function renderRenewals() {
         <div class="card" style="margin-bottom:1rem;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
                 <div>
-                    <div style="font-weight:700;font-size:1rem;margin-bottom:0.4rem;">${r.business_name || '—'}</div>
+                    <div style="font-weight:700;font-size:1rem;margin-bottom:0.4rem;">${r.business_name||'—'}</div>
                     <div style="font-size:0.82rem;color:var(--text2);line-height:1.8;">
                         📧 ${r.email}<br>
-                        💳 Plan: <strong>${planLabel[r.plan] || r.plan}</strong> — $${r.amount || '—'}<br>
+                        💳 Plan: <strong>${planLabel[r.plan]||r.plan}</strong> — $${r.amount||'—'}<br>
                         📅 Requested: ${fmtDate(r.created_at)}
                     </div>
                     ${r.payment_proof_url ? `
@@ -609,10 +660,10 @@ function renderRenewals() {
                     </a>` : ''}
                 </div>
                 <div>
-                    <span class="badge ${r.status === 'pending' ? 'badge-warning' : r.status === 'approved' ? 'badge-success' : 'badge-danger'}">
-                        ${r.status === 'pending' ? '⏳ Pending' : r.status === 'approved' ? '✅ Approved' : '❌ Rejected'}
+                    <span class="badge ${r.status==='pending'?'badge-warning':r.status==='approved'?'badge-success':'badge-danger'}">
+                        ${r.status==='pending'?'⏳ Pending':r.status==='approved'?'✅ Approved':'❌ Rejected'}
                     </span>
-                    ${r.status === 'pending' ? `
+                    ${r.status==='pending' ? `
                     <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
                         <button class="btn btn-success btn-sm" onclick="approveRenewal(${r.id})">✅ Approve</button>
                         <button class="btn btn-danger btn-sm" onclick="rejectRenewal(${r.id})">❌ Reject</button>
@@ -631,16 +682,16 @@ async function approveRenewal(id) {
                 'X-Admin-Key': ADMIN_KEY,
             },
             body: JSON.stringify({
-                status: 'approved',
-                admin_email: 'ceo@discover-travel-uzbekistan.com',
+                status:           'approved',
+                admin_email:      'ceo@discover-travel-uzbekistan.com',
                 rejection_reason: null,
             }),
         });
-        const d = await resp.json().catch(() => ({}));
+        const d = await resp.json().catch(()=>({}));
         if (!resp.ok) throw new Error(d.detail || 'Status ' + resp.status);
-        toast('✅ Renewal approved! ' + (d.message || ''), 'success');
+        toast('✅ Renewal approved! ' + (d.message||''),'success');
         loadRenewals();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
 
 async function rejectRenewal(id) {
@@ -653,14 +704,14 @@ async function rejectRenewal(id) {
                 'X-Admin-Key': ADMIN_KEY,
             },
             body: JSON.stringify({
-                status: 'rejected',
-                admin_email: 'ceo@discover-travel-uzbekistan.com',
+                status:           'rejected',
+                admin_email:      'ceo@discover-travel-uzbekistan.com',
                 rejection_reason: reason,
             }),
         });
-        const d = await resp.json().catch(() => ({}));
+        const d = await resp.json().catch(()=>({}));
         if (!resp.ok) throw new Error(d.detail || 'Status ' + resp.status);
-        toast('Rejected: ' + reason, 'info');
+        toast('Rejected: ' + reason,'info');
         loadRenewals();
-    } catch (e) { toast('❌ ' + e.message, 'error'); }
+    } catch(e) { toast('❌ '+e.message,'error'); }
 }
