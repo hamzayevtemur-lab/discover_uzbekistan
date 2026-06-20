@@ -10,7 +10,7 @@ from jose import jwt
 from database import get_db
 from models.restaurant import Restaurant
 from models.hotel import Hotel
-from routers.guides import Guide
+
 
 router = APIRouter(prefix="/api/partner", tags=["partner-auth"])
 
@@ -81,31 +81,35 @@ async def partner_login(credentials: LoginRequest, db: Session = Depends(get_db)
         }
     
     # Try guide
-    guide = db.query(Guide).filter(
-        Guide.email == credentials.email,
-        Guide.is_active == True
-    ).first()
-
-    if guide and guide.password_hash == credentials.password:
-        token = jwt.encode(
-            {
-                "email":         credentials.email,
-                "type":          "guide",
-                "business_type": "guide",
-                "id":            guide.id,
-                "record_id":     guide.id,
-                "exp":           datetime.utcnow() + timedelta(days=30)
-            },
-            SECRET_KEY,
-            algorithm=ALGORITHM
-        )
-        return {
-            "access_token": token,
-            "token_type":   "bearer",
-            "partner_type": "guide",
-            "id":           guide.id,
-            "name":         guide.name
-        }
+    # Try guide
+    try:
+        from routers.guides import Guide as GuideModel
+        guide = db.query(GuideModel).filter(
+            GuideModel.email == credentials.email,
+            GuideModel.is_active == True
+        ).first()
+        if guide and guide.password_hash == credentials.password:
+            token = jwt.encode(
+                {
+                    "email":         credentials.email,
+                    "type":          "guide",
+                    "business_type": "guide",
+                    "id":            guide.id,
+                    "record_id":     guide.id,
+                    "exp":           datetime.utcnow() + timedelta(days=30)
+                },
+                SECRET_KEY,
+                algorithm=ALGORITHM
+            )
+            return {
+                "access_token": token,
+                "token_type":   "bearer",
+                "partner_type": "guide",
+                "id":           guide.id,
+                "name":         guide.name
+            }
+    except ImportError:
+        pass
 
     # No match found
     raise HTTPException(
