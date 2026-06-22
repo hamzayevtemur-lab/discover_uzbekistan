@@ -43,6 +43,61 @@ def get_partner_token(
         raise HTTPException(status_code=401, detail="Invalid or expired token.")
 
 
+def require_hotel_owner(
+    authorization: str = Security(_auth_header),
+    db: Session = Depends(get_db)
+) -> dict:
+    """
+    Dependency for hotel partner routes.
+    Validates JWT and ensures the partner is a hotel type.
+    """
+    payload = get_partner_token(authorization)
+    biz_type = payload.get("business_type") or payload.get("type")
+    if biz_type != "hotel":
+        raise HTTPException(status_code=403, detail="Hotel access required.")
+    return payload
+
+
+def require_restaurant_owner(
+    authorization: str = Security(_auth_header),
+) -> dict:
+    """
+    Dependency for restaurant partner routes.
+    Validates JWT and ensures the partner is a restaurant type.
+    """
+    payload = get_partner_token(authorization)
+    biz_type = payload.get("business_type") or payload.get("type")
+    if biz_type != "restaurant":
+        raise HTTPException(status_code=403, detail="Restaurant access required.")
+    return payload
+
+
+def require_agency_owner(
+    authorization: str = Security(_auth_header),
+) -> dict:
+    """
+    Dependency for travel agency partner routes.
+    """
+    payload = get_partner_token(authorization)
+    biz_type = payload.get("business_type") or payload.get("type")
+    if biz_type != "travel_agency":
+        raise HTTPException(status_code=403, detail="Agency access required.")
+    return payload
+
+
+def require_guide_owner(
+    authorization: str = Security(_auth_header),
+) -> dict:
+    """
+    Dependency for guide partner routes.
+    """
+    payload = get_partner_token(authorization)
+    biz_type = payload.get("business_type") or payload.get("type")
+    if biz_type != "guide":
+        raise HTTPException(status_code=403, detail="Guide access required.")
+    return payload
+
+
 # ── Login schema ──────────────────────────────────────────────
 class LoginRequest(BaseModel):
     email:    str
