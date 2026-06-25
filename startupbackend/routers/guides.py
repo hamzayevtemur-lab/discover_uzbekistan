@@ -10,13 +10,7 @@ from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, Text, DateTime, Numeric, Boolean
 from sqlalchemy.orm import Session
 from database import Base, get_db
-import os
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt as jose_jwt
-
-_bearer = HTTPBearer(auto_error=False)
-SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
-ALGORITHM  = "HS256"
+from routers.partner_auth import get_partner_token
 
 router = APIRouter(prefix="/api/guides", tags=["guides"])
 
@@ -119,23 +113,23 @@ def get_guide(guide_id: int, db: Session = Depends(get_db)):
 def update_guide(
     guide_id: int,
     data: GuideUpdate,
-    creds: HTTPAuthorizationCredentials = Depends(_bearer),
+    token: dict = Depends(get_partner_token),
     db: Session = Depends(get_db)
 ):
-    if not creds:
-        raise HTTPException(401, "Not authenticated")
-    try:
-        payload = jose_jwt.decode(creds.credentials, SECRET_KEY, algorithms=[ALGORITHM])
-    except Exception:
-        raise HTTPException(401, "Invalid token")
-    if payload.get("business_type") != "guide" or payload.get("record_id") != guide_id:
+    """Guide updates their own profile."""
+    record_id = token.get("record_id") or token.get("id")
+    biz_type  = token.get("business_type") or token.get("type")
+    if biz_type != "guide" or record_id != guide_id:
         raise HTTPException(403, "Not authorized")
 
     g = db.query(Guide).filter(Guide.id == guide_id).first()
     if not g:
         raise HTTPException(404, "Guide not found")
+
     for field, value in data.dict(exclude_unset=True).items():
         setattr(g, field, value)
+
+    # Reset to pending so admin re-approves updated profile
     g.status = 'pending'
     db.commit()
     db.refresh(g)
@@ -202,7 +196,7 @@ def create_guide_review(
 def approve_guide_review(
     guide_id: int,
     review_id: int,
-    creds: HTTPAuthorizationCredentials = Depends(_bearer),
+    token: dict = Depends(get_partner_token),
     db: Session = Depends(get_db)
 ):
     r = db.query(GuideReview).filter(
@@ -216,11 +210,12 @@ def approve_guide_review(
     _update_guide_rating(guide_id, db)
     return {"success": True}
 
+
 @router.post("/{guide_id}/reviews/{review_id}/reject")
 def reject_guide_review(
     guide_id: int,
     review_id: int,
-    creds: HTTPAuthorizationCredentials = Depends(_bearer),
+    token: dict = Depends(get_partner_token),
     db: Session = Depends(get_db)
 ):
     r = db.query(GuideReview).filter(
@@ -232,6 +227,18 @@ def reject_guide_review(
     r.status = 'rejected'
     db.commit()
     return {"success": True}
+
+
+@router.delete("/{guide_id}")
+def delete_guide(guide_id: int, db: Session = Depends(get_db)):
+    """Delete a guide — admin only (uses X-Admin-Key in practice)."""
+    g = db.query(Guide).filter(Guide.id == guide_id).first()
+    if not g:
+        raise HTTPException(404, "Guide not found")
+    db.query(GuideReview).filter(GuideReview.guide_id == guide_id).delete()
+    db.delete(g)
+    db.commit()
+    return {"success": True, "message": "Guide deleted."}
 
 
 def _update_guide_rating(guide_id: int, db: Session):

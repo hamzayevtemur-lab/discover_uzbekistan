@@ -941,6 +941,9 @@
                 <button class="nav-item" onclick="showSection('agencies',this);loadAgencies()">
                     <span class="nav-icon">🗺️</span> Tour Agencies
                 </button>
+                <button class="nav-item" onclick="showSection('guides',this);loadGuides()">
+                    <span class="nav-icon">🧭</span> Local Guides
+                </button>
 
                 <div class="nav-section-label">Insights</div>
                 <button class="nav-item" onclick="showSection('analytics',this)">
@@ -1000,6 +1003,11 @@
                             <div class="stat-icon">🤝</div>
                             <div class="stat-value" id="s-partners">—</div>
                             <div class="stat-label">Active Partners</div>
+                        </div>
+                        <div class="stat-card" style="--accent-color:#10b981;--accent-bg:rgba(16,185,129,0.1);">
+                            <div class="stat-icon">🧭</div>
+                            <div class="stat-value" id="s-guides">—</div>
+                            <div class="stat-label">Local Guides</div>
                         </div>
                     </div>
 
@@ -1230,6 +1238,41 @@
                     </div>
                 </div>
 
+                <!-- GUIDES -->
+                <div id="section-guides" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Local Guides</div>
+                            <a href="/guides-list.html" target="_blank" class="btn btn-secondary btn-sm">
+                                👁 View Public Page
+                            </a>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Languages</th>
+                                        <th>Cities</th>
+                                        <th>Price/Day</th>
+                                        <th>Rating</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="guides-table">
+                                    <tr>
+                                        <td colspan="7" class="empty">Loading…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:0.75rem;font-size:0.82rem;color:var(--text3);">
+                            Showing <span id="guides-showing">0</span> guides
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ANALYTICS -->
                 <div id="section-analytics" class="section">
                     <div class="card" style="margin-bottom:1.5rem;">
@@ -1352,7 +1395,7 @@
                 dashboard: 'Dashboard', approvals: 'Pending Approvals',
                 partners: 'Partner Management', renewals: 'Renewals',
                 restaurants: 'Restaurants', hotels: 'Hotels',
-                agencies: 'Tour Agencies', analytics: 'Analytics'
+                agencies: 'Tour Agencies', guides: 'Local Guides', analytics: 'Analytics'
             };
             document.getElementById('topbarTitle').textContent = titles[name] || name;
             if (name === 'approvals') loadPendingApprovals();

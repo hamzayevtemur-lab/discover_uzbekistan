@@ -42,6 +42,11 @@ async function loadDashboard() {
             document.getElementById('s-partners').textContent = d.length || 0;
         }).catch(() => {});
 
+        // Guides count
+        fetch(`${API_BASE}/api/guides`).then(r => r.json()).then(d => {
+            document.getElementById('s-guides').textContent = Array.isArray(d) ? d.length : 0;
+        }).catch(() => { document.getElementById('s-guides').textContent = '0'; });
+
     } catch(e) { console.error('Stats error:', e); }
 
     // Load pending approvals for badge + dashboard card
@@ -392,6 +397,75 @@ function renderAgenciesPage() {
                 </div>
             </td>
         </tr>`).join('');
+}
+
+// ── GUIDES ───────────────────────────────────────────────────
+let _allGuides = [];
+
+async function loadGuides() {
+    const tbody = document.getElementById('guides-table');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Loading…</td></tr>';
+    try {
+        const res = await fetch(`${API_BASE}/api/guides`);
+        _allGuides = await res.json();
+
+        // Also fetch all guides including non-approved from partner-applications
+        const allApps = await fetch(`${API_BASE}/api/partner-applications/admin/list?status=approved`, {
+            headers: {'X-Admin-Key': ADMIN_KEY}
+        }).then(r => r.json()).catch(() => []);
+
+        const guideApps = allApps.filter(a => a.business_type === 'guide');
+
+        document.getElementById('guides-showing').textContent =
+            Math.max(_allGuides.length, guideApps.length);
+
+        if (!_allGuides.length && !guideApps.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty">No guides yet.</td></tr>';
+            return;
+        }
+
+        // Show approved guides from guides table
+        if (_allGuides.length) {
+            tbody.innerHTML = _allGuides.map(g => `
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            ${g.photo_url ? `<img src="${fixUrl(g.photo_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">` : '<div style="width:32px;height:32px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;">🧭</div>'}
+                            <div>
+                                <strong>${g.name}</strong>
+                                <div style="font-size:0.72rem;color:var(--text3);">${g.email||'—'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-size:0.8rem;color:var(--text2);">${g.languages||'—'}</td>
+                    <td style="font-size:0.8rem;color:var(--text2);">${g.cities||'—'}</td>
+                    <td>${g.price_per_day ? '$'+g.price_per_day+'/day' : '—'}</td>
+                    <td>⭐ ${Number(g.rating||0).toFixed(1)} (${g.review_count||0})</td>
+                    <td><span class="badge ${g.status==='approved'?'badge-success':g.status==='rejected'?'badge-danger':'badge-warning'}">${g.status||'pending'}</span></td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteGuide(${g.id},'${g.name.replace(/'/g,"\'")}')">🗑</button>
+                    </td>
+                </tr>`).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty">No approved guides yet — approve applications in Pending Approvals.</td></tr>';
+        }
+    } catch(e) {
+        if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="empty" style="color:var(--danger);">Failed to load.</td></tr>';
+    }
+}
+
+async function deleteGuide(id, name) {
+    if (!confirm(`Delete guide "${name}"? This cannot be undone.`)) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/guides/${id}`, {
+            method: 'DELETE',
+            headers: {'X-Admin-Key': ADMIN_KEY}
+        });
+        if (!res.ok) throw new Error('Failed');
+        toast(`"${name}" deleted`, 'success');
+        loadGuides();
+    } catch(e) { toast('Delete failed: ' + e.message, 'error'); }
 }
 
 // Stubs for create/edit modals (kept from original logic)
