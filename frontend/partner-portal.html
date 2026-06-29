@@ -4,12 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="apple-touch-icon" href="/images/logo.png">
     <title>Become a Partner - Discover Uzbekistan</title>
-    <link rel="icon" href="favicon.ico" type="image/logo">
-    <script src="/config.js"></script>
+
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap"
         rel="stylesheet">
+    
+    <script src="/config.js"></script>
     <style>
         * {
             margin: 0;
@@ -665,12 +668,16 @@
                     <div class="step-circle">1</div>
                     <div class="step-label">Business Info</div>
                 </div>
-                <div class="progress-step" id="step2-indicator">
+                <div class="progress-step" id="step-verify-indicator">
                     <div class="step-circle">2</div>
+                    <div class="step-label">Verify Email</div>
+                </div>
+                <div class="progress-step" id="step2-indicator">
+                    <div class="step-circle">3</div>
                     <div class="step-label">Choose Plan</div>
                 </div>
                 <div class="progress-step" id="step3-indicator">
-                    <div class="step-circle">3</div>
+                    <div class="step-circle">4</div>
                     <div class="step-label">Payment</div>
                 </div>
             </div>
@@ -825,36 +832,84 @@
                     </div>
                 </div>
 
-                <form id="paymentForm">
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label>Card Number <span class="required">*</span></label>
-                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label>Expiry Date <span class="required">*</span></label>
-                            <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5" required>
-                        </div>
-                        <div class="form-group">
-                            <label>CVV <span class="required">*</span></label>
-                            <input type="text" id="cvv" placeholder="123" maxlength="4" required>
-                        </div>
-                        <div class="form-group full-width">
-                            <label>Cardholder Name <span class="required">*</span></label>
-                            <input type="text" id="cardholderName" placeholder="John Doe" required>
-                        </div>
+                <div id="paymentMethodSelect">
+                    <p style="text-align:center;font-weight:600;color:#6b7280;margin-bottom:1.5rem;">
+                        Choose your payment method:
+                    </p>
+                    <div
+                        style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:500px;margin:0 auto 1.5rem;">
+                        <button type="button" onclick="payWith('click')" style="border:2px solid #e5e7eb;border-radius:16px;padding:1.5rem;
+                                   cursor:pointer;background:white;transition:all 0.2s;font-family:inherit;"
+                            onmouseover="this.style.borderColor='#6366f1';this.style.boxShadow='0 4px 16px rgba(99,102,241,0.2)'"
+                            onmouseout="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+                            <div style="font-size:2rem;margin-bottom:0.5rem;">🟢</div>
+                            <div style="font-weight:800;font-size:1.1rem;color:#1e1b4b;">Click</div>
+                            <div style="font-size:0.75rem;color:#6b7280;margin-top:0.25rem;">Click.uz payment</div>
+                        </button>
+                        <button type="button" onclick="payWith('paynet')" style="border:2px solid #e5e7eb;border-radius:16px;padding:1.5rem;
+                                   cursor:pointer;background:white;transition:all 0.2s;font-family:inherit;"
+                            onmouseover="this.style.borderColor='#6366f1';this.style.boxShadow='0 4px 16px rgba(99,102,241,0.2)'"
+                            onmouseout="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+                            <div style="font-size:2rem;margin-bottom:0.5rem;">🔵</div>
+                            <div style="font-weight:800;font-size:1.1rem;color:#1e1b4b;">Paynet</div>
+                            <div style="font-size:0.75rem;color:#6b7280;margin-top:0.25rem;">Paynet payment</div>
+                        </button>
                     </div>
 
-                    <div class="info-box">
-                        🔒 Your payment is processed securely. We never store your card details.
+                    <!-- Click payment form (shown when Click selected) -->
+                    <div id="clickForm" style="display:none;background:#f0fdf4;border:2px solid #86efac;
+                        border-radius:12px;padding:1.25rem;max-width:500px;margin:0 auto 1rem;">
+                        <div style="font-weight:700;color:#166534;margin-bottom:1rem;">💳 Pay with Click</div>
+                        <div style="font-size:0.875rem;color:#166534;margin-bottom:1rem;">
+                            You will be redirected to Click.uz to complete your payment securely.
+                        </div>
+                        <div
+                            style="background:white;border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:0.875rem;">
+                            <div style="display:flex;justify-content:space-between;padding:0.3rem 0;">
+                                <span style="color:#6b7280;">Amount:</span>
+                                <strong id="clickAmount">$0</strong>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:0.3rem 0;">
+                                <span style="color:#6b7280;">Plan:</span>
+                                <strong id="clickPlan">—</strong>
+                            </div>
+                        </div>
+                        <button type="button" onclick="initiateClickPayment()" style="width:100%;padding:0.875rem;background:#00c853;color:white;border:none;
+                                   border-radius:10px;font-weight:800;font-size:1rem;cursor:pointer;
+                                   font-family:inherit;">
+                            Pay with Click →
+                        </button>
                     </div>
 
-                    <div class="button-group">
+                    <!-- Paynet payment form -->
+                    <div id="paynetForm" style="display:none;background:#eff6ff;border:2px solid #93c5fd;
+                        border-radius:12px;padding:1.25rem;max-width:500px;margin:0 auto 1rem;">
+                        <div style="font-weight:700;color:#1d4ed8;margin-bottom:1rem;">💳 Pay with Paynet</div>
+                        <div style="font-size:0.875rem;color:#1d4ed8;margin-bottom:1rem;">
+                            You will be redirected to Paynet to complete your payment securely.
+                        </div>
+                        <div
+                            style="background:white;border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:0.875rem;">
+                            <div style="display:flex;justify-content:space-between;padding:0.3rem 0;">
+                                <span style="color:#6b7280;">Amount:</span>
+                                <strong id="paynetAmount">$0</strong>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:0.3rem 0;">
+                                <span style="color:#6b7280;">Plan:</span>
+                                <strong id="paynetPlan">—</strong>
+                            </div>
+                        </div>
+                        <button type="button" onclick="initiatePaynetPayment()" style="width:100%;padding:0.875rem;background:#1d4ed8;color:white;border:none;
+                                   border-radius:10px;font-weight:800;font-size:1rem;cursor:pointer;
+                                   font-family:inherit;">
+                            Pay with Paynet →
+                        </button>
+                    </div>
+
+                    <div style="text-align:center;">
                         <button type="button" class="btn btn-secondary" onclick="previousStep()">← Back</button>
-                        <button type="submit" class="btn btn-primary">💳 Complete Payment</button>
                     </div>
-                </form>
+                </div>
             </div>
 
             <!-- Success Step -->
@@ -902,7 +957,7 @@
     </main>
 
     <script>
-
+        const API = 'http://localhost:8000';
 
         let currentStep = 1;
         let selectedPlan = null;
@@ -924,13 +979,32 @@
         }
 
         function previousStep() {
-            if (currentStep > 1) {
-                document.getElementById(`step${currentStep}`).classList.remove('active');
-                document.getElementById(`step${currentStep}-indicator`).classList.remove('active');
-                currentStep--;
-                document.getElementById(`step${currentStep}`).classList.add('active');
-                document.getElementById(`step${currentStep}-indicator`).classList.remove('completed');
-                document.getElementById(`step${currentStep}-indicator`).classList.add('active');
+            const order = [1, 'verify', 2, 3];
+            const idx = order.indexOf(currentStep);
+            if (idx > 0) {
+                const prev = order[idx - 1];
+                // hide current
+                const curEl = currentStep === 'verify'
+                    ? document.getElementById('step-verify')
+                    : document.getElementById(`step${currentStep}`);
+                const curInd = currentStep === 'verify'
+                    ? document.getElementById('step-verify-indicator')
+                    : document.getElementById(`step${currentStep}-indicator`);
+                if (curEl) curEl.classList.remove('active');
+                if (curInd) curInd.classList.remove('active');
+
+                currentStep = prev;
+
+                // show prev
+                const prvEl = currentStep === 'verify'
+                    ? document.getElementById('step-verify')
+                    : document.getElementById(`step${currentStep}`);
+                const prvInd = currentStep === 'verify'
+                    ? document.getElementById('step-verify-indicator')
+                    : document.getElementById(`step${currentStep}-indicator`);
+                if (prvEl) prvEl.classList.add('active');
+                if (prvInd) { prvInd.classList.remove('completed'); prvInd.classList.add('active'); }
+
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
@@ -941,6 +1015,35 @@
             selectedPlan = plan;
             selectedPrice = price;
             document.getElementById('continueToPayment').disabled = false;
+        }
+
+        // Prices by business type
+        const PRICES = {
+            guide: { '1month': 10, '3months': 25, '6months': 55, '1year': 110 },
+            default: { '1month': 20, '3months': 50, '6months': 110, '1year': 220 },
+        };
+
+        function getPrices() {
+            const t = formData.business_type;
+            return PRICES[t] || PRICES.default;
+        }
+
+        function updatePlanPrices() {
+            const p = getPrices();
+            // Update plan card prices dynamically
+            const cards = document.querySelectorAll('.plan-card');
+            const keys = ['1month', '3months', '6months', '1year'];
+            cards.forEach((card, i) => {
+                const key = keys[i];
+                const priceEl = card.querySelector('.plan-price');
+                if (priceEl) priceEl.textContent = '$' + p[key];
+                card.dataset.price = p[key];
+                card.dataset.plan = key;
+            });
+            // Re-attach click handlers with correct price
+            cards.forEach(card => {
+                card.onclick = () => selectPlan(card.dataset.plan, parseInt(card.dataset.price));
+            });
         }
 
         function updatePaymentSummary() {
@@ -992,8 +1095,9 @@
                     return;
                 }
 
-                // Application saved + verification email sent → proceed to plan selection
-                nextStep();
+                // Application saved → verification email sent → show verify step
+                document.getElementById('verifyEmailDisplay').textContent = formData.email;
+                nextStep(); // goes to 'verify' step
 
             } catch (err) {
                 alert('❌ Could not connect to server. Is it running?');
@@ -1085,6 +1189,100 @@
         document.getElementById('cvv').addEventListener('input', function (e) {
             e.target.value = e.target.value.replace(/\D/g, '');
         });
+        // ── EMAIL VERIFICATION ────────────────────────────────────
+        async function resendVerification() {
+            const btn = document.getElementById('resendVerifyBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Sending…';
+            try {
+                const res = await fetch(`${API}/api/partner-applications/resend-verification`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: formData.email })
+                });
+                const d = await res.json();
+                const msg = document.getElementById('verifyResendMsg');
+                msg.style.display = 'block';
+                msg.textContent = res.ok
+                    ? '✅ Verification email resent! Check your inbox.'
+                    : '❌ ' + (d.detail || 'Failed to resend.');
+                setTimeout(() => { msg.style.display = 'none'; }, 5000);
+            } catch (e) {
+                alert('Could not connect to server.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '↻ Resend Email';
+            }
+        }
+
+        // Check URL on load — if ?verified=true&email=xxx → jump to plan step
+        (function checkVerification() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('verified') === 'true') {
+                const email = params.get('email') || '';
+                const btype = params.get('type') || 'restaurant';
+                const bname = params.get('name') || '';
+                formData.email = email;
+                formData.business_type = btype;
+                formData.business_name = bname;
+                // Jump straight to plan selection
+                currentStep = 2;
+                showStep(2);
+                updatePlanPrices();
+                // Clean URL
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        })();
+
+        // ── PAYMENT ───────────────────────────────────────────────
+        function payWith(method) {
+            document.getElementById('clickForm').style.display = 'none';
+            document.getElementById('paynetForm').style.display = 'none';
+
+            const planNames = { '1month': '1 Month', '3months': '3 Months', '6months': '6 Months', '1year': '1 Year' };
+            const pname = planNames[selectedPlan] || selectedPlan;
+
+            if (method === 'click') {
+                document.getElementById('clickAmount').textContent = '$' + selectedPrice;
+                document.getElementById('clickPlan').textContent = pname;
+                document.getElementById('clickForm').style.display = 'block';
+            } else {
+                document.getElementById('paynetAmount').textContent = '$' + selectedPrice;
+                document.getElementById('paynetPlan').textContent = pname;
+                document.getElementById('paynetForm').style.display = 'block';
+            }
+        }
+
+        async function initiateClickPayment() {
+            // When Click credentials are ready, replace this with real API call
+            // Click.uz payment URL format:
+            // https://my.click.uz/services/pay?service_id=SERVICE_ID&merchant_id=MERCHANT_ID
+            //   &amount=AMOUNT&transaction_param=ORDER_ID&return_url=RETURN_URL
+            alert('⚙️ Click payment integration coming soon! Please contact admin to complete your registration manually for now.');
+
+            // FUTURE: uncomment when credentials available
+            // const res = await fetch(`${API}/api/payments/click/create`, {
+            //     method: 'POST',
+            //     headers: {'Content-Type':'application/json'},
+            //     body: JSON.stringify({
+            //         email:     formData.email,
+            //         plan:      selectedPlan,
+            //         amount:    selectedPrice,
+            //         biz_type:  formData.business_type,
+            //         biz_name:  formData.business_name,
+            //     })
+            // });
+            // const d = await res.json();
+            // if (d.payment_url) window.location.href = d.payment_url;
+        }
+
+        async function initiatePaynetPayment() {
+            alert('⚙️ Paynet payment integration coming soon! Please contact admin to complete your registration manually for now.');
+
+            // FUTURE: uncomment when credentials available
+            // const res = await fetch(`${API}/api/payments/paynet/create`, { ... });
+        }
+
     </script>
 </body>
 
