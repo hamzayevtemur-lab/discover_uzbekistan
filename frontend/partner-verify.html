@@ -10,9 +10,6 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap"
         rel="stylesheet" />
-
-    <script src="/config.js"></script>
-
     <style>
         * {
             margin: 0;
@@ -289,9 +286,9 @@
         </div>
     </div>
 
+    <script src="/config.js"></script>
     <script>
         // API defined in config.js
-
         const token = new URLSearchParams(location.search).get('token');
 
         function show(id) {
@@ -310,6 +307,17 @@
                 if (!resp.ok) throw new Error(data.detail || 'Verification failed.');
                 document.getElementById('bizName').textContent = data.business_name || 'your business';
                 show('stateSuccess');
+
+                // Redirect to partner-portal to continue to plan selection
+                const params = new URLSearchParams({
+                    verified: 'true',
+                    email: data.email || '',
+                    type: data.business_type || 'restaurant',
+                    name: data.business_name || '',
+                });
+                setTimeout(() => {
+                    window.location.href = `/partner-portal.html?${params.toString()}`;
+                }, 2000);
             } catch (err) {
                 document.getElementById('errMsg').textContent = err.message;
                 show('stateError');

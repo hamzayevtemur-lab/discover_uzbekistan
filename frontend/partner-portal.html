@@ -4,15 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Become a Partner - Discover Uzbekistan</title>
     <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="apple-touch-icon" href="/images/logo.png">
-    <title>Become a Partner - Discover Uzbekistan</title>
-
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap"
         rel="stylesheet">
-    
-    <script src="/config.js"></script>
     <style>
         * {
             margin: 0;
@@ -623,6 +620,7 @@
             }
         }
     </style>
+    <script src="/config.js"></script>
 </head>
 
 <body>
@@ -957,6 +955,7 @@
     </main>
 
     <script>
+        // API defined in config.js
 
         let currentStep = 1;
         let selectedPlan = null;
@@ -1106,88 +1105,6 @@
             }
         });
 
-        /* ── STEP 3: PAYMENT (simulated) → on success shows email-check screen ── */
-        document.getElementById('paymentForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Processing Payment...';
-
-            // Simulate payment processing (replace with real payment gateway later)
-            await new Promise(r => setTimeout(r, 2000));
-
-            // Mark plan on the application
-            try {
-                await fetch(`${API}/api/partner-applications/signup`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ...formData,
-                        plan: selectedPlan,
-                        plan_amount: selectedPrice,
-                    })
-                });
-                // (This may return 400 "already under review" which is fine — 
-                //  we just want to store the plan. You can add a PATCH endpoint later.)
-            } catch (_) { }
-
-            // Show success screen — tell user to verify email
-            document.getElementById('step3').classList.remove('active');
-            document.getElementById('step3-indicator').classList.remove('active');
-            document.getElementById('step3-indicator').classList.add('completed');
-            document.getElementById('stepSuccess').classList.add('active');
-
-            document.getElementById('successEmail').textContent = formData.email;
-
-            // Update success screen to reflect the new flow
-            // (verification email was already sent at step 1)
-            const credBox = document.querySelector('.credentials-box');
-            if (credBox) {
-                credBox.innerHTML = `
-            <div class="credentials-title">📬 Check Your Email</div>
-            <div class="credential-item">
-                <span class="credential-label">Email sent to:</span>
-                <span class="credential-value">${formData.email}</span>
-            </div>
-            <div class="credential-item">
-                <span class="credential-label">Next step:</span>
-                <span class="credential-value" style="font-size:.95rem">Click the link in your email to verify your address</span>
-            </div>
-            <div class="credential-item">
-                <span class="credential-label">Then:</span>
-                <span class="credential-value" style="font-size:.95rem">Admin reviews your application (1–2 business days)</span>
-            </div>
-            <div class="credential-item">
-                <span class="credential-label">Finally:</span>
-                <span class="credential-value" style="font-size:.95rem">Login credentials sent automatically by email</span>
-            </div>`;
-            }
-
-            // Update success message
-            const successMsg = document.querySelector('.success-message');
-            if (successMsg) {
-                successMsg.innerHTML = `
-            <p>Your application has been submitted and a verification email was sent to <strong>${formData.email}</strong>.</p>
-            <p>Once you verify your email, our team will review your application within 1–2 business days.</p>`;
-            }
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        /* ── CARD NUMBER FORMATTING ── */
-        document.getElementById('cardNumber').addEventListener('input', function (e) {
-            let v = e.target.value.replace(/\s/g, '');
-            e.target.value = v.match(/.{1,4}/g)?.join(' ') || v;
-        });
-        document.getElementById('expiryDate').addEventListener('input', function (e) {
-            let v = e.target.value.replace(/\D/g, '');
-            if (v.length >= 2) v = v.slice(0, 2) + '/' + v.slice(2, 4);
-            e.target.value = v;
-        });
-        document.getElementById('cvv').addEventListener('input', function (e) {
-            e.target.value = e.target.value.replace(/\D/g, '');
-        });
         // ── EMAIL VERIFICATION ────────────────────────────────────
         async function resendVerification() {
             const btn = document.getElementById('resendVerifyBtn');

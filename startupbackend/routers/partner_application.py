@@ -827,6 +827,8 @@ async def verify_email(
         return {
             "message":       "Email already verified. Your application is under review.",
             "business_name": application.business_name,
+            "business_type": application.business_type,   # ← ADD THIS LINE
+            "email":         application.email,             # ← ADD THIS LINE
         }
 
     # Check token expiry (24 h)
@@ -847,6 +849,7 @@ async def verify_email(
         "message":       "Email verified! Your application is now under review.",
         "business_name": application.business_name,
         "business_type": application.business_type,
+        "email":         application.email,                 # ← ADD THIS LINE
     }
 
 
