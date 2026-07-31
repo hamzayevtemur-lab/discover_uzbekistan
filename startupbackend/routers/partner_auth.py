@@ -14,7 +14,9 @@ from models.hotel import Hotel
 
 router = APIRouter(prefix="/api/partner", tags=["partner-auth"])
 
-SECRET_KEY = "my-secret-key-change-in-production-123"
+import os
+SECRET_KEY = os.environ.get("SECRET_KEY", "changeme-in-production")
+
 ALGORITHM  = "HS256"
 
 # ── Token header extractor ────────────────────────────────────
@@ -44,17 +46,23 @@ def get_partner_token(
 
 
 def require_hotel_owner(
+    hotel_id: int,
     authorization: str = Security(_auth_header),
     db: Session = Depends(get_db)
 ) -> dict:
     """
     Dependency for hotel partner routes.
-    Validates JWT and ensures the partner is a hotel type.
+    Validates JWT, ensures the partner is a hotel type, AND confirms
+    the token's record_id matches the hotel_id in the URL — this last
+    check is what stops one partner from touching another partner's
+    hotel by changing the ID in the request.
     """
     payload = get_partner_token(authorization)
     biz_type = payload.get("business_type") or payload.get("type")
     if biz_type != "hotel":
         raise HTTPException(status_code=403, detail="Hotel access required.")
+    if payload.get("record_id") != hotel_id:
+        raise HTTPException(status_code=403, detail="Not authorized for this hotel.")
     return payload
 
 

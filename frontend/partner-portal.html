@@ -443,60 +443,6 @@
             color: var(--text-dark);
         }
 
-        .warn-box {
-            background: #fff8e1;
-            border: 2px solid #fbbf24;
-            border-radius: 12px;
-            padding: 1rem;
-            margin: 0 auto 1.5rem;
-            font-size: 0.875rem;
-            color: #92400e;
-            text-align: left;
-        }
-
-        .free-access-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 16px;
-            padding: 2rem;
-            margin: 1.5rem auto;
-            color: white;
-            text-align: left;
-        }
-
-        .free-access-card .headline {
-            font-size: 1.4rem;
-            font-weight: 800;
-            margin-bottom: 0.75rem;
-        }
-
-        .free-access-card .body {
-            font-size: 0.95rem;
-            line-height: 1.8;
-            opacity: 0.9;
-        }
-
-        .free-access-card .perks {
-            margin-top: 1.25rem;
-            padding-top: 1.25rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .free-access-card .perks-label {
-            font-size: 0.85rem;
-            opacity: 0.8;
-            margin-bottom: 0.5rem;
-        }
-
-        .free-access-card .perks-list {
-            font-size: 0.875rem;
-            line-height: 2;
-            list-style: none;
-        }
-
-        .free-access-card .perks-list li::before {
-            content: '✅ ';
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             .hero h1 {
@@ -576,9 +522,9 @@
                     <div class="step-circle">2</div>
                     <div class="step-label">Verify Email</div>
                 </div>
-                <div class="progress-step" id="step-access-indicator">
+                <div class="progress-step" id="step-success-indicator">
                     <div class="step-circle">3</div>
-                    <div class="step-label">Activate Listing</div>
+                    <div class="step-label">Pending Review</div>
                 </div>
             </div>
 
@@ -598,8 +544,6 @@
                                 <option value="hotel">🏨 Hotel / Guesthouse</option>
                                 <option value="travel_agency">🌍 Travel Agency</option>
                                 <option value="guide">🧭 Local Guide</option>
-                                <option value="attraction">🏛️ Tourist Attraction / Museum</option>
-                                <option value="multiple">📦 Multiple Businesses</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -646,8 +590,7 @@
                 <div class="verify-email-display" id="verifyEmailDisplay">-</div>
 
                 <div class="info-box">
-                    <p>💡 Didn't get the email? Check your spam folder, or resend it below. The link will bring you
-                        right back here to finish activating your listing.</p>
+                    <p>💡 Didn't get the email? Check your spam folder, or resend it below.</p>
                 </div>
 
                 <div style="text-align:center;">
@@ -661,51 +604,7 @@
                 </div>
             </div>
 
-            <!-- Step: Free Access Activation -->
-            <div class="step-content" id="step-access">
-                <div style="text-align:center;padding:0.5rem 0;">
-                    <div style="font-size:4rem;margin-bottom:1rem;">🎉</div>
-                    <h2 class="step-title">Welcome to Discover Uzbekistan!</h2>
-                    <p class="step-description">
-                        We're just getting started — and we want YOU to be part of it from day one.
-                    </p>
-
-                    <div class="free-access-card">
-                        <div class="headline">🚀 Early Partner — FREE Access</div>
-                        <div class="body">
-                            As one of our first partners, your listing is <strong>completely free</strong> while we
-                            grow our platform. No payment required — just activate below and your business goes
-                            live.
-                        </div>
-                        <div class="perks">
-                            <div class="perks-label">What you get for free:</div>
-                            <ul class="perks-list">
-                                <li>Public listing on our platform</li>
-                                <li>Full partner dashboard</li>
-                                <li>Menu / Rooms / Tours management</li>
-                                <li>Customer reviews system</li>
-                                <li>Location on interactive map</li>
-                                <li>Direct tourist contact links</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="warn-box">
-                        <strong>⏰ Limited Time:</strong> Free access is available while we're in our launch phase in
-                        Samarkand. Paid plans will be introduced later — early partners get priority and discounted
-                        rates.
-                    </div>
-
-                    <button type="button" class="btn btn-primary" id="activateBtn" onclick="submitFreeApplication()"
-                        style="font-size:1rem;padding:0.875rem 2.5rem;">
-                        🎊 Activate My Free Listing →
-                    </button>
-                    <br><br>
-                    <button type="button" class="btn btn-secondary" onclick="goToStep('verify')">← Back</button>
-                </div>
-            </div>
-
-            <!-- Step: Success -->
+            <!-- Step: Success (also the landing state after clicking the email verification link) -->
             <div class="step-content" id="step-success">
                 <div class="success-screen">
                     <div class="success-icon">🎊</div>
@@ -737,11 +636,14 @@
         // API base URL defined in config.js
 
         /* ── STEP STATE ──────────────────────────────────────────
-           A single source of truth for the flow: info -> verify -> access -> success.
-           Every step's <div id="step-STEPNAME"> and <div id="step-STEPNAME-indicator">
-           (indicators only exist for info/verify/access) follow this naming so
+           A single source of truth for the flow: info -> verify -> success.
+           Admin approval happens entirely outside this page (in admin.html) —
+           there is nothing for the applicant to click after verifying their
+           email, so 'success' here just means "verified, pending review,"
+           not "approved." Every step's <div id="step-STEPNAME"> and
+           <div id="step-STEPNAME-indicator"> follow this naming so
            navigation code doesn't need per-step special cases. */
-        const STEP_ORDER = ['info', 'verify', 'access', 'success'];
+        const STEP_ORDER = ['info', 'verify', 'success'];
         let currentStep = 'info';
         const formData = {};
 
@@ -752,7 +654,7 @@
             if (currentInd) currentInd.classList.remove('active');
 
             // Mark every step before the target as completed (handles skipping,
-            // e.g. jumping straight from a fresh page load to 'access').
+            // e.g. jumping straight from a fresh page load to 'success').
             const targetIdx = STEP_ORDER.indexOf(target);
             STEP_ORDER.forEach((name, i) => {
                 const ind = document.getElementById(`step-${name}-indicator`);
@@ -854,8 +756,10 @@
         }
 
         // Check URL on load — if the partner clicked the verification link in
-        // their email (?verified=true&email=...&type=...&name=...), skip
-        // straight to the "activate free listing" step.
+        // their email (partner-verify.html redirects here with
+        // ?verified=true&email=...&type=...&name=...), land directly on the
+        // "pending admin review" success screen. There is no further action
+        // for the applicant to take — approval happens manually in admin.html.
         (function checkVerification() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('verified') === 'true') {
@@ -863,51 +767,13 @@
                 formData.business_type = params.get('type') || '';
                 formData.business_name = params.get('name') || '';
 
-                goToStep('access');
+                document.getElementById('successEmail').textContent = formData.email;
+                goToStep('success');
 
                 // Clean the query string so a page refresh doesn't re-trigger this.
                 window.history.replaceState({}, '', window.location.pathname);
             }
         })();
-
-        // ── FREE ACCESS ACTIVATION ────────────────────────────────
-        async function submitFreeApplication() {
-            if (!formData.email) {
-                alert('Please go back and fill in your business details first.');
-                return;
-            }
-            const btn = document.getElementById('activateBtn');
-            btn.disabled = true;
-            btn.textContent = '⏳ Activating…';
-            try {
-                const resp = await fetch(`${API}/api/partner-applications/activate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: formData.email })
-                });
-                const data = await resp.json().catch(() => ({}));
-
-                if (!resp.ok) {
-                    // Already activated is fine — treat it as success.
-                    if (resp.status === 409 || (data.detail && data.detail.includes('already'))) {
-                        showSuccess();
-                        return;
-                    }
-                    throw new Error(data.detail || 'Activation failed.');
-                }
-                showSuccess();
-            } catch (e) {
-                alert('❌ ' + e.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '🎊 Activate My Free Listing →';
-            }
-        }
-
-        function showSuccess() {
-            document.getElementById('successEmail').textContent = formData.email;
-            goToStep('success');
-        }
     </script>
 </body>
 

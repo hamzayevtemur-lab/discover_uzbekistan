@@ -62,7 +62,6 @@ DASHBOARD_URLS: dict[str, str] = {
     "restaurant":    "restaurants-admin-portal.html",
     "hotel":         "hotel-admin-dashboard.html",
     "travel_agency": "travel-agency-admin-dashboard.html",
-    "attraction":    "attraction-admin-dashboard.html",
     "guide":         "guide-admin-dashboard.html",
     # "spa": "spa-admin-dashboard.html",  ← just add a line
 }
@@ -71,13 +70,11 @@ BUSINESS_LABELS: dict[str, str] = {
     "restaurant":    "🍽️ Restaurant / Café",
     "hotel":         "🏨 Hotel / Guesthouse",
     "travel_agency": "🌍 Travel Agency",
-    "attraction":    "🏛️ Tourist Attraction",
     "guide":         "🧭 Local Guide",
-    "multiple":      "📦 Multiple Businesses",
 }
 
 # All valid business types (used for validation)
-VALID_TYPES: frozenset[str] = frozenset(DASHBOARD_URLS.keys()) | {"multiple"}
+VALID_TYPES: frozenset[str] = frozenset(DASHBOARD_URLS.keys())
 
 # Plan duration in days
 PLAN_DAYS: dict[str, int] = {
@@ -225,6 +222,7 @@ def _to_dict(a: PartnerApplication) -> dict:
         "status":           a.status,
         "is_email_verified": a.is_email_verified,
         "applied_at":       _iso(a.applied_at),
+        "email_verify_sent_at": _iso(a.email_verify_sent_at),
         "reviewed_at":      _iso(a.reviewed_at),
         "rejection_reason": a.rejection_reason,
         "linked_record_id": a.linked_record_id,
@@ -502,7 +500,7 @@ def _send_verification_email(app: PartnerApplication, token: str, bg: Background
         ✉️ Verify Email Address
       </a>
       <p style="color:#888;font-size:13px">
-        This link expires in 24 hours. If you didn't apply, you can safely ignore this email.
+        This link expires in 30 minutes. If you didn't apply, you can safely ignore this email.
       </p>
     </div>"""
     bg.add_task(
@@ -834,7 +832,7 @@ async def verify_email(
     # Check token expiry (24 h)
     if (
         application.email_verify_sent_at
-        and datetime.utcnow() - application.email_verify_sent_at > timedelta(hours=24)
+        and datetime.utcnow() - application.email_verify_sent_at > timedelta(minutes=30)
     ):
         raise HTTPException(400, "Verification link has expired. Please apply again.")
 
@@ -855,16 +853,21 @@ async def verify_email(
 
 # ── 3. RESEND VERIFICATION ────────────────────────────────────────────────────
 
+class ResendRequest(BaseModel):
+    email: EmailStr
+
+
 @router.post("/resend-verification", summary="Resend the email-verification link")
 async def resend_verification(
-    email: str,
-    bg:    BackgroundTasks,
-    db:    Session = Depends(get_db),
+    data: ResendRequest,
+    bg:   BackgroundTasks,
+    db:   Session = Depends(get_db),
 ):
     application = db.query(PartnerApplication).filter(
-        PartnerApplication.email == email,
+        PartnerApplication.email == data.email,
         PartnerApplication.is_email_verified == False,  # noqa: E712
     ).first()
+    
     if not application:
         raise HTTPException(404, "No unverified application found for this email.")
 

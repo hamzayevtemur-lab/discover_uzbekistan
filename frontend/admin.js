@@ -3,6 +3,11 @@ const ADMIN_KEY = "668e4a2d545ddcdd0a8d40e0cf7a8079fadeeb21872198a1354cd6c4a9b73
 const PARTNER_PAGE_SIZE = 10;
 let _allPartners = [], _filtPartners = [], _partnerPage = 0;
 
+// How long a verification link is valid for, in minutes. Must match the
+// timedelta used in routers/partner_application.py's /verify-email
+// endpoint — if you change one, change the other.
+const VERIFY_EXPIRY_MINUTES = 30;
+
 // ── API HELPER ────────────────────────────────────────────────
 async function fetchAPI(endpoint, options = {}) {
     try {
@@ -57,21 +62,22 @@ async function loadDashboard() {
 async function loadPendingApprovals(dashboardOnly = false) {
     try {
         const [pendingRestaurants, pendingMenuItems, pendingHotels,
-               pendingRooms, pendingTours, pendingGuideApps] = await Promise.all([
+               pendingRooms, pendingTours, pendingNewApps] = await Promise.all([
             fetchAPI('/api/admin-approval/restaurants/pending'),
             fetchAPI('/api/admin-approval/menu-items/pending'),
             fetchAPI('/api/admin-approval/hotels/pending'),
             fetchAPI('/api/admin-approval/hotel-rooms/pending'),
             fetchAPI('/api/admin-approval/tours/pending'),
-            fetchAPI('/api/partner-applications/admin/list?status=pending'),
+            // Applicants who have verified their email and are ready for
+            // you to approve/reject — every business type, not just guides.
+            // (NOT status=pending — those haven't verified yet and the
+            // backend refuses to approve them until they do.)
+            fetchAPI('/api/partner-applications/admin/list?status=email_verified'),
         ]);
-
-        // Filter only guide applications from partner apps
-        const pendingGuides = pendingGuideApps.filter(a => a.business_type === 'guide');
 
         const total = pendingRestaurants.length + pendingMenuItems.length +
                       pendingHotels.length + pendingRooms.length + pendingTours.length +
-                      pendingGuides.length;
+                      pendingNewApps.length;
 
         // Update badges
         ['nav-pending-badge','nav-pending-badge2'].forEach(id => {
@@ -98,12 +104,13 @@ async function loadPendingApprovals(dashboardOnly = false) {
                         ${pendingMenuItems.length   ? `<div class="badge badge-info">🍴 ${pendingMenuItems.length} Menu Items</div>` : ''}
                         ${pendingHotels.length      ? `<div class="badge badge-warning">🏨 ${pendingHotels.length} Hotels</div>` : ''}
                         ${pendingRooms.length       ? `<div class="badge badge-info">🛏 ${pendingRooms.length} Rooms</div>` : ''}
-                        ${pendingTours.length       ? `<div class="badge badge-warning">🗺️ ${pendingTours.length} Tours</div>` : ''}
-                        ${pendingGuides.length      ? `<div class="badge badge-info">🧭 ${pendingGuides.length} Guide Applications</div>` : ''}
+                        ${pendingTours.length       ? `<div class="badge badge-info">🗺️ ${pendingTours.length} Tours</div>` : ''}
+                        ${pendingNewApps.length     ? `<div class="badge badge-warning">📋 ${pendingNewApps.length} Partner Applications</div>` : ''}
                     </div>`;
             } else {
-                dashCard.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--text3);">
-                    ✅ No pending approvals — all caught up!</div>`;
+                dashCard.innerHTML = `
+                    <div class="card-header"><div class="card-title">⏰ Pending Approvals</div></div>
+                    <div class="empty"><div class="empty-icon">✅</div><p>All caught up!</p></div>`;
             }
         }
 
@@ -143,10 +150,10 @@ async function loadPendingApprovals(dashboardOnly = false) {
             <div class="pending-card">
                 <img class="pending-img" src="${fixUrl(item.image_url)||'https://via.placeholder.com/80x70?text=M'}" onerror="this.src='https://via.placeholder.com/80x70?text=M'">
                 <div class="pending-info">
-                    <div class="pending-name">${item.item_name}</div>
+                    <div class="pending-name">${item.restaurant_name} — ${item.name}</div>
                     <div class="pending-meta">
-                        Restaurant: <strong>${item.restaurant_name}</strong><br>
-                        $${item.price} • ${item.category || 'N/A'}
+                        💰 $${item.price}<br>
+                        ${item.description || ''}
                     </div>
                 </div>
                 <div class="pending-actions">
@@ -203,13 +210,16 @@ async function loadPendingApprovals(dashboardOnly = false) {
                 </div>
             </div>`);
 
-        html += pendingSection('🧭 New Guide Applications', pendingGuides, g => `
+        // Applicants who have verified their email — actionable, every business type.
+        const BIZ_ICON = { restaurant: '🍽️', hotel: '🏨', travel_agency: '🌍', guide: '🧭' };
+
+        html += pendingSection('📋 New Partner Applications', pendingNewApps, g => `
             <div class="pending-card">
                 <div class="pending-img" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);
                     display:flex;align-items:center;justify-content:center;font-size:2rem;
-                    width:80px;height:70px;border-radius:8px;flex-shrink:0;">🧭</div>
+                    width:80px;height:70px;border-radius:8px;flex-shrink:0;">${BIZ_ICON[g.business_type] || '📋'}</div>
                 <div class="pending-info">
-                    <div class="pending-name">${g.business_name}</div>
+                    <div class="pending-name">${g.business_name} <span style="font-weight:400;color:var(--text-gray,#64748b);">(${g.business_type})</span></div>
                     <div class="pending-meta">
                         📧 ${g.email}<br>
                         📞 ${g.phone || '—'}<br>
@@ -228,17 +238,88 @@ async function loadPendingApprovals(dashboardOnly = false) {
         }
 
         document.getElementById('pending-items').innerHTML = html;
+
+        // Load the read-only "still waiting on the applicant" list separately —
+        // these can't be approved yet (backend rejects it) so they don't count
+        // toward the badge/total above, they're purely informational.
+        loadUnverifiedApplications();
     } catch(e) { console.error('Pending error:', e); }
 }
 
+// ── UNVERIFIED APPLICATIONS (haven't clicked the email link yet) ──
+// Read-only — nothing to approve/reject here, since the backend won't
+// let you approve an application until is_email_verified is true. This
+// exists so you can see which test/real emails are mid-signup, and
+// whether their verification link has already expired (in which case
+// they just need to resubmit the signup form with the same email to
+// get a fresh link — /signup already resends automatically for a
+// still-pending application).
+async function loadUnverifiedApplications() {
+    const container = document.getElementById('unverified-items');
+    if (!container) return; // section not present on this page — skip quietly
+
+    try {
+        const pendingApps = await fetchAPI('/api/partner-applications/admin/list?status=pending');
+
+        if (!pendingApps.length) {
+            container.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><p>No applications waiting on email verification.</p></div>`;
+            return;
+        }
+
+        const BIZ_ICON = { restaurant: '🍽️', hotel: '🏨', travel_agency: '🌍', guide: '🧭' };
+        const now = new Date();
+
+        container.innerHTML = `
+            <div class="pending-section">
+                <div class="pending-section-title">
+                    📭 Awaiting Email Verification <span class="pending-count">${pendingApps.length}</span>
+                </div>
+                ${pendingApps.map(a => {
+                    // email_verify_sent_at isn't in every backend version's response yet —
+                    // fall back to applied_at (slightly less accurate after a resend, but
+                    // still a reasonable estimate) if it's missing.
+                    const sentAtRaw = a.email_verify_sent_at || a.applied_at;
+                    const sentAt    = sentAtRaw ? new Date(sentAtRaw) : null;
+                    let expiryHtml  = '<span style="color:var(--text3,#94a3b8);">—</span>';
+                    if (sentAt) {
+                        const expiresAt   = new Date(sentAt.getTime() + VERIFY_EXPIRY_MINUTES * 60000);
+                        const minsLeft    = Math.round((expiresAt - now) / 60000);
+                        expiryHtml = minsLeft > 0
+                            ? `<span style="color:var(--warning,#f59e0b);font-weight:600;">⏳ Link expires in ${minsLeft} min</span>`
+                            : `<span style="color:var(--danger,#ef4444);font-weight:600;">⏰ Link expired — they can reapply with the same email</span>`;
+                    }
+                    return `
+                    <div class="pending-card" style="opacity:0.85;">
+                        <div class="pending-img" style="background:#e2e8f0;
+                            display:flex;align-items:center;justify-content:center;font-size:2rem;
+                            width:80px;height:70px;border-radius:8px;flex-shrink:0;">${BIZ_ICON[a.business_type] || '📋'}</div>
+                        <div class="pending-info">
+                            <div class="pending-name">${a.business_name} <span style="font-weight:400;color:var(--text-gray,#64748b);">(${a.business_type})</span></div>
+                            <div class="pending-meta">
+                                📧 ${a.email}<br>
+                                📞 ${a.phone || '—'}<br>
+                                📍 ${a.address || '—'}<br>
+                                📅 Applied: ${a.applied_at ? new Date(a.applied_at).toLocaleString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'}<br>
+                                ${expiryHtml}
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>`;
+    } catch(e) {
+        console.error('Unverified applications error:', e);
+        container.innerHTML = `<div class="empty" style="color:var(--danger);">Failed to load.</div>`;
+    }
+}
+
 async function approvePartnerApp(appId) {
-    if (!confirm('Approve this guide application? They will receive login credentials by email.')) return;
+    if (!confirm('Approve this application? They will receive login credentials by email.')) return;
     try {
         await fetchAPI(`/api/partner-applications/admin/${appId}/approve`, {
             method:'POST',
             body: JSON.stringify({admin_note: 'Approved by CEO admin'})
         });
-        toast('✅ Guide approved! Credentials sent by email.','success');
+        toast('✅ Partner approved! Credentials sent by email.','success');
         loadPendingApprovals();
         loadDashboard();
     } catch(e) { toast('❌ '+e.message,'error'); }
