@@ -14,8 +14,16 @@ from models import (
     Attraction, AttractionTimeline, AttractionReview, AttractionGallery,
     Like, TravelAgency, Tour, AgencyReview, TourItinerary, TourDestination
 )
+from routers.admin import verify_admin_key
 
-router = APIRouter(prefix="/api/admin-approval", tags=["admin-approval"])
+# dependencies=[...] applies verify_admin_key to EVERY route defined on this
+# router automatically — every endpoint below now requires a valid
+# X-Admin-Key header, without needing to repeat the check on each function.
+router = APIRouter(
+    prefix="/api/admin-approval",
+    tags=["admin-approval"],
+    dependencies=[Depends(verify_admin_key)],
+)
 
 # ==================== SCHEMAS ====================
 
@@ -386,6 +394,57 @@ async def approve_agency(
         "status": agency.status
     }
 
+# ==================== GUIDES ====================
+
+from routers.guides import Guide
+
+@router.get("/guides/pending")
+async def get_pending_guides(db: Session = Depends(get_db)):
+    """Get all guide listings awaiting (re-)approval"""
+    guides = db.query(Guide).filter(
+        Guide.status == "pending"
+    ).all()
+
+    return [
+        {
+            "id": g.id,
+            "name": g.name,
+            "bio": g.bio,
+            "photo_url": g.photo_url,
+            "languages": g.languages,
+            "cities": g.cities,
+            "tour_types": g.tour_types,
+            "price_per_day": float(g.price_per_day) if g.price_per_day else None,
+            "experience_years": g.experience_years,
+            "phone": g.phone,
+            "email": g.email,
+            "status": g.status,
+        }
+        for g in guides
+    ]
+
+@router.post("/guide/{guide_id}/approve")
+async def approve_guide(
+    guide_id: int,
+    action: ApprovalAction,
+    db: Session = Depends(get_db)
+):
+    """Approve or reject a guide listing"""
+    guide = db.query(Guide).filter(Guide.id == guide_id).first()
+
+    if not guide:
+        raise HTTPException(status_code=404, detail="Guide not found")
+
+    guide.status = action.status
+    db.commit()
+    db.refresh(guide)
+
+    return {
+        "success": True,
+        "message": f"Guide {action.status}",
+        "guide_id": guide_id,
+        "status": guide.status
+    }
 
 # ==================== UPDATED STATS ====================
 

@@ -3,6 +3,9 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 
+from fastapi import UploadFile, File
+from services.uploads import save_upload_file
+
 from database import get_db
 from models.hotel import Hotel, HotelRoom
 from routers.partner_auth import require_hotel_owner
@@ -287,3 +290,14 @@ async def delete_hotel_review(
     db.delete(review)
     db.commit()
     return {"success": True, "message": "Review deleted."}
+
+
+## ++============================= Upload images
+@router.post("/{hotel_id}/upload-image")
+async def upload_hotel_image(
+    hotel_id: int,
+    file: UploadFile = File(...),
+    token: dict = Depends(require_hotel_owner),
+):
+    url = save_upload_file(file, "hotels")
+    return {"url": url}

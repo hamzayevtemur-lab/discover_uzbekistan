@@ -302,39 +302,15 @@ async def get_restaurant_stats(
     }
 
 
+from services.uploads import save_upload_file
+
 @router.post("/upload-image")
 async def upload_partner_image(
     file: UploadFile = File(...),
     token: dict = Depends(get_partner_token)   # just verify token is valid
 ):
-    try:
-        allowed_types = ["image/jpeg", "image/png", "image/jpg", "image/webp", "image/gif"]
-        if file.content_type not in allowed_types:
-            raise HTTPException(status_code=400, detail="Invalid file type. Only images allowed.")
-
-        file.file.seek(0, 2)
-        file_size = file.file.tell()
-        file.file.seek(0)
-
-        if file_size > 5 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="File too large. Max size is 5MB.")
-
-        upload_dir = Path("static/uploads/partners")
-        upload_dir.mkdir(parents=True, exist_ok=True)
-
-        file_extension = Path(file.filename).suffix
-        unique_filename = f"{uuid.uuid4()}{file_extension}"
-        file_path = upload_dir / unique_filename
-
-        with file_path.open("wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        return {"url": f"/static/uploads/partners/{unique_filename}", "filename": unique_filename}
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
+    url = save_upload_file(file, "restaurants")
+    return {"url": url}
     
     
 # ─────────────────────────────────────────────────────────────

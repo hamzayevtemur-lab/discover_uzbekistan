@@ -52,27 +52,25 @@ async def verify_news_admin_login(data: ContentLoginRequest):
 
 # ==================== IMAGE UPLOAD ====================
 
-@router.post("/upload-image")
-async def upload_image(file: UploadFile = File(...)):
-    """Upload an image and return the URL"""
+from services.uploads import save_upload_file
+
+@router.post("/upload-image", dependencies=[Depends(verify_admin_key)])
+async def upload_image(file: UploadFile = File(...), folder: str = ""):
+    """Upload an image and return the URL. Pass ?folder=restaurants (or
+    hotels, menu-items, hotel-rooms, etc.) to sort it into that
+    static/uploads/<folder>/ subfolder; omit it for the old root-level
+    behavior (kept for any existing caller that doesn't pass it)."""
     try:
-        # Create uploads directory if it doesn't exist
+        if folder:
+            return {"url": save_upload_file(file, folder)}
+
         upload_dir = Path("static/uploads")
         upload_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Generate unique filename
         import uuid
-        file_extension = Path(file.filename).suffix
-        unique_filename = f"{uuid.uuid4()}{file_extension}"
-        file_path = upload_dir / unique_filename
-        
-        # Save file
-        with file_path.open("wb") as buffer:
+        unique_filename = f"{uuid.uuid4()}{Path(file.filename).suffix}"
+        with (upload_dir / unique_filename).open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        
-        # Return the URL
-        image_url = f"/static/uploads/{unique_filename}"
-        return {"url": image_url, "filename": unique_filename}
+        return {"url": f"/static/uploads/{unique_filename}", "filename": unique_filename}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
 
@@ -769,3 +767,108 @@ async def verify_admin_login(data: AdminLoginRequest):
 
 
 
+# ==================== RESTAURANT MENU (admin) ====================
+
+@router.post("/restaurants/{restaurant_id}/menu", dependencies=[Depends(verify_admin_key)])
+def create_menu_item(restaurant_id: int, data: dict, db: Session = Depends(get_db)):
+    """Add a menu item directly as admin — created already approved, no partner review needed."""
+    restaurant = db.query(Restaurant).filter(Restaurant.id == restaurant_id).first()
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    item = RestaurantMenu(
+        restaurant_id=restaurant_id,
+        item_name=data.get("item_name"),
+        price=data.get("price"),
+        category=data.get("category"),
+        image_url=data.get("image_url"),
+        status="approved",
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return {
+        "id": item.id, "item_name": item.item_name, "price": item.price,
+        "category": item.category, "image_url": item.image_url,
+    }
+
+@router.delete("/menu-items/{item_id}", dependencies=[Depends(verify_admin_key)])
+def delete_menu_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(RestaurantMenu).filter(RestaurantMenu.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": "Menu item deleted"}
+
+
+# ==================== HOTEL ROOMS (admin) ====================
+
+@router.post("/hotels/{hotel_id}/rooms", dependencies=[Depends(verify_admin_key)])
+def create_hotel_room(hotel_id: int, data: dict, db: Session = Depends(get_db)):
+    """Add a room directly as admin — created already approved, no partner review needed."""
+    hotel = db.query(Hotel).filter(Hotel.id == hotel_id).first()
+    if not hotel:
+        raise HTTPException(status_code=404, detail="Hotel not found")
+
+    room = HotelRoom(
+        hotel_id=hotel_id,
+        room_type=data.get("room_type"),
+        price=data.get("price"),
+        capacity=data.get("capacity"),
+        description=data.get("description"),
+        image_url=data.get("image_url"),
+        available=data.get("available", True),
+        status="approved",
+    )
+    db.add(room)
+    db.commit()
+    db.refresh(room)
+    return {
+        "id": room.id, "room_type": room.room_type, "price": room.price,
+        "capacity": room.capacity, "image_url": room.image_url,
+        "description": room.description, "available": room.available,
+    }
+
+@router.delete("/hotel-rooms/{room_id}", dependencies=[Depends(verify_admin_key)])
+def delete_hotel_room(room_id: int, db: Session = Depends(get_db)):
+    room = db.query(HotelRoom).filter(HotelRoom.id == room_id).first()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    db.delete(room)
+    db.commit()
+    return {"message": "Room deleted"}
+
+
+
+
+@router.put("/menu-items/{item_id}", dependencies=[Depends(verify_admin_key)])
+def update_menu_item(item_id: int, data: dict, db: Session = Depends(get_db)):
+    item = db.query(RestaurantMenu).filter(RestaurantMenu.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    for key, value in data.items():
+        if hasattr(item, key):
+            setattr(item, key, value)
+    db.commit()
+    db.refresh(item)
+    return {
+        "id": item.id, "item_name": item.item_name, "price": item.price,
+        "category": item.category, "image_url": item.image_url,
+    }
+
+@router.put("/hotel-rooms/{room_id}", dependencies=[Depends(verify_admin_key)])
+def update_hotel_room(room_id: int, data: dict, db: Session = Depends(get_db)):
+    room = db.query(HotelRoom).filter(HotelRoom.id == room_id).first()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    for key, value in data.items():
+        if hasattr(room, key):
+            setattr(room, key, value)
+    db.commit()
+    db.refresh(room)
+    return {
+        "id": room.id, "room_type": room.room_type, "price": room.price,
+        "capacity": room.capacity, "image_url": room.image_url,
+        "description": room.description, "available": room.available,
+    }

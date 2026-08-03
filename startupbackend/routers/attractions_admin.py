@@ -330,18 +330,9 @@ def delete_review(attraction_id: int, review_id: int, db: Session = Depends(get_
 #  IMAGE UPLOAD (shared with content-admin)
 # ══════════════════════════════════════════════════════════════
 
+from services.uploads import save_upload_file
+
 @router.post("/upload-image")
 async def upload_image(file: UploadFile = File(...)):
-    import shutil, uuid
-    from pathlib import Path
-    allowed = {"image/jpeg", "image/png", "image/jpg", "image/webp", "image/gif"}
-    if file.content_type not in allowed:
-        raise HTTPException(400, "Invalid file type.")
-    if file.size and file.size > 10 * 1024 * 1024:
-        raise HTTPException(400, "File too large (max 10MB).")
-    upload_dir = Path("static/uploads")
-    upload_dir.mkdir(parents=True, exist_ok=True)
-    filename = f"{uuid.uuid4()}{Path(file.filename).suffix}"
-    with (upload_dir / filename).open("wb") as buf:
-        shutil.copyfileobj(file.file, buf)
-    return {"url": f"/static/uploads/{filename}"}
+    url = save_upload_file(file, "attractions")
+    return {"url": url}

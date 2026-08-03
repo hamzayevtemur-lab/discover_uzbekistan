@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, Text, DateTime, Numeric, Boolean
 from sqlalchemy.orm import Session
 from database import Base, get_db
+from services.uploads import save_upload_file
 from routers.partner_auth import get_partner_token
 
 router = APIRouter(prefix="/api/guides", tags=["guides"])
@@ -254,3 +255,19 @@ def _update_guide_rating(guide_id: int, db: Session):
             g.rating       = round(avg, 2)
             g.review_count = len(reviews)
             db.commit()
+            
+            
+#### Upload images
+@router.post("/{guide_id}/upload-image")
+async def upload_guide_image(
+    guide_id: int,
+    file: UploadFile = File(...),
+    token: dict = Depends(get_partner_token),
+):
+    record_id = token.get("record_id") or token.get("id")
+    biz_type  = token.get("business_type") or token.get("type")
+    if biz_type != "guide" or record_id != guide_id:
+        raise HTTPException(403, "Not authorized")
+
+    url = save_upload_file(file, "guides")
+    return {"url": url}
