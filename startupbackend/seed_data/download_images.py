@@ -45,13 +45,18 @@ UNSPLASH_SEARCH_URL = "https://api.unsplash.com/search/photos"
 # Where downloaded images should live relative to your project root.
 # main.py mounts /static from this same "static" folder, so whatever
 # path we write here is what the frontend will actually load.
-STATIC_ROOT = Path("static/uploads")
+# Resolve relative to this script's own location (seed_data/), not
+# whatever directory you happen to be standing in when you run it —
+# this always lands in startupbackend/static/uploads regardless of cwd.
+STATIC_ROOT = Path(__file__).resolve().parent.parent / "static" / "uploads"
 
 
 def slugify(name: str) -> str:
     s = name.lower().strip()
-    s = re.sub(r"[^a-z0-9]+", "-", s)
-    return s.strip("-")
+    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+    if not s:
+        s = f"item-{abs(hash(name)) % 100000}"  # fallback for non-Latin names
+    return s
 
 
 def find_photo(query: str) -> dict | None:

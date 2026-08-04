@@ -477,7 +477,8 @@
     "phone": "998955603607",
     "opening_hours": "Mo-Su 09:00-23:00",
     "website": "",
-    "image_query": "Сказка Samarkand restaurant"
+    "image_query": "Сказка Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-50018.jpg"
   },
   {
     "name": "чиккен хот-дог",
@@ -501,7 +502,8 @@
     "phone": "+998915579952",
     "opening_hours": "Mo-Su 09:00-23:00",
     "website": "",
-    "image_query": "Размарин Samarkand restaurant"
+    "image_query": "Размарин Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-58692.jpg"
   },
   {
     "name": "Икром Шашлык",
@@ -561,7 +563,8 @@
     "phone": "",
     "opening_hours": "Mo-Fr 09:00-23:00",
     "website": "",
-    "image_query": "Табака Samarkand restaurant"
+    "image_query": "Табака Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-67961.jpg"
   },
   {
     "name": "Караван",
@@ -573,7 +576,8 @@
     "phone": "",
     "opening_hours": "",
     "website": "",
-    "image_query": "Караван Samarkand restaurant"
+    "image_query": "Караван Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-38020.jpg"
   },
   {
     "name": "Ошмаркази.бурунчгалди",
@@ -633,7 +637,8 @@
     "phone": "+998906029199",
     "opening_hours": "",
     "website": "",
-    "image_query": "Шашлычная Samarkand restaurant"
+    "image_query": "Шашлычная Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-59224.jpg"
   },
   {
     "name": "Гаффор бобо",
@@ -705,7 +710,8 @@
     "phone": "",
     "opening_hours": "24/7",
     "website": "",
-    "image_query": "Чайхана Ягона Samarkand restaurant"
+    "image_query": "Чайхана Ягона Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-14888.jpg"
   },
   {
     "name": "Миллий Таомлар",
@@ -729,7 +735,8 @@
     "phone": "+998979152444",
     "opening_hours": "",
     "website": "",
-    "image_query": "Национальный дом Шахназаров Samarkand restaurant"
+    "image_query": "Национальный дом Шахназаров Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-93296.jpg"
   },
   {
     "name": "Супер Халиса #1",
@@ -765,7 +772,8 @@
     "phone": "+998 95 500 83 83",
     "opening_hours": "Mo-Su 10:00-23:00",
     "website": "",
-    "image_query": "Shoxjahon Samarkand restaurant"
+    "image_query": "Shoxjahon Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/shoxjahon.jpg"
   },
   {
     "name": "Shashlik Uz",
@@ -777,7 +785,8 @@
     "phone": "+998905021111",
     "opening_hours": "10:00-23:00",
     "website": "https://t.me/shashlikuzbot",
-    "image_query": "Shashlik Uz Samarkand restaurant"
+    "image_query": "Shashlik Uz Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/shashlik-uz.jpg"
   },
   {
     "name": "Korea chiken",
@@ -801,7 +810,8 @@
     "phone": "",
     "opening_hours": "Mo-Su 08:00-23:00",
     "website": "",
-    "image_query": "Коко гирил Samarkand restaurant"
+    "image_query": "Коко гирил Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-79242.jpg"
   },
   {
     "name": "Уткир гирил",
@@ -813,7 +823,8 @@
     "phone": "",
     "opening_hours": "",
     "website": "",
-    "image_query": "Уткир гирил Samarkand restaurant"
+    "image_query": "Уткир гирил Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-70070.jpg"
   },
   {
     "name": "Жавлон. Шашлик",
@@ -837,7 +848,8 @@
     "phone": "+998 99 807 65 65",
     "opening_hours": "Mo-Su 09:00-21:00",
     "website": "",
-    "image_query": "Севгидин. Халиса Samarkand restaurant"
+    "image_query": "Севгидин. Халиса Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-20603.jpg"
   },
   {
     "name": "Bahrillo Bobo Oshxona",
@@ -873,7 +885,8 @@
     "phone": "915208181",
     "opening_hours": "Mo-Su 09:00-19:00",
     "website": "",
-    "image_query": "Уктам ОШ Samarkand restaurant"
+    "image_query": "Уктам ОШ Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/item-41419.jpg"
   },
   {
     "name": "Кафе Hyatt",
@@ -885,7 +898,8 @@
     "phone": "+998904482520",
     "opening_hours": "Mo-Sa 00:00-24:00",
     "website": "https://www.tripadvisor.ru/Restaurant_Review-g298068-d25107071-Reviews-Cafe_Hyatt-Samarkand_Samarqand_Province.html",
-    "image_query": "Кафе Hyatt Samarkand restaurant"
+    "image_query": "Кафе Hyatt Samarkand restaurant",
+    "image_url": "/static/uploads/restaurants/hyatt.jpg"
   },
   {
     "name": "Fedya Shashlik No. 2",
