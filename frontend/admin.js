@@ -35,26 +35,22 @@ async function loadDashboard() {
         document.getElementById('s-attractions').textContent = stats.attractions?.total ?? '—';
         document.getElementById('s-reviews').textContent = stats.reviews?.total ?? '—';
 
-        // Agencies count
         fetchAPI('/admin/travel-agencies').then(res => {
             document.getElementById('s-agencies').textContent = (res.agencies || []).length;
         }).catch(() => { });
 
-        // Partners count
         fetch(`${API_BASE}/api/partner-applications/admin/list?status=approved`, {
             headers: { 'X-Admin-Key': ADMIN_KEY }
         }).then(r => r.json()).then(d => {
             document.getElementById('s-partners').textContent = d.length || 0;
         }).catch(() => { });
 
-        // Guides count
         fetch(`${API_BASE}/api/guides`).then(r => r.json()).then(d => {
             document.getElementById('s-guides').textContent = Array.isArray(d) ? d.length : 0;
         }).catch(() => { document.getElementById('s-guides').textContent = '0'; });
 
     } catch (e) { console.error('Stats error:', e); }
 
-    // Load pending approvals for badge + dashboard card
     loadPendingApprovals(true);
 }
 
@@ -76,13 +72,11 @@ async function loadPendingApprovals(dashboardOnly = false) {
             pendingHotels.length + pendingRooms.length + pendingTours.length +
             pendingNewApps.length + pendingGuideListings.length;
 
-        // Update badges
         ['nav-pending-badge', 'nav-pending-badge2'].forEach(id => {
             const el = document.getElementById(id);
             if (el) { el.textContent = total; el.style.display = total > 0 ? 'inline-block' : 'none'; }
         });
 
-        // Dashboard card
         const dashCard = document.getElementById('dashboard-pending');
         if (dashCard) {
             if (total > 0) {
@@ -113,7 +107,6 @@ async function loadPendingApprovals(dashboardOnly = false) {
 
         if (dashboardOnly) return;
 
-        // Full approvals page
         let html = '';
 
         function pendingSection(title, items, renderFn) {
@@ -224,7 +217,6 @@ async function loadPendingApprovals(dashboardOnly = false) {
         </div>
     </div>`);
 
-        // Applicants who have verified their email — actionable, every business type.
         const BIZ_ICON = { restaurant: '🍽️', hotel: '🏨', travel_agency: '🌍', guide: '🧭' };
 
         html += pendingSection('📋 New Partner Applications', pendingNewApps, g => `
@@ -252,25 +244,14 @@ async function loadPendingApprovals(dashboardOnly = false) {
         }
 
         document.getElementById('pending-items').innerHTML = html;
-
-        // Load the read-only "still waiting on the applicant" list separately —
-        // these can't be approved yet (backend rejects it) so they don't count
-        // toward the badge/total above, they're purely informational.
         loadUnverifiedApplications();
     } catch (e) { console.error('Pending error:', e); }
 }
 
-// ── UNVERIFIED APPLICATIONS (haven't clicked the email link yet) ──
-// Read-only — nothing to approve/reject here, since the backend won't
-// let you approve an application until is_email_verified is true. This
-// exists so you can see which test/real emails are mid-signup, and
-// whether their verification link has already expired (in which case
-// they just need to resubmit the signup form with the same email to
-// get a fresh link — /signup already resends automatically for a
-// still-pending application).
+// ── UNVERIFIED APPLICATIONS ────────────────────────────────────
 async function loadUnverifiedApplications() {
     const container = document.getElementById('unverified-items');
-    if (!container) return; // section not present on this page — skip quietly
+    if (!container) return;
 
     try {
         const pendingApps = await fetchAPI('/api/partner-applications/admin/list?status=pending');
@@ -289,9 +270,6 @@ async function loadUnverifiedApplications() {
                     📭 Awaiting Email Verification <span class="pending-count">${pendingApps.length}</span>
                 </div>
                 ${pendingApps.map(a => {
-            // email_verify_sent_at isn't in every backend version's response yet —
-            // fall back to applied_at (slightly less accurate after a resend, but
-            // still a reasonable estimate) if it's missing.
             const sentAtRaw = a.email_verify_sent_at || a.applied_at;
             const sentAt = sentAtRaw ? new Date(sentAtRaw) : null;
             let expiryHtml = '<span style="color:var(--text3,#94a3b8);">—</span>';
@@ -376,107 +354,161 @@ async function rejectItem(type, id) {
 async function approveGuideListing(id) {
     try {
         await fetchAPI(`/api/admin-approval/guide/${id}/approve`, {
-            method:'POST', body:JSON.stringify({status:'approved',admin_email:'ceo@discover.com'})
+            method: 'POST', body: JSON.stringify({ status: 'approved', admin_email: 'ceo@discover.com' })
         });
-        toast('✅ Guide listing approved!','success');
+        toast('✅ Guide listing approved!', 'success');
         loadPendingApprovals();
         loadDashboard();
-    } catch(e) { toast('❌ '+e.message,'error'); }
+    } catch (e) { toast('❌ ' + e.message, 'error'); }
 }
 
 async function rejectGuideListing(id) {
     const reason = prompt('Rejection reason (optional):') || 'Did not meet requirements.';
     try {
         await fetchAPI(`/api/admin-approval/guide/${id}/approve`, {
-            method:'POST', body:JSON.stringify({status:'rejected',rejection_reason:reason,admin_email:'ceo@discover.com'})
+            method: 'POST', body: JSON.stringify({ status: 'rejected', rejection_reason: reason, admin_email: 'ceo@discover.com' })
         });
-        toast('Guide listing rejected.','info');
+        toast('Guide listing rejected.', 'info');
         loadPendingApprovals();
-    } catch(e) { toast('❌ '+e.message,'error'); }
+    } catch (e) { toast('❌ ' + e.message, 'error'); }
+}
+
+// ── SHARED PAGINATION HELPER ─────────────────────────────────
+// Builds a Prev/Next control bar right after a given "showing" element,
+// creating it once and reusing it on later renders — no admin.html
+// changes needed, same self-building approach as the edit modal.
+function _ensurePaginationContainer(anchorId, containerId) {
+    let el = document.getElementById(containerId);
+    if (!el) {
+        el = document.createElement('div');
+        el.id = containerId;
+        el.style.cssText = 'display:flex;align-items:center;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;';
+        const anchor = document.getElementById(anchorId);
+        const parent = anchor?.closest('div,p') || anchor?.parentElement;
+        (parent || anchor)?.insertAdjacentElement('afterend', el);
+    }
+    return el;
+}
+
+function _renderPagerControls(containerEl, page, pages, onPageChange) {
+    if (pages <= 1) { containerEl.innerHTML = ''; return; }
+    containerEl.innerHTML = `
+        <button class="btn btn-secondary btn-sm" ${page === 0 ? 'disabled' : ''}
+            onclick="(${onPageChange})(Math.max(0, ${page}-1))">← Prev</button>
+        <span style="color:var(--text3,#94a3b8);">Page ${page + 1} of ${pages}</span>
+        <button class="btn btn-secondary btn-sm" ${page >= pages - 1 ? 'disabled' : ''}
+            onclick="(${onPageChange})(Math.min(${pages - 1}, ${page}+1))">Next →</button>`;
 }
 
 // ── RESTAURANTS ───────────────────────────────────────────────
-let _allRestaurants = [], _restaurantPage = 0;
+let _allRestaurants = [], _restaurantPage = 0, _restaurantTotal = 0;
 const REST_PAGE = 15;
 
 async function loadRestaurants() {
     try {
-        const data = await fetchAPI('/admin/restaurants');
+        // limit=500 is the backend's hard max (Query(..., le=500) in admin.py) —
+        // covers your current count in one call. If you ever exceed 500
+        // restaurants, this will need real server-side paging instead.
+        const data = await fetchAPI('/admin/restaurants?limit=500');
         _allRestaurants = data.restaurants || [];
+        _restaurantTotal = data.total ?? _allRestaurants.length;
         _restaurantPage = 0;
         renderRestaurantsPage();
     } catch (e) { console.error(e); }
 }
 
+function goToRestaurantPage(p) { _restaurantPage = p; renderRestaurantsPage(); }
+
 function renderRestaurantsPage() {
     const tbody = document.getElementById('restaurants-table');
     const start = _restaurantPage * REST_PAGE;
     const slice = _allRestaurants.slice(start, start + REST_PAGE);
-    document.getElementById('restaurants-showing').textContent = _allRestaurants.length;
-    document.getElementById('restaurants-total').textContent = _allRestaurants.length;
-    if (!slice.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No restaurants.</td></tr>'; return; }
-    tbody.innerHTML = slice.map(r => `
-        <tr>
-            <td><strong>#${r.id}</strong></td>
-            <td>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    ${r.image_url ? `<img src="${fixUrl(r.image_url)}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;" onerror="this.style.display='none'">` : ''}
-                    <strong>${r.name}</strong>
-                </div>
-            </td>
-            <td style="color:var(--text2);">${r.cuisine_type || '—'}</td>
-            <td>⭐ ${r.rating || 0}</td>
-            <td><span class="badge ${r.status === 'approved' ? 'badge-success' : r.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${r.status || '—'}</span></td>
-            <td>${r.is_partner ? '<span class="badge badge-info">✅ Yes</span>' : '<span class="badge badge-muted">No</span>'}</td>
-            <td>
-                <div style="display:flex;gap:0.4rem;">
-                    <button class="btn btn-secondary btn-sm" onclick="editRestaurant(${r.id})">✏</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteRestaurant(${r.id})">✕</button>
-                </div>
-            </td>
-        </tr>`).join('');
+    const pages = Math.max(1, Math.ceil(_allRestaurants.length / REST_PAGE));
+
+    document.getElementById('restaurants-showing').textContent =
+        _allRestaurants.length ? `${start + 1}–${Math.min(start + REST_PAGE, _allRestaurants.length)}` : '0';
+    document.getElementById('restaurants-total').textContent = _restaurantTotal;
+
+    if (!slice.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No restaurants.</td></tr>'; }
+    else {
+        tbody.innerHTML = slice.map(r => `
+            <tr>
+                <td><strong>#${r.id}</strong></td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        ${r.image_url ? `<img src="${fixUrl(r.image_url)}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;" onerror="this.style.display='none'">` : ''}
+                        <strong>${r.name}</strong>
+                    </div>
+                </td>
+                <td style="color:var(--text2);">${r.cuisine_type || '—'}</td>
+                <td>⭐ ${r.rating || 0}</td>
+                <td><span class="badge ${r.status === 'approved' ? 'badge-success' : r.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${r.status || '—'}</span></td>
+                <td>${r.is_partner ? '<span class="badge badge-info">✅ Yes</span>' : '<span class="badge badge-muted">No</span>'}</td>
+                <td>
+                    <div style="display:flex;gap:0.4rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="editRestaurant(${r.id})">✏</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteRestaurant(${r.id})">✕</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    const pager = _ensurePaginationContainer('restaurants-total', 'restaurants-pagination');
+    _renderPagerControls(pager, _restaurantPage, pages, 'goToRestaurantPage');
 }
 
 // ── HOTELS ────────────────────────────────────────────────────
-let _allHotels = [], _hotelPage = 0;
+let _allHotels = [], _hotelPage = 0, _hotelTotal = 0;
 const HOTEL_PAGE = 15;
 
 async function loadHotels() {
     try {
-        const data = await fetchAPI('/admin/hotels');
+        const data = await fetchAPI('/admin/hotels?limit=500');
         _allHotels = data.hotels || [];
+        _hotelTotal = data.total ?? _allHotels.length;
         _hotelPage = 0;
         renderHotelsPage();
     } catch (e) { console.error(e); }
 }
 
+function goToHotelPage(p) { _hotelPage = p; renderHotelsPage(); }
+
 function renderHotelsPage() {
     const tbody = document.getElementById('hotels-table');
     const start = _hotelPage * HOTEL_PAGE;
     const slice = _allHotels.slice(start, start + HOTEL_PAGE);
-    document.getElementById('hotels-showing').textContent = _allHotels.length;
-    document.getElementById('hotels-total').textContent = _allHotels.length;
-    if (!slice.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No hotels.</td></tr>'; return; }
-    tbody.innerHTML = slice.map(h => `
-        <tr>
-            <td><strong>#${h.id}</strong></td>
-            <td>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    ${h.image_url ? `<img src="${fixUrl(h.image_url)}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;" onerror="this.style.display='none'">` : ''}
-                    <strong>${h.name}</strong>
-                </div>
-            </td>
-            <td style="color:var(--text2);">${h.type || '—'}</td>
-            <td>⭐ ${h.rating || 0}</td>
-            <td><span class="badge ${h.status === 'approved' ? 'badge-success' : h.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${h.status || '—'}</span></td>
-            <td>${h.is_partner ? '<span class="badge badge-info">✅ Yes</span>' : '<span class="badge badge-muted">No</span>'}</td>
-            <td>
-                <div style="display:flex;gap:0.4rem;">
-                    <button class="btn btn-secondary btn-sm" onclick="editHotel(${h.id})">✏</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteHotel(${h.id})">✕</button>
-                </div>
-            </td>
-        </tr>`).join('');
+    const pages = Math.max(1, Math.ceil(_allHotels.length / HOTEL_PAGE));
+
+    document.getElementById('hotels-showing').textContent =
+        _allHotels.length ? `${start + 1}–${Math.min(start + HOTEL_PAGE, _allHotels.length)}` : '0';
+    document.getElementById('hotels-total').textContent = _hotelTotal;
+
+    if (!slice.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No hotels.</td></tr>'; }
+    else {
+        tbody.innerHTML = slice.map(h => `
+            <tr>
+                <td><strong>#${h.id}</strong></td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        ${h.image_url ? `<img src="${fixUrl(h.image_url)}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;" onerror="this.style.display='none'">` : ''}
+                        <strong>${h.name}</strong>
+                    </div>
+                </td>
+                <td style="color:var(--text2);">${h.type || '—'}</td>
+                <td>⭐ ${h.rating || 0}</td>
+                <td><span class="badge ${h.status === 'approved' ? 'badge-success' : h.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${h.status || '—'}</span></td>
+                <td>${h.is_partner ? '<span class="badge badge-info">✅ Yes</span>' : '<span class="badge badge-muted">No</span>'}</td>
+                <td>
+                    <div style="display:flex;gap:0.4rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="editHotel(${h.id})">✏</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteHotel(${h.id})">✕</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    const pager = _ensurePaginationContainer('hotels-total', 'hotels-pagination');
+    _renderPagerControls(pager, _hotelPage, pages, 'goToHotelPage');
 }
 
 // ── AGENCIES ──────────────────────────────────────────────────
@@ -485,39 +517,99 @@ const AGENCY_PAGE = 15;
 
 async function loadAgencies() {
     try {
-        const data = await fetchAPI('/admin/travel-agencies');
+        const data = await fetchAPI('/admin/travel-agencies?limit=500');
         _allAgencies = data.agencies || [];
+        _agencyPage = 0;
         renderAgenciesPage();
     } catch (e) { console.error(e); }
 }
 
+function goToAgencyPage(p) { _agencyPage = p; renderAgenciesPage(); }
+
 function renderAgenciesPage() {
     const tbody = document.getElementById('agencies-table');
-    if (!_allAgencies.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No agencies.</td></tr>'; return; }
-    tbody.innerHTML = _allAgencies.map(a => `
-        <tr>
-            <td><strong>#${a.id}</strong></td>
-            <td>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    ${a.image_url ? `<img src="${fixUrl(a.image_url)}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;" onerror="this.style.display='none'">` : ''}
-                    <strong>${a.name}</strong>
-                </div>
-            </td>
-            <td style="color:var(--text2);">${a.agency_type || '—'}</td>
-            <td style="color:var(--text2);">${a.city || '—'}</td>
-            <td>${a.tours_count || 0}</td>
-            <td>⭐ ${a.rating || 0}</td>
-            <td>
-                <div style="display:flex;gap:0.4rem;">
-                    <button class="btn btn-secondary btn-sm" onclick="editAgency(${a.id})">✏</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteAgency(${a.id},'${a.name.replace(/'/g, "\\'")}')">✕</button>
-                </div>
-            </td>
-        </tr>`).join('');
+    const start = _agencyPage * AGENCY_PAGE;
+    const slice = _allAgencies.slice(start, start + AGENCY_PAGE);
+    const pages = Math.max(1, Math.ceil(_allAgencies.length / AGENCY_PAGE));
+
+    if (!slice.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No agencies.</td></tr>'; }
+    else {
+        tbody.innerHTML = slice.map(a => `
+            <tr>
+                <td><strong>#${a.id}</strong></td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        ${a.image_url ? `<img src="${fixUrl(a.image_url)}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;" onerror="this.style.display='none'">` : ''}
+                        <strong>${a.name}</strong>
+                    </div>
+                </td>
+                <td style="color:var(--text2);">${a.agency_type || '—'}</td>
+                <td style="color:var(--text2);">${a.city || '—'}</td>
+                <td>${a.tours_count || 0}</td>
+                <td>⭐ ${a.rating || 0}</td>
+                <td>
+                    <div style="display:flex;gap:0.4rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="editAgency(${a.id})">✏</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAgency(${a.id},'${a.name.replace(/'/g, "\\'")}')">✕</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    let pager = document.getElementById('agencies-pagination');
+    if (!pager) {
+        pager = document.createElement('div');
+        pager.id = 'agencies-pagination';
+        pager.style.cssText = 'display:flex;align-items:center;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;';
+        tbody.closest('table')?.insertAdjacentElement('afterend', pager);
+    }
+    _renderPagerControls(pager, _agencyPage, pages, 'goToAgencyPage');
 }
 
 // ── GUIDES ───────────────────────────────────────────────────
-let _allGuides = [];
+let _allGuides = [], _guidePage = 0;
+const GUIDE_PAGE = 15;
+
+function goToGuidePage(p) { _guidePage = p; renderGuidesPage(); }
+
+function renderGuidesPage() {
+    const tbody = document.getElementById('guides-table');
+    const start = _guidePage * GUIDE_PAGE;
+    const slice = _allGuides.slice(start, start + GUIDE_PAGE);
+    const pages = Math.max(1, Math.ceil(_allGuides.length / GUIDE_PAGE));
+
+    document.getElementById('guides-showing').textContent = _allGuides.length;
+
+    tbody.innerHTML = slice.map(g => `
+        <tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    ${g.photo_url ? `<img src="${fixUrl(g.photo_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">` : '<div style="width:32px;height:32px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;">🧭</div>'}
+                    <div>
+                        <strong>${g.name}</strong>
+                        <div style="font-size:0.72rem;color:var(--text3);">${g.email || '—'}</div>
+                    </div>
+                </div>
+            </td>
+            <td style="font-size:0.8rem;color:var(--text2);">${g.languages || '—'}</td>
+            <td style="font-size:0.8rem;color:var(--text2);">${g.cities || '—'}</td>
+            <td>${g.price_per_day ? '$' + g.price_per_day + '/day' : '—'}</td>
+            <td>⭐ ${Number(g.rating || 0).toFixed(1)} (${g.review_count || 0})</td>
+            <td><span class="badge ${g.status === 'approved' ? 'badge-success' : g.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${g.status || 'pending'}</span></td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="deleteGuide(${g.id},'${g.name.replace(/'/g, "\'")}')">🗑</button>
+            </td>
+        </tr>`).join('');
+
+    let pager = document.getElementById('guides-pagination');
+    if (!pager) {
+        pager = document.createElement('div');
+        pager.id = 'guides-pagination';
+        pager.style.cssText = 'display:flex;align-items:center;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;';
+        tbody.closest('table')?.insertAdjacentElement('afterend', pager);
+    }
+    _renderPagerControls(pager, _guidePage, pages, 'goToGuidePage');
+}
 
 async function loadGuides() {
     const tbody = document.getElementById('guides-table');
@@ -526,47 +618,14 @@ async function loadGuides() {
     try {
         const res = await fetch(`${API_BASE}/api/guides`);
         _allGuides = await res.json();
+        _guidePage = 0;
 
-        // Also fetch all guides including non-approved from partner-applications
-        const allApps = await fetch(`${API_BASE}/api/partner-applications/admin/list?status=approved`, {
-            headers: { 'X-Admin-Key': ADMIN_KEY }
-        }).then(r => r.json()).catch(() => []);
-
-        const guideApps = allApps.filter(a => a.business_type === 'guide');
-
-        document.getElementById('guides-showing').textContent =
-            Math.max(_allGuides.length, guideApps.length);
-
-        if (!_allGuides.length && !guideApps.length) {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty">No guides yet.</td></tr>';
+        if (!_allGuides.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty">No approved guides yet — approve applications in Pending Approvals.</td></tr>';
+            document.getElementById('guides-showing').textContent = '0';
             return;
         }
-
-        // Show approved guides from guides table
-        if (_allGuides.length) {
-            tbody.innerHTML = _allGuides.map(g => `
-                <tr>
-                    <td>
-                        <div style="display:flex;align-items:center;gap:0.5rem;">
-                            ${g.photo_url ? `<img src="${fixUrl(g.photo_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">` : '<div style="width:32px;height:32px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;">🧭</div>'}
-                            <div>
-                                <strong>${g.name}</strong>
-                                <div style="font-size:0.72rem;color:var(--text3);">${g.email || '—'}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td style="font-size:0.8rem;color:var(--text2);">${g.languages || '—'}</td>
-                    <td style="font-size:0.8rem;color:var(--text2);">${g.cities || '—'}</td>
-                    <td>${g.price_per_day ? '$' + g.price_per_day + '/day' : '—'}</td>
-                    <td>⭐ ${Number(g.rating || 0).toFixed(1)} (${g.review_count || 0})</td>
-                    <td><span class="badge ${g.status === 'approved' ? 'badge-success' : g.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${g.status || 'pending'}</span></td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" onclick="deleteGuide(${g.id},'${g.name.replace(/'/g, "\'")}')">🗑</button>
-                    </td>
-                </tr>`).join('');
-        } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty">No approved guides yet — approve applications in Pending Approvals.</td></tr>';
-        }
+        renderGuidesPage();
     } catch (e) {
         if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="empty" style="color:var(--danger);">Failed to load.</td></tr>';
     }
@@ -585,7 +644,6 @@ async function deleteGuide(id, name) {
     } catch (e) { toast('Delete failed: ' + e.message, 'error'); }
 }
 
-// Stubs for create/edit modals (kept from original logic)
 function openCreateRestaurant() { toast('Use content-admin to create listings', 'info'); }
 function closeRestaurantModal() { }
 function openCreateHotel() { toast('Use content-admin to create listings', 'info'); }
@@ -906,11 +964,8 @@ async function rejectRenewal(id) {
 }
 
 
-
-
 // ── EDIT MODAL (self-contained, builds its own DOM — no admin.html changes needed) ──
 
-// Matches the portion-size scheme already used in your existing menu data.
 const MENU_CATEGORIES = [
     { value: 'single', label: 'Single' },
     { value: 'fortwo', label: 'For Two' },
@@ -923,8 +978,6 @@ const ROOM_TYPES = [
     'Family Room', 'Suite', 'Deluxe Room', 'Studio',
 ];
 
-// Which menu item / room (if any) is currently in inline-edit mode.
-// Reset whenever the modal closes so it doesn't carry over next time.
 let _editingMenuItemId = null;
 let _editingRoomId = null;
 
@@ -958,8 +1011,8 @@ function _fieldRow(id, label, value, isTextarea) {
         <div style="margin-bottom:0.75rem;">
             <label style="display:block;font-size:0.8rem;color:#94a3b8;margin-bottom:0.25rem;">${label}</label>
             ${isTextarea
-                ? `<textarea id="${id}" rows="3" style="width:100%;padding:0.5rem;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff;box-sizing:border-box;">${value ?? ''}</textarea>`
-                : `<input id="${id}" value="${safeVal}" style="width:100%;padding:0.5rem;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff;box-sizing:border-box;">`}
+            ? `<textarea id="${id}" rows="3" style="width:100%;padding:0.5rem;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff;box-sizing:border-box;">${value ?? ''}</textarea>`
+            : `<input id="${id}" value="${safeVal}" style="width:100%;padding:0.5rem;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff;box-sizing:border-box;">`}
         </div>`;
 }
 
@@ -1009,7 +1062,7 @@ async function _uploadImageFile(file, folder) {
     formData.append('file', file);
     const resp = await fetch(`${API_BASE}/admin/upload-image?folder=${encodeURIComponent(folder)}`, {
         method: 'POST',
-        headers: { 'X-Admin-Key': ADMIN_KEY }, // no Content-Type — browser sets the multipart boundary itself
+        headers: { 'X-Admin-Key': ADMIN_KEY },
         body: formData
     });
     const data = await resp.json();
@@ -1035,6 +1088,116 @@ function _itemThumb(url) {
         : `<div style="width:36px;height:36px;border-radius:6px;background:#0f172a;flex-shrink:0;"></div>`;
 }
 
+// ── LOCATION PICKER (Leaflet + OpenStreetMap tiles — no API key needed) ──
+// Loaded lazily on first use so pages that never touch the picker don't
+// pay for the extra script/CSS. Uses OSM tiles, same data source you're
+// already crediting elsewhere on the site.
+let _leafletLoading = null;
+function _ensureLeafletLoaded() {
+    if (window.L) return Promise.resolve();
+    if (_leafletLoading) return _leafletLoading;
+    _leafletLoading = new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load map library'));
+        document.head.appendChild(script);
+    });
+    return _leafletLoading;
+}
+
+let _pickerMap = null, _pickerMarker = null;
+
+// latFieldId/lngFieldId are the ids of the lat/lng <input> elements already
+// sitting in the parent edit modal — this picker writes straight into them.
+async function openLocationPicker(latFieldId, lngFieldId) {
+    try {
+        await _ensureLeafletLoaded();
+    } catch (e) {
+        toast('❌ Could not load the map. Check your internet connection.', 'error');
+        return;
+    }
+
+    const curLat = parseFloat(document.getElementById(latFieldId).value);
+    const curLng = parseFloat(document.getElementById(lngFieldId).value);
+    // Default to central Samarkand if nothing set yet.
+    const startLat = isFinite(curLat) ? curLat : 39.6542;
+    const startLng = isFinite(curLng) ? curLng : 66.9597;
+
+    const overlay = document.createElement('div');
+    overlay.id = '_locationPickerModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10000;display:flex;align-items:center;justify-content:center;padding:1rem;';
+    overlay.innerHTML = `
+        <div style="background:#1e293b;border-radius:12px;max-width:700px;width:100%;padding:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+                <h3 style="margin:0;color:#fff;">📍 Click the map to set the location</h3>
+                <button onclick="document.getElementById('_locationPickerModal').remove()"
+                    style="background:none;border:none;color:#94a3b8;font-size:1.5rem;cursor:pointer;line-height:1;">&times;</button>
+            </div>
+            <div id="_pickerMapEl" style="height:400px;border-radius:8px;overflow:hidden;"></div>
+            <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.75rem;color:#94a3b8;font-size:0.85rem;">
+                <span id="_pickerCoords">${startLat.toFixed(6)}, ${startLng.toFixed(6)}</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%;margin-top:0.75rem;"
+                onclick="_confirmLocationPick('${latFieldId}','${lngFieldId}')">Use This Location</button>
+        </div>`;
+    document.body.appendChild(overlay);
+
+    // Leaflet needs the container to actually be in the DOM with a real
+    // size before init — it is by this point, so init immediately.
+    _pickerMap = L.map('_pickerMapEl').setView([startLat, startLng], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
+    }).addTo(_pickerMap);
+
+    _pickerMarker = L.marker([startLat, startLng], { draggable: true }).addTo(_pickerMap);
+
+    function updateCoordsDisplay(lat, lng) {
+        document.getElementById('_pickerCoords').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    }
+
+    _pickerMap.on('click', (e) => {
+        _pickerMarker.setLatLng(e.latlng);
+        updateCoordsDisplay(e.latlng.lat, e.latlng.lng);
+    });
+
+    _pickerMarker.on('dragend', () => {
+        const pos = _pickerMarker.getLatLng();
+        updateCoordsDisplay(pos.lat, pos.lng);
+    });
+}
+
+function _confirmLocationPick(latFieldId, lngFieldId) {
+    const pos = _pickerMarker.getLatLng();
+    document.getElementById(latFieldId).value = pos.lat.toFixed(6);
+    document.getElementById(lngFieldId).value = pos.lng.toFixed(6);
+    document.getElementById('_locationPickerModal')?.remove();
+    _pickerMap = null;
+    _pickerMarker = null;
+    toast('✅ Location set — remember to hit Save Changes', 'success');
+}
+
+function _locationFieldRow(latId, lngId, lat, lng) {
+    return `
+        <div style="margin-bottom:0.75rem;">
+            <label style="display:block;font-size:0.8rem;color:#94a3b8;margin-bottom:0.25rem;">Location</label>
+            <div style="display:flex;gap:0.5rem;">
+                <input id="${latId}" type="number" step="any" value="${lat ?? ''}" placeholder="Latitude"
+                    style="flex:1;padding:0.5rem;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff;">
+                <input id="${lngId}" type="number" step="any" value="${lng ?? ''}" placeholder="Longitude"
+                    style="flex:1;padding:0.5rem;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#fff;">
+                <button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;"
+                    onclick="openLocationPicker('${latId}','${lngId}')">📍 Pick on Map</button>
+            </div>
+        </div>`;
+}
+
 // ── RESTAURANTS ──
 function editRestaurant(id) {
     const r = _allRestaurants.find(x => x.id === id);
@@ -1046,6 +1209,7 @@ function editRestaurant(id) {
         _fieldRow('edit_cuisine_type', 'Cuisine Type', r.cuisine_type) +
         _fieldRow('edit_phone', 'Phone', r.phone) +
         _fieldRow('edit_address', 'Address', r.address) +
+        _locationFieldRow('edit_latitude', 'edit_longitude', r.latitude, r.longitude) +
         _fieldRow('edit_opening_hours', 'Opening Hours', r.opening_hours) +
         _fieldRow('edit_website', 'Website', r.website) +
         _imageFieldRow('edit_image_url', 'Photo', r.image_url, 'restaurants');
@@ -1107,6 +1271,10 @@ async function saveRestaurantEdit(id) {
     const fields = ['name', 'description', 'cuisine_type', 'phone', 'address', 'opening_hours', 'website', 'image_url'];
     const data = {};
     fields.forEach(f => data[f] = document.getElementById(`edit_${f}`).value);
+    const lat = parseFloat(document.getElementById('edit_latitude').value);
+    const lng = parseFloat(document.getElementById('edit_longitude').value);
+    if (isFinite(lat)) data.latitude = lat;
+    if (isFinite(lng)) data.longitude = lng;
     try {
         await fetchAPI(`/admin/restaurants/${id}`, { method: 'PUT', body: JSON.stringify(data) });
         toast('✅ Restaurant updated', 'success');
@@ -1169,6 +1337,7 @@ function editHotel(id) {
         _fieldRow('edit_type', 'Type', h.type) +
         _fieldRow('edit_phone', 'Phone', h.phone) +
         _fieldRow('edit_address', 'Address', h.address) +
+        _locationFieldRow('edit_latitude', 'edit_longitude', h.latitude, h.longitude) +
         _fieldRow('edit_opening_hours', 'Opening Hours', h.opening_hours) +
         _fieldRow('edit_website', 'Website', h.website) +
         _fieldRow('edit_offer', 'Offer', h.offer) +
@@ -1231,6 +1400,10 @@ async function saveHotelEdit(id) {
     const fields = ['name', 'description', 'type', 'phone', 'address', 'opening_hours', 'website', 'offer', 'image_url'];
     const data = {};
     fields.forEach(f => data[f] = document.getElementById(`edit_${f}`).value);
+    const lat = parseFloat(document.getElementById('edit_latitude').value);
+    const lng = parseFloat(document.getElementById('edit_longitude').value);
+    if (isFinite(lat)) data.latitude = lat;
+    if (isFinite(lng)) data.longitude = lng;
     try {
         await fetchAPI(`/admin/hotels/${id}`, { method: 'PUT', body: JSON.stringify(data) });
         toast('✅ Hotel updated', 'success');
