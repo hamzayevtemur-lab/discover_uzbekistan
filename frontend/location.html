@@ -1362,19 +1362,6 @@
       );
     }
 
-      const distance = calculateDistance(
-        userLocation.lat,
-        userLocation.lng,
-        place.lat,
-        place.lng,
-      );
-      const time = (distance * 2).toFixed(0);
-
-      showToast(
-        `📍 ${escapeHtml(place.name)} — ${distance.toFixed(1)} km · ~${time} min by car`,
-      );
-    }
-
     // ==================== VIEW DETAILS ====================
 
     function viewPlaceDetails(placeId, type) {
