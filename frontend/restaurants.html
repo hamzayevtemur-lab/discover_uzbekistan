@@ -12,7 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJHCVBY91E"></script>
     <script src="/config.js"></script>
     <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-KJHCVBY91E');</script>
@@ -1296,7 +1296,7 @@
         </div>
     </div>
     <div class="toast" id="toast"></div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
         // API defined in config.js
         let R = null, rid = null, upos = null, map = null, rl = null, rvLoaded = false;
@@ -1362,23 +1362,46 @@
         function setupMTabs() { document.querySelectorAll('.mtb').forEach(b => { b.addEventListener('click', function () { document.querySelectorAll('.mtb').forEach(x => x.classList.remove('active')); this.classList.add('active'); loadMenu(this.dataset.cat); }); }); }
         function initMap() {
             if (!R?.latitude || !R?.longitude) { document.getElementById('restaurantMap').innerHTML = '<div class="lc" style="color:var(--txt3)">No location data</div>'; return; }
-            map = L.map('restaurantMap', { zoomControl: true }).setView([R.latitude, R.longitude], 15);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
-            const ic = L.divIcon({ className: '', html: `<div style="width:14px;height:14px;border-radius:50%;background:var(--ac);border:3px solid #fff;box-shadow:0 2px 10px rgba(255,107,107,.5)"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] });
-            L.marker([R.latitude, R.longitude], { icon: ic }).addTo(map).bindPopup(`<b>${esc(R.name)}</b>${R.address ? `<br>${esc(R.address)}` : ''}`, { maxWidth: 180 }).openPopup();
+            ymaps.ready(() => {
+                map = new ymaps.Map('restaurantMap', {
+                    center: [R.latitude, R.longitude],
+                    zoom: 15,
+                    controls: ['zoomControl', 'fullscreenControl']
+                });
+                const placemark = new ymaps.Placemark([R.latitude, R.longitude], {
+                    hintContent: R.name,
+                    balloonContent: `<b>${esc(R.name)}</b>${R.address ? `<br>${esc(R.address)}` : ''}`
+                }, {
+                    preset: 'islands#orangeFoodIcon'
+                });
+                map.geoObjects.add(placemark);
+                if (upos) addUsr();
+            });
         }
         function addUsr() {
             if (!map || !upos) return;
-            const ui = L.divIcon({ className: '', html: '<div style="width:12px;height:12px;border-radius:50%;background:#4ecdc4;border:2.5px solid #fff;box-shadow:0 0 10px #4ecdc4"></div>', iconSize: [12, 12], iconAnchor: [6, 6] });
-            L.marker([upos.lat, upos.lng], { icon: ui }).addTo(map).bindPopup('📍 You are here');
-            L.polyline([[upos.lat, upos.lng], [R.latitude, R.longitude]], { color: '#ff6b6b', weight: 2.5, opacity: .4, dashArray: '7 5' }).addTo(map);
-            map.fitBounds([[upos.lat, upos.lng], [R.latitude, R.longitude]], { padding: [45, 45] });
+            const userPlacemark = new ymaps.Placemark([upos.lat, upos.lng], {
+                balloonContent: '📍 You are here'
+            }, {
+                preset: 'islands#greenCircleDotIcon'
+            });
+            map.geoObjects.add(userPlacemark);
+            const line = new ymaps.Polyline([[upos.lat, upos.lng], [R.latitude, R.longitude]], {}, {
+                strokeColor: '#ff6b6b', strokeWidth: 3, strokeStyle: 'dash'
+            });
+            map.geoObjects.add(line);
+            map.setBounds(map.geoObjects.getBounds(), { zoomMargin: 45 });
         }
         function getDir() {
             if (!map) { t('⏳ Map loading…'); return; } if (!upos) { t('📍 Enable location access first'); return; }
-            fetch(`https://router.project-osrm.org/route/v1/driving/${upos.lng},${upos.lat};${R.longitude},${R.latitude}?overview=full&geometries=geojson`)
-                .then(r => r.json()).then(d => { if (d.code !== 'Ok' || !d.routes?.length) throw new Error(); if (rl) map.removeLayer(rl); const c = d.routes[0].geometry.coordinates.map(x => [x[1], x[0]]); rl = L.polyline(c, { color: '#ff6b6b', weight: 5, opacity: .85, lineCap: 'round' }); rl.addTo(map); map.fitBounds(rl.getBounds(), { padding: [55, 55] }); t(`🗺 ${(d.routes[0].distance / 1000).toFixed(1)} km · ~${Math.round(d.routes[0].duration / 60)} min`); })
-                .catch(() => t('⚠️ Could not calculate route'));
+            if (rl) map.geoObjects.remove(rl);
+            rl = new ymaps.Polyline([[upos.lat, upos.lng], [R.latitude, R.longitude]], {}, {
+                strokeColor: '#ff6b6b', strokeWidth: 5
+            });
+            map.geoObjects.add(rl);
+            map.setBounds(rl.geometry.getBounds(), { zoomMargin: 55 });
+            const dist = (Math.sqrt(Math.pow(upos.lat - R.latitude, 2) + Math.pow(upos.lng - R.longitude, 2)) * 111).toFixed(1);
+            t(`🗺 Approx. ${dist} km away`);
         }
         async function loadNearby() {
             await gLoc(); const gr = document.getElementById('ngrid');

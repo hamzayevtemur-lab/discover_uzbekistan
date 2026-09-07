@@ -10,8 +10,7 @@
     <script src="/config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
     <style>
         * {
             margin: 0;
@@ -1337,25 +1336,39 @@
                 if (!nMap) {
                     const lat = parseFloat(document.getElementById('nLat').value) || 39.7084;
                     const lng = parseFloat(document.getElementById('nLng').value) || 66.9975;
-                    nMap = L.map('news-map').setView([lat, lng], 6);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(nMap);
-                    nMap.on('click', e => {
-                        setNewsPin(e.latlng.lat, e.latlng.lng);
-                        document.getElementById('nLat').value = e.latlng.lat.toFixed(6);
-                        document.getElementById('nLng').value = e.latlng.lng.toFixed(6);
+                    ymaps.ready(() => {
+                        nMap = new ymaps.Map('news-map', {
+                            center: [lat, lng],
+                            zoom: 6,
+                            controls: ['zoomControl', 'fullscreenControl']
+                        });
+                        nMap.events.add('click', e => {
+                            const coords = e.get('coords');
+                            setNewsPin(coords[0], coords[1]);
+                            document.getElementById('nLat').value = coords[0].toFixed(6);
+                            document.getElementById('nLng').value = coords[1].toFixed(6);
+                        });
+                        if (parseFloat(document.getElementById('nLat').value)) {
+                            setNewsPin(parseFloat(document.getElementById('nLat').value),
+                                parseFloat(document.getElementById('nLng').value));
+                        }
                     });
-                    if (parseFloat(document.getElementById('nLat').value)) {
-                        setNewsPin(parseFloat(document.getElementById('nLat').value),
-                            parseFloat(document.getElementById('nLng').value));
-                    }
+                } else {
+                    nMap.container.fitToViewport();
                 }
-                setTimeout(() => nMap.invalidateSize(), 100);
             }
         }
         function setNewsPin(lat, lng) {
-            if (nMarker) nMap.removeLayer(nMarker);
-            nMarker = L.marker([lat, lng]).addTo(nMap);
-            nMap.setView([lat, lng], 13);
+            if (!nMap) return;
+            if (nMarker) nMap.geoObjects.remove(nMarker);
+            nMarker = new ymaps.Placemark([lat, lng], {}, { draggable: true });
+            nMarker.events.add('dragend', () => {
+                const coords = nMarker.geometry.getCoordinates();
+                document.getElementById('nLat').value = coords[0].toFixed(6);
+                document.getElementById('nLng').value = coords[1].toFixed(6);
+            });
+            nMap.geoObjects.add(nMarker);
+            nMap.setCenter([lat, lng], 13);
         }
         function updateMapFromInputs() {
             const lat = parseFloat(document.getElementById('nLat').value);

@@ -7,8 +7,8 @@
   <title>Smart Route Planner - Discover Uzbekistan</title>
   <link rel="icon" type="image/png" href="/images/logo.png">
   <link rel="apple-touch-icon" href="/images/logo.png">
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Yandex Maps API -->
+  <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -747,8 +747,7 @@
     </div>
   </div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <!-- Your JavaScript -->
   <script>
     // API defined in config.js
@@ -957,36 +956,32 @@
     // ==================== MAP INITIALIZATION ====================
 
     function initMap() {
-      map = L.map("map").setView([userLocation.lat, userLocation.lng], 14);
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-        maxZoom: 19,
-      }).addTo(map);
-
-      addUserMarker();
+      ymaps.ready(() => {
+        map = new ymaps.Map("map", {
+          center: [userLocation.lat, userLocation.lng],
+          zoom: 14,
+          controls: ["zoomControl", "fullscreenControl"]
+        });
+        addUserMarker();
+      });
     }
 
     function addUserMarker() {
-      const userIcon = L.divIcon({
-        className: "user-marker",
-        html: '<div style="background: #00ff88; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 15px #00ff88; animation: pulse 2s infinite;"></div>',
-        iconSize: [26, 26],
-        iconAnchor: [13, 13],
+      if (!map) return;
+      if (userMarker) map.geoObjects.remove(userMarker);
+      userMarker = new ymaps.Placemark([userLocation.lat, userLocation.lng], {
+        hintContent: "Your Location",
+        balloonContent: `
+          <div style="padding: 10px; min-width: 180px;">
+              <h3 style="margin: 0 0 5px 0;">📍 Your Location</h3>
+              <p style="margin: 0 0 5px 0; font-size: 12px;">Lat: ${userLocation.lat.toFixed(4)}</p>
+              <p style="margin: 0 0 5px 0; font-size: 12px;">Lng: ${userLocation.lng.toFixed(4)}</p>
+          </div>
+        `
+      }, {
+        preset: 'islands#greenCircleDotIcon'
       });
-
-      userMarker = L.marker([userLocation.lat, userLocation.lng], {
-        icon: userIcon,
-        title: "Your Location",
-      }).addTo(map);
-
-      userMarker.bindPopup(`
-        <div style="padding: 10px; min-width: 180px;">
-            <h3 style="margin: 0 0 5px 0;">📍 Your Location</h3>
-            <p style="margin: 0 0 5px 0; font-size: 12px;">Lat: ${userLocation.lat.toFixed(4)}</p>
-            <p style="margin: 0 0 5px 0; font-size: 12px;">Lng: ${userLocation.lng.toFixed(4)}</p>
-        </div>
-    `);
+      map.geoObjects.add(userMarker);
     }
 
     // ==================== USER LOCATION ====================
@@ -1004,10 +999,10 @@
                 `;
 
             if (userMarker) {
-              userMarker.setLatLng([userLocation.lat, userLocation.lng]);
+              userMarker.geometry.setCoordinates([userLocation.lat, userLocation.lng]);
             }
 
-            map.setView([userLocation.lat, userLocation.lng], 14);
+            if (map) map.setCenter([userLocation.lat, userLocation.lng], 14);
 
             // Recalculate distances after getting real location
             showPlaces(currentTab);
@@ -1152,8 +1147,9 @@
     }
 
     function drawRouteOnMap(from, to) {
+      if (!map) return;
       if (routeLayer) {
-        map.removeLayer(routeLayer);
+        map.geoObjects.remove(routeLayer);
       }
 
       let startPoint, endPoint;
@@ -1170,24 +1166,20 @@
         endPoint = userLocation;
       }
 
-      routeLayer = L.polyline(
+      routeLayer = new ymaps.Polyline(
         [
           [startPoint.lat, startPoint.lng],
           [endPoint.lat, endPoint.lng],
         ],
+        {},
         {
-          color: "#ff6b35",
-          weight: 4,
-          opacity: 0.7,
-          dashArray: "10, 10",
-        },
-      ).addTo(map);
-
-      const bounds = L.latLngBounds(
-        [startPoint.lat, startPoint.lng],
-        [endPoint.lat, endPoint.lng],
+          strokeColor: "#ff6b35",
+          strokeWidth: 4,
+          strokeStyle: "dash",
+        }
       );
-      map.fitBounds(bounds, { padding: [50, 50] });
+      map.geoObjects.add(routeLayer);
+      map.setBounds(routeLayer.geometry.getBounds(), { zoomMargin: 50 });
     }
 
     function selectRoute(index) {
@@ -1232,7 +1224,9 @@
       placesList.innerHTML = "";
 
       // Clear previous markers
-      placeMarkers.forEach((marker) => map.removeLayer(marker));
+      if (map) {
+        placeMarkers.forEach((marker) => map.geoObjects.remove(marker));
+      }
       placeMarkers = [];
 
       // Sort by distance
@@ -1289,43 +1283,23 @@
     // ==================== MAP MARKERS ====================
 
     function addPlaceMarker(place, type) {
-      let iconColor, iconChar;
-
+      if (!map) return;
+      let preset = 'islands#blueIcon';
       switch (type) {
         case "restaurants":
-          iconColor = "#FF5722";
-          iconChar = "R";
+          preset = "islands#orangeFoodIcon";
           break;
         case "hotels":
-          iconColor = "#2196F3";
-          iconChar = "H";
+          preset = "islands#blueHotelIcon";
           break;
         case "attractions":
-          iconColor = "#FF9800";
-          iconChar = "A";
+          preset = "islands#yellowSightIcon";
           break;
       }
 
-      const icon = L.divIcon({
-        className: "place-marker",
-        html: `
-            <div style="background: ${iconColor}; width: 24px; height: 24px; border-radius: 50%; 
-                        border: 2px solid white; display: flex; align-items: center; 
-                        justify-content: center; color: white; font-weight: bold; font-size: 12px;
-                        box-shadow: 0 0 10px ${iconColor};">
-                ${iconChar}
-            </div>
-        `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-      });
-
-      const marker = L.marker([place.lat, place.lng], {
-        icon: icon,
-        title: `${place.name} (${place.distance})`,
-      }).addTo(map);
-
-      marker.bindPopup(`
+      const marker = new ymaps.Placemark([place.lat, place.lng], {
+        hintContent: `${place.name} (${place.distance})`,
+        balloonContent: `
         <div style="padding: 10px; min-width: 200px;">
             <h3 style="margin: 0 0 5px 0;">${place.name}</h3>
             <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">${place.type}</p>
@@ -1343,8 +1317,10 @@
                 <i class="fas fa-info-circle"></i> View Details
             </button>
         </div>
-    `);
+        `
+      }, { preset });
 
+      map.geoObjects.add(marker);
       placeMarkers.push(marker);
     }
 
@@ -1352,30 +1328,39 @@
 
     function showRouteToPlace(placeId, type) {
       const place = placesData[type].find((p) => p.id == placeId);
-      if (!place || !userMarker) return;
+      if (!place || !userMarker || !map) return;
 
       if (routeLayer) {
-        map.removeLayer(routeLayer);
+        map.geoObjects.remove(routeLayer);
       }
 
-      routeLayer = L.polyline(
+      routeLayer = new ymaps.Polyline(
         [
           [userLocation.lat, userLocation.lng],
           [place.lat, place.lng],
         ],
+        {},
         {
-          color: "#ff6b35",
-          weight: 4,
-          opacity: 0.7,
-          dashArray: "10, 10",
-        },
-      ).addTo(map);
-
-      const bounds = L.latLngBounds(
-        [userLocation.lat, userLocation.lng],
-        [place.lat, place.lng],
+          strokeColor: "#ff6b35",
+          strokeWidth: 4,
+          strokeStyle: "dash",
+        }
       );
-      map.fitBounds(bounds, { padding: [50, 50] });
+      map.geoObjects.add(routeLayer);
+      map.setBounds(routeLayer.geometry.getBounds(), { zoomMargin: 50 });
+
+      const distance = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        place.lat,
+        place.lng,
+      );
+      const time = (distance * 2).toFixed(0);
+
+      showToast(
+        `📍 ${escapeHtml(place.name)} — ${distance.toFixed(1)} km · ~${time} min by car`,
+      );
+    }
 
       const distance = calculateDistance(
         userLocation.lat,

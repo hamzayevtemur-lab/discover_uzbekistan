@@ -8,7 +8,7 @@
     <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="apple-touch-icon" href="/images/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
     <script src="/config.js"></script>
     <style>
         :root {
@@ -909,7 +909,6 @@
 
     <div class="toast" id="toastEl"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // ── CONFIG ──────────────────────────────────────────────────────────
         // API defined in config.js
@@ -1143,49 +1142,45 @@
 
             if (mapVisible) {
                 if (!mapInitialized) setTimeout(renderMap, 60);
-                else { leafletMap.invalidateSize(); fitMapBounds(); }
+                else { if (leafletMap) leafletMap.container.fitToViewport(); fitMapBounds(); }
             }
         }
 
         function renderMap() {
             mapInitialized = true;
-            leafletMap = L.map('attractionMap').setView([41.3, 64.6], 6);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors', maxZoom: 19
-            }).addTo(leafletMap);
-            if (userPosition) addUserMapMarker();
-            addAllAttractionMarkers();
-            fitMapBounds();
+            ymaps.ready(() => {
+                leafletMap = new ymaps.Map('attractionMap', {
+                    center: [41.3, 64.6],
+                    zoom: 6,
+                    controls: ['zoomControl', 'fullscreenControl']
+                });
+                if (userPosition) addUserMapMarker();
+                addAllAttractionMarkers();
+                fitMapBounds();
+            });
         }
 
         function addUserMapMarker() {
             if (!leafletMap || !userPosition) return;
-            if (userMapMarker) userMapMarker.remove();
-            const icon = L.divIcon({
-                className: '',
-                html: `<div style="width:16px;height:16px;background:#00e676;border-radius:50%;border:3px solid white;box-shadow:0 0 14px #00e676;"></div>`,
-                iconSize: [16, 16], iconAnchor: [8, 8]
+            if (userMapMarker) leafletMap.geoObjects.remove(userMapMarker);
+            userMapMarker = new ymaps.Placemark([userPosition.lat, userPosition.lng], {
+                balloonContent: '<b style="font-size:13px">📍 You are here</b>',
+                hintContent: 'You are here'
+            }, {
+                preset: 'islands#greenCircleDotIcon'
             });
-            userMapMarker = L.marker([userPosition.lat, userPosition.lng], { icon, zIndexOffset: 1000 })
-                .addTo(leafletMap).bindPopup('<b style="font-size:13px">📍 You are here</b>');
+            leafletMap.geoObjects.add(userMapMarker);
         }
 
         function addAllAttractionMarkers() {
             if (!leafletMap) return;
             allAttractions.forEach(a => {
                 if (!a.latitude || !a.longitude) return;
-                const icon = L.divIcon({
-                    className: '',
-                    html: `<div style="width:30px;height:30px;background:#00bcd4;border-radius:50% 50% 50% 0;
-                           transform:rotate(-45deg);border:2px solid white;
-                           box-shadow:0 3px 12px rgba(0,188,212,0.55);cursor:pointer;"></div>`,
-                    iconSize: [30, 30], iconAnchor: [15, 28]
-                });
                 const distLine = a._distance != null ? `<span style="color:#00e676;font-size:12px">📍 ${a._distance.toFixed(1)} km away</span><br>` : '';
                 const ratingLine = a.rating != null ? `<span style="color:#ffd740;font-size:12px">⭐ ${parseFloat(a.rating).toFixed(1)}/5.0</span><br>` : '';
-                const marker = L.marker([a.latitude, a.longitude], { icon, title: a.name })
-                    .addTo(leafletMap)
-                    .bindPopup(`
+                const marker = new ymaps.Placemark([a.latitude, a.longitude], {
+                    hintContent: a.name,
+                    balloonContent: `
                     <div style="padding:4px;min-width:190px">
                         <b style="font-size:14px;display:block;margin-bottom:4px">${esc(a.name)}</b>
                         ${a.category ? `<span style="font-size:11px;color:#aaa">${esc(a.category)}</span><br>` : ''}
@@ -1196,18 +1191,22 @@
                                    padding:8px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">
                             View Details
                         </button>
-                    </div>`);
-                marker.on('click', () => highlightCard(a.id));
+                    </div>`
+                }, {
+                    preset: 'islands#cyanSightIcon'
+                });
+                marker.events.add('click', () => highlightCard(a.id));
+                leafletMap.geoObjects.add(marker);
                 attractionMarkers[a.id] = marker;
             });
         }
 
         function fitMapBounds() {
             if (!leafletMap) return;
-            const coords = allAttractions.filter(a => a.latitude && a.longitude).map(a => [a.latitude, a.longitude]);
-            if (userPosition) coords.push([userPosition.lat, userPosition.lng]);
-            if (coords.length) leafletMap.fitBounds(coords, { padding: [40, 40], maxZoom: 12 });
-            leafletMap.invalidateSize();
+            if (leafletMap.geoObjects.getBounds()) {
+                leafletMap.setBounds(leafletMap.geoObjects.getBounds(), { checkZoomRange: true, zoomMargin: 40 });
+            }
+            leafletMap.container.fitToViewport();
         }
 
         // ── INIT ─────────────────────────────────────────────────────────────

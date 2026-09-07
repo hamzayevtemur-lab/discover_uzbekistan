@@ -1088,36 +1088,28 @@ function _itemThumb(url) {
         : `<div style="width:36px;height:36px;border-radius:6px;background:#0f172a;flex-shrink:0;"></div>`;
 }
 
-// ── LOCATION PICKER (Leaflet + OpenStreetMap tiles — no API key needed) ──
-// Loaded lazily on first use so pages that never touch the picker don't
-// pay for the extra script/CSS. Uses OSM tiles, same data source you're
-// already crediting elsewhere on the site.
-let _leafletLoading = null;
-function _ensureLeafletLoaded() {
-    if (window.L) return Promise.resolve();
-    if (_leafletLoading) return _leafletLoading;
-    _leafletLoading = new Promise((resolve, reject) => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
-
+// ── LOCATION PICKER (Yandex Maps) ──
+let _yandexLoading = null;
+function _ensureYandexLoaded() {
+    if (window.ymaps) return Promise.resolve();
+    if (_yandexLoading) return _yandexLoading;
+    _yandexLoading = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.src = 'https://api-maps.yandex.ru/2.1/?lang=en_US';
         script.onload = () => resolve();
         script.onerror = () => reject(new Error('Failed to load map library'));
         document.head.appendChild(script);
     });
-    return _leafletLoading;
+    return _yandexLoading;
 }
 
-let _pickerMap = null, _pickerMarker = null;
+let _pickerMap = null, _pickerMarker = null, _pickedCoords = null;
 
 // latFieldId/lngFieldId are the ids of the lat/lng <input> elements already
 // sitting in the parent edit modal — this picker writes straight into them.
 async function openLocationPicker(latFieldId, lngFieldId) {
     try {
-        await _ensureLeafletLoaded();
+        await _ensureYandexLoaded();
     } catch (e) {
         toast('❌ Could not load the map. Check your internet connection.', 'error');
         return;
@@ -1128,6 +1120,7 @@ async function openLocationPicker(latFieldId, lngFieldId) {
     // Default to central Samarkand if nothing set yet.
     const startLat = isFinite(curLat) ? curLat : 39.6542;
     const startLng = isFinite(curLng) ? curLng : 66.9597;
+    _pickedCoords = [startLat, startLng];
 
     const overlay = document.createElement('div');
     overlay.id = '_locationPickerModal';
@@ -1148,35 +1141,38 @@ async function openLocationPicker(latFieldId, lngFieldId) {
         </div>`;
     document.body.appendChild(overlay);
 
-    // Leaflet needs the container to actually be in the DOM with a real
-    // size before init — it is by this point, so init immediately.
-    _pickerMap = L.map('_pickerMapEl').setView([startLat, startLng], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-    }).addTo(_pickerMap);
+    ymaps.ready(() => {
+        _pickerMap = new ymaps.Map('_pickerMapEl', {
+            center: [startLat, startLng],
+            zoom: 14,
+            controls: ['zoomControl', 'fullscreenControl']
+        });
+        _pickerMarker = new ymaps.Placemark([startLat, startLng], {}, { draggable: true });
+        _pickerMap.geoObjects.add(_pickerMarker);
 
-    _pickerMarker = L.marker([startLat, startLng], { draggable: true }).addTo(_pickerMap);
+        function updateCoordsDisplay(lat, lng) {
+            _pickedCoords = [lat, lng];
+            document.getElementById('_pickerCoords').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        }
 
-    function updateCoordsDisplay(lat, lng) {
-        document.getElementById('_pickerCoords').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-    }
+        _pickerMap.events.add('click', (e) => {
+            const coords = e.get('coords');
+            _pickerMarker.geometry.setCoordinates(coords);
+            updateCoordsDisplay(coords[0], coords[1]);
+        });
 
-    _pickerMap.on('click', (e) => {
-        _pickerMarker.setLatLng(e.latlng);
-        updateCoordsDisplay(e.latlng.lat, e.latlng.lng);
-    });
-
-    _pickerMarker.on('dragend', () => {
-        const pos = _pickerMarker.getLatLng();
-        updateCoordsDisplay(pos.lat, pos.lng);
+        _pickerMarker.events.add('dragend', () => {
+            const coords = _pickerMarker.geometry.getCoordinates();
+            updateCoordsDisplay(coords[0], coords[1]);
+        });
     });
 }
 
 function _confirmLocationPick(latFieldId, lngFieldId) {
-    const pos = _pickerMarker.getLatLng();
-    document.getElementById(latFieldId).value = pos.lat.toFixed(6);
-    document.getElementById(lngFieldId).value = pos.lng.toFixed(6);
+    if (_pickedCoords) {
+        document.getElementById(latFieldId).value = _pickedCoords[0].toFixed(6);
+        document.getElementById(lngFieldId).value = _pickedCoords[1].toFixed(6);
+    }
     document.getElementById('_locationPickerModal')?.remove();
     _pickerMap = null;
     _pickerMarker = null;

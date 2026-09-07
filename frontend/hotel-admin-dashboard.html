@@ -4,12 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hotel Partner Dashboard - Discover Uzbekistan</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/config.js"></script>
   <style>
     :root {
@@ -1354,18 +1352,31 @@
 
     // LOCATION
     function initMap() {
-      hMap = L.map('hotel-map').setView([41.3111, 69.2797], 12);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(hMap);
-      hMap.on('click', e => {
-        setPin(e.latlng.lat, e.latlng.lng);
-        document.getElementById('hLat').value = e.latlng.lat.toFixed(6);
-        document.getElementById('hLng').value = e.latlng.lng.toFixed(6);
+      ymaps.ready(() => {
+        hMap = new ymaps.Map('hotel-map', {
+          center: [41.3111, 69.2797],
+          zoom: 12,
+          controls: ['zoomControl', 'fullscreenControl']
+        });
+        hMap.events.add('click', e => {
+          const coords = e.get('coords');
+          setPin(coords[0], coords[1]);
+          document.getElementById('hLat').value = coords[0].toFixed(6);
+          document.getElementById('hLng').value = coords[1].toFixed(6);
+        });
       });
     }
     function setPin(lat, lng) {
-      if (hMarker) hMap.removeLayer(hMarker);
-      hMarker = L.marker([lat, lng]).addTo(hMap);
-      hMap.setView([lat, lng], 14);
+      if (!hMap) return;
+      if (hMarker) hMap.geoObjects.remove(hMarker);
+      hMarker = new ymaps.Placemark([lat, lng], {}, { draggable: true });
+      hMarker.events.add('dragend', () => {
+        const coords = hMarker.geometry.getCoordinates();
+        document.getElementById('hLat').value = coords[0].toFixed(6);
+        document.getElementById('hLng').value = coords[1].toFixed(6);
+      });
+      hMap.geoObjects.add(hMarker);
+      hMap.setCenter([lat, lng], 14);
     }
     async function loadLocation() {
       try {

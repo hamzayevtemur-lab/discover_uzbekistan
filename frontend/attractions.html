@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="/images/logo.png">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJHCVBY91E"></script>
     <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-KJHCVBY91E');</script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap"
@@ -1068,7 +1068,7 @@
         <button class="lb-next" onclick="event.stopPropagation();lbNav(1)">›</button>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script src="/config.js"></script>
     <script>
         // API defined in config.js
@@ -1220,17 +1220,35 @@
 
         function initMap() {
             if (!attraction?.latitude || !attraction?.longitude) return;
-            map = L.map('attractionMap').setView([attraction.latitude, attraction.longitude], 15);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-            L.marker([attraction.latitude, attraction.longitude]).addTo(map)
-                .bindPopup(`<b>${attraction.name}</b><br>${attraction.address || ''}`).openPopup();
+            ymaps.ready(() => {
+                map = new ymaps.Map('attractionMap', {
+                    center: [attraction.latitude, attraction.longitude],
+                    zoom: 15,
+                    controls: ['zoomControl', 'fullscreenControl']
+                });
+                const placemark = new ymaps.Placemark([attraction.latitude, attraction.longitude], {
+                    hintContent: attraction.name,
+                    balloonContent: `<b>${esc(attraction.name)}</b><br>${esc(attraction.address || '')}`
+                }, {
+                    preset: 'islands#cyanSightIcon'
+                });
+                map.geoObjects.add(placemark);
+                if (userPos) addUserToMap();
+            });
         }
         function addUserToMap() {
             if (!map || !userPos) return;
-            const icon = L.divIcon({ html: '<div style="background:#0ABFBC;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px #0ABFBC;"></div>', iconSize: [22, 22], iconAnchor: [11, 11] });
-            L.marker([userPos.lat, userPos.lng], { icon }).addTo(map).bindPopup('You are here');
-            L.polyline([[userPos.lat, userPos.lng], [attraction.latitude, attraction.longitude]], { color: '#FC7A1E', weight: 3, dashArray: '7 5', opacity: 0.7 }).addTo(map);
-            map.fitBounds([[userPos.lat, userPos.lng], [attraction.latitude, attraction.longitude]], { padding: [50, 50] });
+            const userPlacemark = new ymaps.Placemark([userPos.lat, userPos.lng], {
+                balloonContent: 'You are here'
+            }, {
+                preset: 'islands#greenCircleDotIcon'
+            });
+            map.geoObjects.add(userPlacemark);
+            const line = new ymaps.Polyline([[userPos.lat, userPos.lng], [attraction.latitude, attraction.longitude]], {}, {
+                strokeColor: '#FC7A1E', strokeWidth: 3, strokeStyle: 'dash'
+            });
+            map.geoObjects.add(line);
+            map.setBounds(map.geoObjects.getBounds(), { zoomMargin: 50 });
         }
 
         async function loadNearby() {

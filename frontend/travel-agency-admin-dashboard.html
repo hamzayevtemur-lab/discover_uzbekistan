@@ -7,11 +7,10 @@
     <title>Agency Partner Dashboard - Discover Uzbekistan</title>
     <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="apple-touch-icon" href="/images/logo.png">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/config.js"></script>
     <style>
         :root {
@@ -2095,19 +2094,32 @@
 
         // ── MAP ───────────────────────────────────────────────────────
         function initAgencyMap() {
-            agencyMap = L.map('agency-map').setView([41.3111, 69.2797], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(agencyMap);
-            agencyMap.on('click', e => {
-                updateAgencyMapPin(e.latlng.lat, e.latlng.lng);
-                document.getElementById('pLat').value = e.latlng.lat.toFixed(6);
-                document.getElementById('pLng').value = e.latlng.lng.toFixed(6);
+            ymaps.ready(() => {
+                agencyMap = new ymaps.Map('agency-map', {
+                    center: [41.3111, 69.2797],
+                    zoom: 13,
+                    controls: ['zoomControl', 'fullscreenControl']
+                });
+                agencyMap.events.add('click', e => {
+                    const coords = e.get('coords');
+                    updateAgencyMapPin(coords[0], coords[1]);
+                    document.getElementById('pLat').value = coords[0].toFixed(6);
+                    document.getElementById('pLng').value = coords[1].toFixed(6);
+                });
             });
         }
 
         function updateAgencyMapPin(lat, lng) {
-            if (agencyMarker) agencyMap.removeLayer(agencyMarker);
-            agencyMarker = L.marker([lat, lng]).addTo(agencyMap);
-            agencyMap.setView([lat, lng], 14);
+            if (!agencyMap) return;
+            if (agencyMarker) agencyMap.geoObjects.remove(agencyMarker);
+            agencyMarker = new ymaps.Placemark([lat, lng], {}, { draggable: true });
+            agencyMarker.events.add('dragend', () => {
+                const coords = agencyMarker.geometry.getCoordinates();
+                document.getElementById('pLat').value = coords[0].toFixed(6);
+                document.getElementById('pLng').value = coords[1].toFixed(6);
+            });
+            agencyMap.geoObjects.add(agencyMarker);
+            agencyMap.setCenter([lat, lng], 14);
         }
 
         // ── TAGS ──────────────────────────────────────────────────────

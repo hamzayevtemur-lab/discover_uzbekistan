@@ -7,12 +7,11 @@
   <title>Restaurant Partner Portal - Discover Uzbekistan</title>
   <link rel="icon" type="image/png" href="/images/logo.png">
   <link rel="apple-touch-icon" href="/images/logo.png">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="/config.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     :root {
       --primary: #4f46e5;
@@ -1485,19 +1484,32 @@
     }
 
     function initMap() {
-      rMap = L.map('restaurant-map').setView([41.3111, 69.2797], 12);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(rMap);
-      rMap.on('click', e => {
-        setMapPin(e.latlng.lat, e.latlng.lng);
-        document.getElementById('rLat').value = e.latlng.lat.toFixed(6);
-        document.getElementById('rLng').value = e.latlng.lng.toFixed(6);
+      ymaps.ready(() => {
+        rMap = new ymaps.Map('restaurant-map', {
+          center: [41.3111, 69.2797],
+          zoom: 12,
+          controls: ['zoomControl', 'fullscreenControl']
+        });
+        rMap.events.add('click', e => {
+          const coords = e.get('coords');
+          setMapPin(coords[0], coords[1]);
+          document.getElementById('rLat').value = coords[0].toFixed(6);
+          document.getElementById('rLng').value = coords[1].toFixed(6);
+        });
       });
     }
 
     function setMapPin(lat, lng) {
-      if (rMarker) rMap.removeLayer(rMarker);
-      rMarker = L.marker([lat, lng]).addTo(rMap);
-      rMap.setView([lat, lng], 14);
+      if (!rMap) return;
+      if (rMarker) rMap.geoObjects.remove(rMarker);
+      rMarker = new ymaps.Placemark([lat, lng], {}, { draggable: true });
+      rMarker.events.add('dragend', () => {
+        const coords = rMarker.geometry.getCoordinates();
+        document.getElementById('rLat').value = coords[0].toFixed(6);
+        document.getElementById('rLng').value = coords[1].toFixed(6);
+      });
+      rMap.geoObjects.add(rMarker);
+      rMap.setCenter([lat, lng], 14);
     }
 
     async function saveLocation() {

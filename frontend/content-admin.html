@@ -10,8 +10,7 @@
     <script src="/config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
     <style>
         * {
             margin: 0;
@@ -1292,18 +1291,31 @@
 
         // ── MAP ───────────────────────────────────────────────────────
         function initMap() {
-            aMap = L.map('attraction-map').setView([39.7084, 66.9975], 6);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(aMap);
-            aMap.on('click', e => {
-                setMapPin(e.latlng.lat, e.latlng.lng);
-                document.getElementById('aLat').value = e.latlng.lat.toFixed(6);
-                document.getElementById('aLng').value = e.latlng.lng.toFixed(6);
+            ymaps.ready(() => {
+                aMap = new ymaps.Map('attraction-map', {
+                    center: [39.7084, 66.9975],
+                    zoom: 6,
+                    controls: ['zoomControl', 'fullscreenControl']
+                });
+                aMap.events.add('click', e => {
+                    const coords = e.get('coords');
+                    setMapPin(coords[0], coords[1]);
+                    document.getElementById('aLat').value = coords[0].toFixed(6);
+                    document.getElementById('aLng').value = coords[1].toFixed(6);
+                });
             });
         }
         function setMapPin(lat, lng) {
-            if (aMarker) aMap.removeLayer(aMarker);
-            aMarker = L.marker([lat, lng]).addTo(aMap);
-            aMap.setView([lat, lng], 13);
+            if (!aMap) return;
+            if (aMarker) aMap.geoObjects.remove(aMarker);
+            aMarker = new ymaps.Placemark([lat, lng], {}, { draggable: true });
+            aMarker.events.add('dragend', () => {
+                const coords = aMarker.geometry.getCoordinates();
+                document.getElementById('aLat').value = coords[0].toFixed(6);
+                document.getElementById('aLng').value = coords[1].toFixed(6);
+            });
+            aMap.geoObjects.add(aMarker);
+            aMap.setCenter([lat, lng], 13);
         }
 
         // ── IMAGE UPLOAD ──────────────────────────────────────────────
