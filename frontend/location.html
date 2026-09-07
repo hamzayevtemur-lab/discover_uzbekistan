@@ -758,6 +758,9 @@
       samarkand: { lat: 39.6549, lng: 66.9756, name: "Samarkand" },
       bukhara: { lat: 39.7756, lng: 64.4222, name: "Bukhara" },
       khiva: { lat: 41.3783, lng: 60.3625, name: "Khiva" },
+      registan: { lat: 39.6547, lng: 66.9756, name: "Registan Square" },
+      baxt_restaurant: { lat: 39.6580, lng: 66.9600, name: "Baxt Restaurant" },
+      registan_plaza: { lat: 39.6500, lng: 66.9680, name: "Registan Plaza Hotel" },
     };
 
     const routesData = {
@@ -766,45 +769,193 @@
           method: "train",
           icon: "🚄",
           name: "High-Speed Train (Afrosiyob)",
-          time: "2h 10min",
-          price: "$8-15",
-          description: "Fastest and most comfortable option",
+          time: "2h 15min",
+          price: "$12-25",
+          description: "Fastest, premium bullet train via Railway.uz",
+          tip: "💡 Tip: Book Afrosiyob tickets up to 45 days in advance!"
         },
         {
-          method: "bus",
-          icon: "🚌",
-          name: "Express Bus",
-          time: "4h 30min",
-          price: "$5-8",
-          description: "Budget-friendly option",
+          method: "train",
+          icon: "🚆",
+          name: "Sharq Express Train",
+          time: "3h 30min",
+          price: "$8-15",
+          description: "Comfortable air-conditioned express train",
+          tip: "💡 Convenient morning and evening departures."
         },
         {
           method: "taxi",
           icon: "🚕",
-          name: "Shared Taxi",
+          name: "Shared Taxi (Olmazor Stand)",
           time: "3h 45min",
           price: "$12-18",
-          description: "Door-to-door service",
+          description: "Direct door-to-door car share",
+          tip: "💡 Departs continuously from Olmazor metro station."
         },
+        {
+          method: "bus",
+          icon: "🚌",
+          name: "Express Highway Bus",
+          time: "4h 30min",
+          price: "$5-9",
+          description: "Economical air-conditioned coach service",
+          tip: "💡 Departs hourly from Tashkent Central Bus Station."
+        },
+        {
+          method: "car",
+          icon: "🚗",
+          name: "Private Car / Driver",
+          time: "3h 30min",
+          price: "$50-80",
+          description: "Flexible private transfer via M39 Highway",
+          tip: "💡 Stop by Jizzakh for famous Somsa along the way!"
+        }
       ],
       "samarkand-bukhara": [
         {
           method: "train",
-          icon: "🚂",
-          name: "Regional Train",
-          time: "4h 15min",
+          icon: "🚄",
+          name: "High-Speed Train (Afrosiyob)",
+          time: "1h 30min",
+          price: "$10-20",
+          description: "Ultra-fast connection between Silk Road capitals",
+          tip: "💡 Scenic 90-minute ride across Zarafshan plains."
+        },
+        {
+          method: "train",
+          icon: "🚆",
+          name: "Passenger Train",
+          time: "2h 45min",
           price: "$6-12",
-          description: "Scenic route through countryside",
+          description: "Relaxed regional rail journey",
+          tip: "💡 Multiple daily train connections."
+        },
+        {
+          method: "taxi",
+          icon: "🚕",
+          name: "Shared Taxi (Ulugbek Stand)",
+          time: "3h 15min",
+          price: "$10-15",
+          description: "Direct ride via Navoi / M37 highway",
+          tip: "💡 Negotiate per seat or hire full car."
         },
         {
           method: "bus",
           icon: "🚌",
           name: "Tourist Bus",
-          time: "3h 50min",
-          price: "$7-10",
-          description: "Popular with tourists",
-        },
+          time: "3h 45min",
+          price: "$6-10",
+          description: "Intercity coach service",
+          tip: "💡 Reaches Bukhara North Bus Terminal."
+        }
       ],
+      "bukhara-khiva": [
+        {
+          method: "train",
+          icon: "🚆",
+          name: "Kyzylkum Passenger Train",
+          time: "6h 15min",
+          price: "$12-22",
+          description: "Comfortable train journey through Kyzylkum desert",
+          tip: "💡 Arrives directly at Khiva Railway Station."
+        },
+        {
+          method: "taxi",
+          icon: "🚕",
+          name: "Kyzylkum Desert Shared Taxi",
+          time: "5h 30min",
+          price: "$18-28",
+          description: "Direct taxi across A380 Desert Highway",
+          tip: "💡 Includes photo stops by Amu Darya river."
+        },
+        {
+          method: "bus",
+          icon: "🚌",
+          name: "Inter-regional Bus",
+          time: "6h 45min",
+          price: "$10-15",
+          description: "Budget bus to Urgench & Khiva",
+          tip: "💡 Departs daily from Bukhara Terminal."
+        }
+      ],
+      "tashkent-bukhara": [
+        {
+          method: "train",
+          icon: "🚄",
+          name: "Afrosiyob High-Speed Train",
+          time: "3h 50min",
+          price: "$20-35",
+          description: "Direct high-speed link Tashkent ↔ Bukhara",
+          tip: "💡 Reaches speeds up to 250 km/h."
+        },
+        {
+          method: "car",
+          icon: "✈️",
+          name: "Domestic Flight (Uzbekistan Airways)",
+          time: "1h 10min",
+          price: "$45-70",
+          description: "Non-stop daily flight from Tashkent (TAS) to Bukhara (BHK)",
+          tip: "💡 Quickest option for tight travel schedules."
+        },
+        {
+          method: "taxi",
+          icon: "🚕",
+          name: "Shared Taxi",
+          time: "6h 30min",
+          price: "$22-32",
+          description: "Intercity taxi via M37 highway",
+          tip: "💡 Convenient door-to-door transfer."
+        }
+      ],
+      "tashkent-khiva": [
+        {
+          method: "car",
+          icon: "✈️",
+          name: "Domestic Flight to Urgench (UGC)",
+          time: "1h 25min",
+          price: "$55-90",
+          description: "Flight to Urgench + 30min taxi to Khiva Old City",
+          tip: "💡 Multiple flights daily on Uzbekistan Airways."
+        },
+        {
+          method: "train",
+          icon: "🚆",
+          name: "Night Sleeper Train",
+          time: "13h 30min",
+          price: "$22-38",
+          description: "Overnight sleeper train direct to Khiva",
+          tip: "💡 Save on hotel cost while sleeping on train!"
+        },
+        {
+          method: "taxi",
+          icon: "🚕",
+          name: "Shared Taxi",
+          time: "11h 00min",
+          price: "$35-50",
+          description: "Long-distance car share through Uzbekistan desert",
+          tip: "💡 Ideal for adventurous road trippers."
+        }
+      ],
+      "samarkand-khiva": [
+        {
+          method: "train",
+          icon: "🚆",
+          name: "Direct Sleeper Train",
+          time: "9h 30min",
+          price: "$18-30",
+          description: "Direct train Samarkand ↔ Khiva",
+          tip: "💡 Departs Samarkand in the evening."
+        },
+        {
+          method: "taxi",
+          icon: "🚕",
+          name: "Shared Taxi via A380",
+          time: "8h 15min",
+          price: "$28-40",
+          description: "Car share through Navoi and Kyzylkum desert",
+          tip: "💡 Stops for tea and lunch along the highway."
+        }
+      ]
     };
 
     // Global variables
@@ -1137,116 +1288,147 @@
 
     // ==================== ROUTE PLANNING ====================
 
-    function planRoute() {
-      const from = document.getElementById("fromCity").value;
-      const to = document.getElementById("toCity").value;
-      const transport = document.getElementById("transportType").value;
+    let activeRoutesList = [];
 
-      if (!from || !to) {
+    function planRoute() {
+      const fromKey = document.getElementById("fromCity").value;
+      const toKey = document.getElementById("toCity").value;
+      const transportFilter = document.getElementById("transportType").value;
+
+      if (!fromKey || !toKey) {
         showToast("⚠️ Please select both departure and destination cities");
         return;
       }
 
-      if (from === to) {
+      if (fromKey === toKey) {
         showToast("⚠️ Departure and destination cannot be the same");
         return;
       }
 
-      // Check both directions so reverse routes work
-      const routeKey = routesData[`${from}-${to}`]
-        ? `${from}-${to}`
-        : `${to}-${from}`;
-      const routes = routesData[routeKey] || [];
+      let startPoint = cityCoordinates[fromKey] || { lat: userLocation.lat, lng: userLocation.lng, name: "Current Location" };
+      let endPoint = cityCoordinates[toKey] || { lat: userLocation.lat, lng: userLocation.lng, name: "Destination" };
 
+      // Look up routes in both directions
+      const routeKey = routesData[`${fromKey}-${toKey}`]
+        ? `${fromKey}-${toKey}`
+        : `${toKey}-${fromKey}`;
+      
+      let routes = routesData[routeKey] ? [...routesData[routeKey]] : [];
+
+      // If no pre-configured intercity route found, generate dynamic local route options
       if (routes.length === 0) {
-        showToast(
-          "ℹ️ No routes available for this journey. Try different cities.",
-        );
-        return;
+        const distKm = calculateDistance(startPoint.lat, startPoint.lng, endPoint.lat, endPoint.lng);
+        const driveMin = Math.max(10, Math.round(distKm * 1.5));
+        routes = [
+          {
+            method: "taxi",
+            icon: "🚕",
+            name: `Direct Taxi / Transfer (${endPoint.name || 'Destination'})`,
+            time: driveMin > 60 ? `${Math.floor(driveMin/60)}h ${driveMin%60}min` : `${driveMin} min`,
+            price: `$${Math.max(3, Math.round(distKm * 0.15 + 3))}-$${Math.max(6, Math.round(distKm * 0.25 + 8))}`,
+            description: `Direct transfer from ${startPoint.name} to ${endPoint.name}`,
+            tip: "💡 Best for direct door-to-door convenience."
+          },
+          {
+            method: "bus",
+            icon: "🚌",
+            name: "Local Bus / Public Transport",
+            time: `${Math.round(driveMin * 1.3)} min`,
+            price: `$${Math.max(1, Math.round(distKm * 0.05 + 1))}-$${Math.max(3, Math.round(distKm * 0.1))}`,
+            description: "City and intercity public transport route",
+            tip: "💡 Regular departures throughout the day."
+          }
+        ];
       }
 
-      displayRoutes(routes, transport);
-      drawRouteOnMap(from, to);
+      activeRoutesList = routes;
+      displayRoutes(routes, transportFilter);
+      drawRouteOnMap(startPoint, endPoint);
     }
 
     function displayRoutes(routes, filterTransport) {
       const resultsDiv = document.getElementById("routeResults");
       resultsDiv.style.display = "block";
-      resultsDiv.innerHTML =
-        '<div class="section-header">Available Routes</div>';
+      resultsDiv.innerHTML = '<div class="section-header">Available Travel Options</div>';
 
-      const filteredRoutes =
-        filterTransport === "all"
-          ? routes
-          : routes.filter((r) => r.method === filterTransport);
+      const filteredRoutes = filterTransport === "all"
+        ? routes
+        : routes.filter((r) => r.method === filterTransport || (filterTransport === 'car' && (r.method === 'taxi' || r.method === 'car')));
 
       if (filteredRoutes.length === 0) {
-        resultsDiv.innerHTML +=
-          '<p class="route-error">No routes found for selected transport type</p>';
+        resultsDiv.innerHTML += '<p style="color:#ff6b35;font-size:13px;padding:8px 0;">No options match your selected filter. Displaying all routes:</p>';
+        routes.forEach((route, index) => renderRouteCard(resultsDiv, route, index));
         return;
       }
 
       filteredRoutes.forEach((route, index) => {
-        const routeCard = document.createElement("div");
-        routeCard.className = "route-card";
-        routeCard.onclick = () => selectRoute(index);
-        routeCard.innerHTML = `
-            <div class="route-method">
-                <span class="method-icon">${route.icon}</span>
-                <span class="method-name">${route.name}</span>
-            </div>
-            <p style="font-size: 13px; opacity: 0.8; margin-bottom: 8px;">${route.description}</p>
-            <div class="route-details">
-                <span class="route-time">⏱️ ${route.time}</span>
-                <span class="route-price">💰 ${route.price}</span>
-            </div>
-        `;
-        resultsDiv.appendChild(routeCard);
+        renderRouteCard(resultsDiv, route, index);
       });
     }
 
-    function drawRouteOnMap(from, to) {
+    function renderRouteCard(container, route, index) {
+      const routeCard = document.createElement("div");
+      routeCard.className = `route-card ${index === 0 ? 'selected' : ''}`;
+      routeCard.onclick = () => selectRoute(index, route);
+      routeCard.innerHTML = `
+          <div class="route-method">
+              <span class="method-icon">${route.icon}</span>
+              <span class="method-name">${escapeHtml(route.name)}</span>
+          </div>
+          <p style="font-size: 13px; opacity: 0.85; margin-bottom: 8px;">${escapeHtml(route.description)}</p>
+          <div class="route-details">
+              <span class="route-time">⏱️ ${escapeHtml(route.time)}</span>
+              <span class="route-price" style="color:#00ff88;font-weight:700;">💰 ${escapeHtml(route.price)}</span>
+          </div>
+          ${route.tip ? `<div style="font-size:11px;color:#ffd740;margin-top:6px;">${escapeHtml(route.tip)}</div>` : ''}
+      `;
+      container.appendChild(routeCard);
+    }
+
+    function drawRouteOnMap(startPoint, endPoint) {
       if (!map) return;
       if (routeLayer) {
         map.geoObjects.remove(routeLayer);
       }
 
-      let startPoint, endPoint;
+      const p1 = [startPoint.lat, startPoint.lng];
+      const p2 = [endPoint.lat, endPoint.lng];
 
-      if (from in cityCoordinates) {
-        startPoint = cityCoordinates[from];
+      if (window.ymaps && ymaps.route) {
+        ymaps.route([p1, p2], { mapStateAutoApply: true }).then(route => {
+          routeLayer = route;
+          routeLayer.getPaths().options.set({
+            strokeColor: '#ff6b35',
+            strokeWidth: 5,
+            opacity: 0.85
+          });
+          map.geoObjects.add(routeLayer);
+        }).catch(() => drawPolylineFallback(p1, p2));
       } else {
-        startPoint = userLocation;
+        drawPolylineFallback(p1, p2);
       }
+    }
 
-      if (to in cityCoordinates) {
-        endPoint = cityCoordinates[to];
-      } else {
-        endPoint = userLocation;
-      }
-
-      routeLayer = new ymaps.Polyline(
-        [
-          [startPoint.lat, startPoint.lng],
-          [endPoint.lat, endPoint.lng],
-        ],
-        {},
-        {
-          strokeColor: "#ff6b35",
-          strokeWidth: 4,
-          strokeStyle: "dash",
-        }
-      );
+    function drawPolylineFallback(p1, p2) {
+      routeLayer = new ymaps.Polyline([p1, p2], {}, {
+        strokeColor: "#ff6b35",
+        strokeWidth: 4,
+        strokeStyle: "dash"
+      });
       map.geoObjects.add(routeLayer);
       map.setBounds(routeLayer.geometry.getBounds(), { zoomMargin: 50 });
     }
 
-    function selectRoute(index) {
+    function selectRoute(index, route) {
       selectedRoute = index;
       const cards = document.querySelectorAll(".route-card");
       cards.forEach((card, i) => {
         card.classList.toggle("selected", i === index);
       });
+
+      if (route) {
+        showToast(`${route.icon} Selected: ${route.name} (${route.time} · ${route.price})`);
+      }
     }
 
     // ==================== TAB SWITCHING ====================
