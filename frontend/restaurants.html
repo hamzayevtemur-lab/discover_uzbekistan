@@ -71,16 +71,30 @@
         }
 
         .nav-logo {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.15rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
             font-weight: 700;
-            letter-spacing: .07em;
-            color: var(--txt);
-            text-decoration: none
+            letter-spacing: .04em;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.2s ease;
         }
 
-        .nav-logo span {
-            color: var(--ac)
+        .nav-logo:hover {
+            opacity: 0.9;
+        }
+
+        .nav-logo img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
         }
 
         .nav-back {
@@ -1159,7 +1173,7 @@
 <body>
     <nav>
         <button class="nav-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i> Back</button>
-        <a href="index.html" class="nav-logo"><img src="/images/logo.png" alt="Logo" style="height:34px;width:34px;border-radius:50%;object-fit:cover;margin-right:6px;"> Discover Travel Uzbekistan</a>
+        <a href="index.html" class="nav-logo"><img src="/images/logo.png" alt="Discover Travel Uzbekistan"><span>Discover Travel Uzbekistan</span></a>
         <div class="nav-actions">
             <button class="nb" id="favBtn"><i class="fa-regular fa-heart"></i></button>
             <button class="nsb" onclick="shareR()"><i class="fa-solid fa-share-nodes"></i> Share</button>

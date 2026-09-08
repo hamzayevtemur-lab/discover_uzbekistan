@@ -57,6 +57,32 @@
         }
 
         /* HEADER */
+.nav-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-logo:hover {
+            opacity: 0.9;
+        }
+
+        .nav-logo img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
         header {
             position: fixed;
             top: 0;
@@ -889,6 +915,7 @@
 
     <header>
         <a href="javascript:history.back()" class="back-btn">← Back</a>
+        <a href="index.html" class="nav-logo"><img src="/images/logo.png" alt="Discover Travel Uzbekistan"><span>Discover Travel Uzbekistan</span></a>
         <button class="share-btn" onclick="shareAttraction()">Share ↗</button>
     </header>
 
