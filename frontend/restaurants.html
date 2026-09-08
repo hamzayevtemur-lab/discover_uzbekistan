@@ -1458,6 +1458,7 @@
         function dd(a, b, c, d) { const R = 6371, dL = (c - a) * Math.PI / 180, dN = (d - b) * Math.PI / 180; const x = Math.sin(dL / 2) ** 2 + Math.cos(a * Math.PI / 180) * Math.cos(c * Math.PI / 180) * Math.sin(dN / 2) ** 2; return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)); }
         (function () { const id = new URLSearchParams(location.search).get('id'); if (!id) return; const sid = sessionStorage.getItem('_as') || ('s' + Date.now() + Math.random().toString(36).substr(2, 8)); sessionStorage.setItem('_as', sid); const t0 = Date.now(); let sent = false; function send() { if (sent) return; sent = true; const d = { page_type: 'restaurant', page_id: parseInt(id), partner_id: parseInt(id), time_spent: Math.floor((Date.now() - t0) / 1000), session_id: sid }; navigator.sendBeacon ? navigator.sendBeacon(`${API}/api/analytics/track`, new Blob([JSON.stringify(d)], { type: 'application/json' })) : fetch(`${API}/api/analytics/track`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d), keepalive: true }).catch(() => { }); } window.addEventListener('beforeunload', send); document.addEventListener('visibilitychange', () => { if (document.hidden) send(); }); })();
     </script>
+  <script src=/i18n.js></script>
 </body>
 
 </html>
