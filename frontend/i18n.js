@@ -162,7 +162,6 @@
         // Update elements with explicit data-en, data-uz, data-ru attributes
         document.querySelectorAll('[data-en], [data-uz], [data-ru]').forEach(elem => {
             let text = elem.getAttribute(`data-${currentLang}`);
-            // Fallback if data-ru is missing
             if (!text && currentLang === 'ru') {
                 text = elem.getAttribute('data-en') || elem.getAttribute('data-uz');
             }
@@ -191,15 +190,13 @@
         document.querySelectorAll('a, button, h1, h2, h3, p, span, input').forEach(elem => {
             if (elem.classList.contains('i18n-btn') || elem.closest('.i18n-switcher-container')) return;
 
-            // Handle placeholders
-            if (elem.placeholder && AUTO_PHRASES[elem.placeholder.strip ? elem.placeholder.strip() : elem.placeholder]) {
-                const phrase = AUTO_PHRASES[elem.placeholder];
+            if (elem.placeholder && AUTO_PHRASES[elem.placeholder.trim()]) {
+                const phrase = AUTO_PHRASES[elem.placeholder.trim()];
                 if (phrase && phrase[currentLang]) {
                     elem.placeholder = phrase[currentLang];
                 }
             }
 
-            // Handle exact text matches
             const trimmedText = elem.textContent.trim();
             if (AUTO_PHRASES[trimmedText]) {
                 const phrase = AUTO_PHRASES[trimmedText];
@@ -265,14 +262,18 @@
             document.querySelector('.nav-actions') ||
             document.querySelector('.header-content') ||
             document.querySelector('.top-nav') ||
-            document.querySelector('.admin-header') ||
-            document.querySelector('.portal-header') ||
+            document.querySelector('.header-inner') ||
             document.querySelector('header') ||
             document.querySelector('nav') ||
             document.body;
 
         if (mountPoint) {
-            mountPoint.appendChild(switcherContainer);
+            const logoutBtn = mountPoint.querySelector('.logout-btn, #logoutBtn, [onclick*="logout"]');
+            if (logoutBtn) {
+                mountPoint.insertBefore(switcherContainer, logoutBtn);
+            } else {
+                mountPoint.appendChild(switcherContainer);
+            }
         }
     }
 
@@ -311,7 +312,7 @@
                 display: inline-flex;
                 align-items: center;
                 z-index: 1100;
-                font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, sans-serif;
+                font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, sans-serif;
             }
             body > .i18n-switcher-container {
                 position: fixed;
@@ -320,24 +321,32 @@
                 z-index: 9999;
             }
             .i18n-btn {
-                background: rgba(255, 255, 255, 0.12);
-                border: 1px solid rgba(255, 255, 255, 0.25);
-                color: #ffffff;
-                padding: 7px 14px;
+                background: rgba(79, 70, 229, 0.08);
+                border: 1px solid rgba(79, 70, 229, 0.2);
+                color: #4f46e5;
+                padding: 6px 14px;
                 border-radius: 20px;
                 cursor: pointer;
                 font-size: 13px;
-                font-weight: 600;
+                font-weight: 700;
                 display: inline-flex;
                 align-items: center;
                 gap: 6px;
-                backdrop-filter: blur(10px);
                 transition: all 0.2s ease;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+            header .i18n-btn, nav .i18n-btn {
+                color: inherit;
+            }
+            header[style*="background: #000"] .i18n-btn, 
+            header[style*="background: rgba(0"] .i18n-btn,
+            body:not([class*="light"]) header .i18n-btn,
+            .header:not([style*="background: var(--surface)"]) .i18n-btn {
+                background: rgba(255, 255, 255, 0.12);
+                border-color: rgba(255, 255, 255, 0.25);
+                color: #ffffff;
             }
             .i18n-btn:hover {
-                background: rgba(255, 255, 255, 0.22);
-                border-color: rgba(255, 255, 255, 0.4);
+                opacity: 0.9;
                 transform: translateY(-1px);
             }
             .i18n-arrow {
@@ -350,13 +359,19 @@
                 position: absolute;
                 top: calc(100% + 6px);
                 right: 0;
-                background: #16161e;
-                border: 1px solid rgba(255, 255, 255, 0.18);
+                background: #ffffff;
+                border: 1px solid #e5e3ff;
                 border-radius: 12px;
                 padding: 6px;
                 min-width: 145px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+                z-index: 1200;
+            }
+            body:not([class*="light"]) .i18n-dropdown,
+            header:not([style*="background: var(--surface)"]) .i18n-dropdown {
+                background: #181822;
+                border-color: rgba(255, 255, 255, 0.18);
                 box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
-                backdrop-filter: blur(20px);
             }
             .i18n-dropdown.show {
                 display: block;
@@ -366,26 +381,30 @@
                 width: 100%;
                 background: transparent;
                 border: none;
-                color: #e2e8f0;
+                color: #1e1b4b;
                 padding: 8px 12px;
                 border-radius: 8px;
                 cursor: pointer;
                 font-size: 13px;
-                font-weight: 500;
+                font-weight: 600;
                 text-align: left;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 transition: all 0.15s ease;
             }
+            body:not([class*="light"]) .lang-dropdown-item,
+            header:not([style*="background: var(--surface)"]) .lang-dropdown-item {
+                color: #e2e8f0;
+            }
             .lang-dropdown-item:hover {
-                background: rgba(255, 255, 255, 0.12);
-                color: #ffffff;
+                background: rgba(79, 70, 229, 0.1);
+                color: #4f46e5;
             }
             .lang-dropdown-item.active {
-                background: rgba(99, 102, 241, 0.3);
-                color: #a5b4fc;
-                font-weight: 700;
+                background: rgba(79, 70, 229, 0.2);
+                color: #4f46e5;
+                font-weight: 800;
             }
             @keyframes fadeInDown {
                 from { opacity: 0; transform: translateY(-8px); }
