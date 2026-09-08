@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>Restaurant — Discover Uzbekistan</title>
+    <title>Restaurant — Discover Travel Uzbekistan</title>
     <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="apple-touch-icon" href="/images/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1159,7 +1159,7 @@
 <body>
     <nav>
         <button class="nav-back" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i> Back</button>
-        <a href="index.html" class="nav-logo">DISCOVER<span> UZ</span></a>
+        <a href="index.html" class="nav-logo">DISCOVER<span> TRAVEL UZBEKISTAN</span></a>
         <div class="nav-actions">
             <button class="nb" id="favBtn"><i class="fa-regular fa-heart"></i></button>
             <button class="nsb" onclick="shareR()"><i class="fa-solid fa-share-nodes"></i> Share</button>
@@ -1326,7 +1326,7 @@
             const m = []; if (R.address) m.push(`<div class="hmi"><i class="fa-solid fa-location-dot"></i><strong>${esc(R.address)}</strong></div>`); if (R.opening_hours) m.push(`<div class="hmi"><i class="fa-regular fa-clock"></i>${esc(R.opening_hours)}</div>`); if (R.phone) m.push(`<div class="hmi"><i class="fa-solid fa-phone"></i>${esc(R.phone)}</div>`);
             document.getElementById('hmeta').innerHTML = m.join('');
             if (R.rating > 0) { document.getElementById('hrat').style.display = 'inline-flex'; document.getElementById('hrn').textContent = parseFloat(R.rating).toFixed(1); document.getElementById('hrs').textContent = sOf(R.rating); document.getElementById('hrc').textContent = `${R.review_count || 0} reviews`; }
-            document.title = `${R.name} — Discover Uzbekistan`;
+            document.title = `${R.name} — Discover Travel Uzbekistan`;
         }
         function buildIBar() {
             const items = [];
@@ -1440,7 +1440,7 @@
             try { const r = await fetch(`${API}/restaurants/reviews`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ restaurant_id: parseInt(rid), reviewer_name: nm, rating: rt, comment: cm }) }); if (!r.ok) throw new Error();['rvname', 'rvcom'].forEach(id => document.getElementById(id).value = ''); document.getElementById('rvrat').value = ''; const ok = document.getElementById('rvok'); ok.style.display = 'block'; setTimeout(() => ok.style.display = 'none', 5000); rvLoaded = false; await loadRvs(); }
             catch (e) { t('⚠️ Could not submit: ' + e.message); }
         }
-        function shareR() { if (!R) return; const d = { title: R.name, text: `Check out ${R.name} on Discover Uzbekistan!`, url: location.href }; if (navigator.share) navigator.share(d).catch(() => { }); else navigator.clipboard?.writeText(location.href).then(() => t('🔗 Link copied!')).catch(() => t('⚠️ Could not copy')); }
+        function shareR() { if (!R) return; const d = { title: R.name, text: `Check out ${R.name} on Discover Travel Uzbekistan!`, url: location.href }; if (navigator.share) navigator.share(d).catch(() => { }); else navigator.clipboard?.writeText(location.href).then(() => t('🔗 Link copied!')).catch(() => t('⚠️ Could not copy')); }
         function dd(a, b, c, d) { const R = 6371, dL = (c - a) * Math.PI / 180, dN = (d - b) * Math.PI / 180; const x = Math.sin(dL / 2) ** 2 + Math.cos(a * Math.PI / 180) * Math.cos(c * Math.PI / 180) * Math.sin(dN / 2) ** 2; return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)); }
         (function () { const id = new URLSearchParams(location.search).get('id'); if (!id) return; const sid = sessionStorage.getItem('_as') || ('s' + Date.now() + Math.random().toString(36).substr(2, 8)); sessionStorage.setItem('_as', sid); const t0 = Date.now(); let sent = false; function send() { if (sent) return; sent = true; const d = { page_type: 'restaurant', page_id: parseInt(id), partner_id: parseInt(id), time_spent: Math.floor((Date.now() - t0) / 1000), session_id: sid }; navigator.sendBeacon ? navigator.sendBeacon(`${API}/api/analytics/track`, new Blob([JSON.stringify(d)], { type: 'application/json' })) : fetch(`${API}/api/analytics/track`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d), keepalive: true }).catch(() => { }); } window.addEventListener('beforeunload', send); document.addEventListener('visibilitychange', () => { if (document.hidden) send(); }); })();
     </script>
