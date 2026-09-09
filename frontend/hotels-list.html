@@ -281,6 +281,47 @@
             color: white;
         }
 
+        
+        .radius-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .radius-pills {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 3px;
+            border-radius: 12px;
+            gap: 2px;
+        }
+
+        .rad-pill {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .rad-pill:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .rad-pill.active {
+            background: var(--accent, #6366f1);
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
         .quick-btns {
             display: flex;
             gap: 8px;
@@ -782,7 +823,48 @@
                 flex: none;
             }
 
-            .quick-btns {
+            
+        .radius-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .radius-pills {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 3px;
+            border-radius: 12px;
+            gap: 2px;
+        }
+
+        .rad-pill {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .rad-pill:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .rad-pill.active {
+            background: var(--accent, #6366f1);
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .quick-btns {
                 width: 100%;
             }
 
@@ -933,6 +1015,33 @@
         let userPosition = null;
         let nearMeActive = false;
         let partnerActive = false;
+        let currentRadius = 'auto';
+
+        function setRadius(r) {
+            currentRadius = r;
+            updateRadiusPillsUI();
+            applyFilters();
+        }
+
+        function updateRadiusPillsUI() {
+            document.querySelectorAll('.rad-pill').forEach(b => b.classList.remove('active'));
+            if (currentRadius === 'auto') {
+                const b = document.getElementById('radAutoBtn');
+                if (b) b.classList.add('active');
+            } else if (currentRadius === 10) {
+                const b = document.getElementById('rad10Btn');
+                if (b) b.classList.add('active');
+            } else if (currentRadius === 20) {
+                const b = document.getElementById('rad20Btn');
+                if (b) b.classList.add('active');
+            } else if (currentRadius === 50) {
+                const b = document.getElementById('rad50Btn');
+                if (b) b.classList.add('active');
+            } else if (currentRadius === 'all') {
+                const b = document.getElementById('radAllBtn');
+                if (b) b.classList.add('active');
+            }
+        }
         let currentView = 'grid';
         let mapVisible = false;
         let mapInitialized = false;
@@ -1071,18 +1180,52 @@
             const type = document.getElementById('typeFilter').value;
             const sort = document.getElementById('sortFilter').value;
 
+            let activeRadius = currentRadius;
+            let statusText = '';
+
+            if (userPosition && currentRadius === 'auto') {
+                const in10 = allHotels.filter(h => h._distance != null && h._distance <= 10);
+                if (in10.length > 0) {
+                    activeRadius = 10;
+                    statusText = '📍 Showing hotels within 10 km of your location';
+                } else {
+                    const in20 = allHotels.filter(h => h._distance != null && h._distance <= 20);
+                    if (in20.length > 0) {
+                        activeRadius = 20;
+                        statusText = '📍 No hotels within 10 km — showing hotels within 20 km';
+                    } else {
+                        activeRadius = 'all';
+                        statusText = '📍 No hotels within 20 km — showing all hotels nearby';
+                    }
+                }
+            } else if (userPosition && currentRadius !== 'all') {
+                activeRadius = Number(currentRadius);
+                statusText = `📍 Showing hotels within ${activeRadius} km radius`;
+            } else if (userPosition && currentRadius === 'all') {
+                statusText = '📍 Showing all hotels across Uzbekistan';
+            } else {
+                statusText = '📍 Location disabled — showing all hotels';
+            }
+
+            setLocStatus(!!userPosition, statusText);
+
             let list = allHotels.filter(h => {
                 if (search && !(h.name || '').toLowerCase().includes(search)) return false;
                 if (city !== 'all' && !(h.address || '').toLowerCase().includes(city)) return false;
                 if (type !== 'all' && (h.hotel_type || h.type || '') !== type) return false;
                 if (partnerActive && !h.is_partner) return false;
                 if (nearMeActive && (h._distance == null || h._distance > 50)) return false;
+                if (activeRadius !== 'all' && (h._distance == null || h._distance > activeRadius)) return false;
                 return true;
             });
 
-            if (sort === 'distance') list.sort((a, b) => (a._distance ?? 9999) - (b._distance ?? 9999));
-            else if (sort === 'rating') list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-            else if (sort === 'name') list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            if (sort === 'distance' || (userPosition && sort === 'default')) {
+                list.sort((a, b) => (a._distance ?? 9999) - (b._distance ?? 9999));
+            } else if (sort === 'rating') {
+                list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            } else if (sort === 'name') {
+                list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            }
 
             renderCards(list);
         }

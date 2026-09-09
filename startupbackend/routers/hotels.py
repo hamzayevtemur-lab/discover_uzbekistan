@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+import math
 
 from database import get_db
 from models import Hotel, HotelRoom, HotelReview
@@ -10,13 +11,33 @@ from services import update_hotel_rating
 router = APIRouter(prefix="/hotels", tags=["hotels"])
 
 
+def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate great-circle distance between two GPS points in km"""
+    if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+        return float('inf')
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
+
+
 @router.get("", response_model=List[dict])
-def get_all_hotels(db: Session = Depends(get_db)):
-    """Get all hotels"""
+def get_all_hotels(
+    lat: Optional[float] = Query(None, description="User latitude"),
+    lng: Optional[float] = Query(None, description="User longitude"),
+    radius: Optional[float] = Query(None, description="Target radius in km"),
+    db: Session = Depends(get_db)
+):
+    """Get all hotels, optionally filtered by radius (10km -> 20km auto-fallback)"""
     hotels = db.query(Hotel).filter(
-        Hotel.status=="approved").all()
-    return [
-        {
+        Hotel.status == "approved"
+    ).all()
+
+    result = []
+    for h in hotels:
+        h_dict = {
             "id": h.id,
             "name": h.name,
             "description": h.description,
@@ -31,18 +52,40 @@ def get_all_hotels(db: Session = Depends(get_db)):
             "opening_hours": h.opening_hours,
             "is_partner": h.is_partner,
             "website": h.website,
-            "instagram":h.instagram,
-            "telegram":h.telegram,
+            "instagram": h.instagram,
+            "telegram": h.telegram,
             "offer": h.offer
         }
-        for h in hotels
-    ]
+
+        if lat is not None and lng is not None:
+            dist = haversine_distance(lat, lng, h.latitude, h.longitude)
+            h_dict["distance"] = round(dist, 2) if dist != float('inf') else None
+        else:
+            h_dict["distance"] = None
+
+        result.append(h_dict)
+
+    if lat is not None and lng is not None:
+        result.sort(key=lambda x: x["distance"] if x["distance"] is not None else 99999)
+        if radius is not None:
+            result = [item for item in result if item["distance"] is not None and item["distance"] <= radius]
+        else:
+            # Auto fallback: Try 10 km first, then 20 km, then all
+            in_10 = [item for item in result if item["distance"] is not None and item["distance"] <= 10.0]
+            if len(in_10) > 0:
+                result = in_10
+            else:
+                in_20 = [item for item in result if item["distance"] is not None and item["distance"] <= 20.0]
+                if len(in_20) > 0:
+                    result = in_20
+
+    return result
 
 
 @router.get("/{hotel_id}", response_model=dict)
 def get_hotel(hotel_id: int, db: Session = Depends(get_db)):
     """Get a specific hotel by ID"""
-    hotel = db.query(Hotel).filter(Hotel.id == hotel_id, Hotel.status=="approved").first()
+    hotel = db.query(Hotel).filter(Hotel.id == hotel_id, Hotel.status == "approved").first()
     if not hotel:
         raise HTTPException(status_code=404, detail="Hotel not found")
     
@@ -61,8 +104,8 @@ def get_hotel(hotel_id: int, db: Session = Depends(get_db)):
         "opening_hours": hotel.opening_hours,
         "is_partner": hotel.is_partner,
         "website": hotel.website,
-        "instagram":hotel.instagram,
-        "telegram":hotel.telegram,
+        "instagram": hotel.instagram,
+        "telegram": hotel.telegram,
         "offer": hotel.offer
     }
 
@@ -70,7 +113,7 @@ def get_hotel(hotel_id: int, db: Session = Depends(get_db)):
 @router.get("/{hotel_id}/rooms", response_model=List[dict])
 def get_hotel_rooms(hotel_id: int, db: Session = Depends(get_db)):
     """Get all rooms for a hotel"""
-    rooms = db.query(HotelRoom).filter(HotelRoom.hotel_id == hotel_id, HotelRoom.status=="approved").all()
+    rooms = db.query(HotelRoom).filter(HotelRoom.hotel_id == hotel_id, HotelRoom.status == "approved").all()
     return [
         {
             "id": r.id,
@@ -93,7 +136,7 @@ def get_hotel_reviews(hotel_id: int, db: Session = Depends(get_db)):
         db.query(HotelReview)
         .filter(
             HotelReview.hotel_id == hotel_id,
-            HotelReview.status == "approved"   # ← only approved for public
+            HotelReview.status == "approved"
         )
         .order_by(HotelReview.created_at.desc())
         .all()

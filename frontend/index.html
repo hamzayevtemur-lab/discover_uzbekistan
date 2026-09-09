@@ -1746,6 +1746,30 @@
       }
     }
 
+    function calcDist(lat1, lon1, lat2, lon2) {
+      if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+      const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    let indexUserPosition = null;
+
+    function initIndexLocation(callback) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            indexUserPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            if (callback) callback();
+          },
+          () => { if (callback) callback(); },
+          { timeout: 5000 }
+        );
+      } else {
+        if (callback) callback();
+      }
+    }
+
     async function loadAttractions() {
       const carousel = document.getElementById('Carousel');
 
@@ -1760,7 +1784,36 @@
           return;
         }
 
-        const featured = attractions.slice(0, 8);
+        if (indexUserPosition) {
+          attractions.forEach(a => {
+            a._distance = calcDist(indexUserPosition.lat, indexUserPosition.lng, a.latitude, a.longitude);
+          });
+        }
+
+        let displayList = attractions;
+        let radiusLabel = 'Showing all destinations';
+
+        if (indexUserPosition) {
+          const in10 = attractions.filter(a => a._distance != null && a._distance <= 10);
+          if (in10.length > 0) {
+            displayList = in10;
+            radiusLabel = '📍 Nearby attractions within 10 km';
+          } else {
+            const in20 = attractions.filter(a => a._distance != null && a._distance <= 20);
+            if (in20.length > 0) {
+              displayList = in20;
+              radiusLabel = '📍 No attractions within 10 km — showing within 20 km';
+            } else {
+              displayList.sort((a, b) => (a._distance ?? 9999) - (b._distance ?? 9999));
+              radiusLabel = '📍 Popular attractions in Uzbekistan';
+            }
+          }
+        }
+
+        const countEl = document.getElementById('resultsCount');
+        if (countEl) countEl.textContent = radiusLabel;
+
+        const featured = displayList.slice(0, 6);
         carousel.innerHTML = featured.map(a => `
             <div class="place-card" 
                  onclick="openAttraction(${a.id})" 
@@ -1769,6 +1822,7 @@
                 
                 <div class="place-image" style="position:relative;overflow:hidden">
                     <img src="${a.image_url || 'images/reg5.jpg'}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0" onerror="this.src='images/reg5.jpg'"/>
+                    ${a._distance != null ? `<div style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.75);color:#00e676;font-size:11px;font-weight:700;padding:4px 9px;border-radius:12px;backdrop-filter:blur(4px);z-index:2;">📍 ${a._distance.toFixed(1)} km</div>` : ''}
                 </div>
 
                 <button class="like-btn" onclick="toggleLike(event, 'attraction_${a.id}')" data-place-id="attraction_${a.id}">
@@ -1784,9 +1838,9 @@
             </div>
         `).join('');
 
-        // Show "See all" button if more than 8 attractions
+        // Always show "See All Attractions" button
         const seeAll = document.getElementById('seeAllAttractionsBtn');
-        if (seeAll) seeAll.style.display = attractions.length > 8 ? 'flex' : 'none';
+        if (seeAll) seeAll.style.display = 'flex';
 
         // Load likes after cards are rendered
         loadAllLikes();

@@ -277,6 +277,47 @@
             color: white;
         }
 
+        
+        .radius-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .radius-pills {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 3px;
+            border-radius: 12px;
+            gap: 2px;
+        }
+
+        .rad-pill {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .rad-pill:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .rad-pill.active {
+            background: var(--accent);
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
         .quick-btns {
             display: flex;
             gap: 8px;
@@ -734,7 +775,48 @@
                 flex: none;
             }
 
-            .quick-btns {
+            
+        .radius-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .radius-pills {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 3px;
+            border-radius: 12px;
+            gap: 2px;
+        }
+
+        .rad-pill {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .rad-pill:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .rad-pill.active {
+            background: var(--accent);
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .quick-btns {
                 width: 100%;
             }
 
@@ -891,6 +973,33 @@
         let userPosition = null;
         let nearMeActive = false;
         let partnerActive = false;
+        let currentRadius = 'auto';
+
+        function setRadius(r) {
+            currentRadius = r;
+            updateRadiusPillsUI();
+            applyFilters();
+        }
+
+        function updateRadiusPillsUI() {
+            document.querySelectorAll('.rad-pill').forEach(b => b.classList.remove('active'));
+            if (currentRadius === 'auto') {
+                const b = document.getElementById('radAutoBtn');
+                if (b) b.classList.add('active');
+            } else if (currentRadius === 10) {
+                const b = document.getElementById('rad10Btn');
+                if (b) b.classList.add('active');
+            } else if (currentRadius === 20) {
+                const b = document.getElementById('rad20Btn');
+                if (b) b.classList.add('active');
+            } else if (currentRadius === 50) {
+                const b = document.getElementById('rad50Btn');
+                if (b) b.classList.add('active');
+            } else if (currentRadius === 'all') {
+                const b = document.getElementById('radAllBtn');
+                if (b) b.classList.add('active');
+            }
+        }
         let currentView = 'grid';
         let mapVisible = false;
         let mapInitialized = false;
@@ -1023,16 +1132,46 @@
             const cuisine = document.getElementById('cuisineFilter').value;
             const sort = document.getElementById('sortFilter').value;
 
+            let activeRadius = currentRadius;
+            let statusText = '';
+
+            if (userPosition && currentRadius === 'auto') {
+                const in10 = allRestaurants.filter(r => r._distance != null && r._distance <= 10);
+                if (in10.length > 0) {
+                    activeRadius = 10;
+                    statusText = '📍 Showing restaurants within 10 km of your location';
+                } else {
+                    const in20 = allRestaurants.filter(r => r._distance != null && r._distance <= 20);
+                    if (in20.length > 0) {
+                        activeRadius = 20;
+                        statusText = '📍 No restaurants within 10 km — showing restaurants within 20 km';
+                    } else {
+                        activeRadius = 'all';
+                        statusText = '📍 No restaurants within 20 km — showing all restaurants nearby';
+                    }
+                }
+            } else if (userPosition && currentRadius !== 'all') {
+                activeRadius = Number(currentRadius);
+                statusText = `📍 Showing restaurants within ${activeRadius} km radius`;
+            } else if (userPosition && currentRadius === 'all') {
+                statusText = '📍 Showing all restaurants across Uzbekistan';
+            } else {
+                statusText = '📍 Location disabled — showing all restaurants';
+            }
+
+            setLocStatus(!!userPosition, statusText);
+
             let list = allRestaurants.filter(r => {
                 if (search && !(r.name || '').toLowerCase().includes(search)) return false;
                 if (city !== 'all' && !(r.address || '').toLowerCase().includes(city)) return false;
                 if (cuisine !== 'all' && !(r.cuisine_type || '').toLowerCase().includes(cuisine)) return false;
                 if (partnerActive && !r.is_partner) return false;
                 if (nearMeActive && (r._distance == null || r._distance > 50)) return false;
+                if (activeRadius !== 'all' && (r._distance == null || r._distance > activeRadius)) return false;
                 return true;
             });
 
-            if (sort === 'distance') {
+            if (sort === 'distance' || (userPosition && sort === 'default')) {
                 list.sort((a, b) => (a._distance ?? 9999) - (b._distance ?? 9999));
             } else if (sort === 'rating') {
                 list.sort((a, b) => (b.rating || 0) - (a.rating || 0));

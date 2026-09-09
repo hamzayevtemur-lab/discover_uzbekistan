@@ -1,23 +1,42 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+import math
 
 from database import get_db
 from models import Attraction, AttractionReview, AttractionTimeline, AttractionGallery
 from schemas import AttractionReviewCreate
 from services import update_attraction_rating
 from pydantic import BaseModel
-from typing import Optional
 
 router = APIRouter(prefix="/attractions", tags=["attractions"])
 
 
+def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate great-circle distance between two GPS points in km"""
+    if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+        return float('inf')
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
+
+
 @router.get("", response_model=List[dict])
-def get_all_attractions(db: Session = Depends(get_db)):
-    """Get all attractions"""
+def get_all_attractions(
+    lat: Optional[float] = Query(None, description="User latitude"),
+    lng: Optional[float] = Query(None, description="User longitude"),
+    radius: Optional[float] = Query(None, description="Target radius in km"),
+    db: Session = Depends(get_db)
+):
+    """Get all attractions, optionally filtered by radius (10km -> 20km auto-fallback)"""
     attractions = db.query(Attraction).all()
-    return [
-        {
+
+    result = []
+    for a in attractions:
+        a_dict = {
             "id": a.id,
             "name": a.name,
             "description": a.description,
@@ -39,8 +58,30 @@ def get_all_attractions(db: Session = Depends(get_db)):
             "best_time": a.best_time,
             "historical_significance": a.historical_significance
         }
-        for a in attractions
-    ]
+
+        if lat is not None and lng is not None:
+            dist = haversine_distance(lat, lng, a.latitude, a.longitude)
+            a_dict["distance"] = round(dist, 2) if dist != float('inf') else None
+        else:
+            a_dict["distance"] = None
+
+        result.append(a_dict)
+
+    if lat is not None and lng is not None:
+        result.sort(key=lambda x: x["distance"] if x["distance"] is not None else 99999)
+        if radius is not None:
+            result = [item for item in result if item["distance"] is not None and item["distance"] <= radius]
+        else:
+            # Auto fallback: Try 10 km first, then 20 km, then all
+            in_10 = [item for item in result if item["distance"] is not None and item["distance"] <= 10.0]
+            if len(in_10) > 0:
+                result = in_10
+            else:
+                in_20 = [item for item in result if item["distance"] is not None and item["distance"] <= 20.0]
+                if len(in_20) > 0:
+                    result = in_20
+
+    return result
 
 
 @router.get("/{attraction_id}", response_model=dict)
@@ -154,8 +195,6 @@ def create_attraction_review(review: AttractionReviewCreate, db: Session = Depen
     return db_review
 
 
-# Additional endpoints for partners to manage gallery photos
-
 class GalleryPhotoIn(BaseModel):
     image_url: str
     caption: Optional[str] = None
@@ -172,7 +211,6 @@ def add_gallery_photo(
     if not attraction:
         raise HTTPException(status_code=404, detail="Attraction not found")
 
-    # Get current max order
     max_order = db.query(AttractionGallery)\
         .filter(AttractionGallery.attraction_id == attraction_id)\
         .count()
@@ -209,5 +247,3 @@ def delete_gallery_photo(
     db.commit()
 
     return {"success": True, "deleted_id": photo_id}
-
-#something
