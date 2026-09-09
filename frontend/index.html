@@ -1757,8 +1757,7 @@
 
     function initIndexLocation(callback) {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          pos => {
+        navigator.geolocation.getCurrentPosition(pos => {
             indexUserPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
             if (callback) callback();
           },

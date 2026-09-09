@@ -7,7 +7,7 @@
     <title>Restaurants - Discover Travel Uzbekistan</title>
     <link rel="icon" type="image/png" href="/images/logo.png">
     <link rel="apple-touch-icon" href="/images/logo.png">
-    <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/javascript" defer></script>
     <script src="/config.js"></script>
     <style>
         :root {
@@ -1059,8 +1059,7 @@
                 setLocStatus(false, 'Location not supported by this browser');
                 return;
             }
-            navigator.geolocation.getCurrentPosition(
-                pos => {
+            navigator.geolocation.getCurrentPosition(pos => {
                     userPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     setLocStatus(true, `Your location detected — distances shown below`);
                     attachDistances();
@@ -1070,7 +1069,8 @@
                         fitMapBounds();
                     }
                 },
-                () => setLocStatus(false, 'Location access denied — showing all restaurants')
+                () => setLocStatus(false, 'Location access denied — showing all restaurants'),
+                { enableHighAccuracy: false, timeout: 2500, maximumAge: 300000 }
             );
         }
 
