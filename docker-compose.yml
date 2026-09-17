@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # ── MYSQL DATABASE ──────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: discover_uzbekistan_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-Ironman3106)}
+      MYSQL_DATABASE: ${DB_NAME:-discover_uzbekistan}
+      MYSQL_USER: ${DB_USER:-discover_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-Ironman3106)}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-Ironman3106)}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FASTAPI BACKEND ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./startupbackend
+      dockerfile: Dockerfile
+    container_name: discover_uzbekistan_backend
+    restart: always
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=${DB_USER:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-Ironman3106)}
+      - DB_NAME=${DB_NAME:-discover_uzbekistan}
+      - SECRET_KEY=${SECRET_KEY}
+      - ADMIN_SECRET_KEY=${ADMIN_SECRET_KEY}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FRONTEND_BASE=${FRONTEND_BASE:-http://localhost}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── NGINX FRONTEND & REVERSE PROXY ──────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: discover_uzbekistan_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+    driver: local
