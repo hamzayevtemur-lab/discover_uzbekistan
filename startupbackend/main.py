@@ -14,10 +14,12 @@ from routers import (
 
 app = FastAPI(title="Discover Uzbekistan API")
 
-# ── CORS ──────────────────────────────────────────────────────
+allowed_origins_env = os.environ.get("ALLOWED_ORIGINS", "*")
+origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
