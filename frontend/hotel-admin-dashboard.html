@@ -832,6 +832,9 @@
           <i class="fas fa-chart-bar" style="width:18px;text-align:center"></i> Dashboard
         </button>
         <div class="nav-section">Hotel</div>
+        <button class="nav-item" onclick="showSection('bookings',this)">
+          <i class="fas fa-calendar-check" style="width:18px;text-align:center"></i> Bookings & Reservations <span id="hbPendingBadge" style="background:#e11d48;color:#fff;border-radius:20px;padding:2px 8px;font-size:0.75rem;margin-left:auto;display:none;">0</span>
+        </button>
         <button class="nav-item" onclick="showSection('info',this)">
           <i class="fas fa-hotel" style="width:18px;text-align:center"></i> Hotel Info
         </button>
@@ -889,6 +892,17 @@
               <p>Loading…</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- BOOKINGS -->
+      <div id="section-bookings" class="section">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <h3 style="font-size:1.2rem;font-weight:700;"><i class="fas fa-calendar-check" style="color:var(--primary)"></i> Room Bookings & Reservations</h3>
+            <button class="btn btn-secondary btn-sm" onclick="loadBookings()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <div id="hotelBookingsList"><div style="text-align:center;padding:2rem;color:var(--muted)">Loading bookings...</div></div>
         </div>
       </div>
 
@@ -1184,6 +1198,7 @@
       document.getElementById(`section-${name}`).classList.add('active');
       if (btn) btn.classList.add('active');
       if (name === 'dashboard') loadDashboard();
+      if (name === 'bookings') loadBookings();
       if (name === 'info') loadInfo();
       if (name === 'rooms') loadRooms();
       if (name === 'location') { loadLocation(); setTimeout(() => hMap?.invalidateSize(), 100); }
@@ -1599,6 +1614,84 @@
       };
       var cap = document.getElementById('roomCapacity');
       if (cap && capMap[roomType]) cap.value = capMap[roomType];
+    }
+    async function loadBookings() {
+      try {
+        const bookings = await api('GET', `/api/partner/hotels/${hotelId}/bookings`);
+        const pendingCount = bookings.filter(b => b.status === 'pending').length;
+        const badge = document.getElementById('hbPendingBadge');
+        if (badge) {
+          badge.textContent = pendingCount;
+          badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+        }
+        const container = document.getElementById('hotelBookingsList');
+        if (!bookings.length) {
+          container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);"><i class="fas fa-calendar-times" style="font-size:2.5rem;margin-bottom:1rem;display:block;"></i>No booking requests received yet.</div>`;
+          return;
+        }
+        function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+        container.innerHTML = `
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+              <thead>
+                <tr style="border-bottom:2px solid var(--border);text-align:left;color:var(--muted);">
+                  <th style="padding:0.75rem;">Guest</th>
+                  <th style="padding:0.75rem;">Contact</th>
+                  <th style="padding:0.75rem;">Check-in / Stay</th>
+                  <th style="padding:0.75rem;">Guests / Room</th>
+                  <th style="padding:0.75rem;">Notes</th>
+                  <th style="padding:0.75rem;">Status</th>
+                  <th style="padding:0.75rem;text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${bookings.map(b => `
+                  <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:0.75rem;font-weight:700;">${esc(b.guest_name)}</td>
+                    <td style="padding:0.75rem;">
+                      <div>📞 <a href="tel:${esc(b.phone)}" style="color:var(--primary);text-decoration:none;font-weight:600;">${esc(b.phone)}</a></div>
+                      <div style="font-size:0.8rem;color:var(--muted);">✉️ <a href="mailto:${esc(b.email)}" style="color:inherit;">${esc(b.email)}</a></div>
+                    </td>
+                    <td style="padding:0.75rem;">
+                      <div>📅 ${esc(b.check_in_date)} ${b.arrival_time ? 'at ' + esc(b.arrival_time) : ''}</div>
+                      <div style="font-size:0.8rem;color:var(--muted);">${b.stay_days} day(s) stay</div>
+                    </td>
+                    <td style="padding:0.75rem;">
+                      <div>👥 ${b.guests_count} guest(s)</div>
+                      <div style="font-size:0.8rem;color:var(--primary);">${esc(b.room_type || 'Standard Room')}</div>
+                    </td>
+                    <td style="padding:0.75rem;max-width:200px;font-size:0.82rem;color:var(--muted);">${esc(b.special_requests || '—')}</td>
+                    <td style="padding:0.75rem;">
+                      <span class="badge badge-${b.status === 'confirmed' ? 'success' : b.status === 'rejected' ? 'danger' : b.status === 'completed' ? 'primary' : 'warning'}">
+                        ${b.status.toUpperCase()}
+                      </span>
+                    </td>
+                    <td style="padding:0.75rem;text-align:right;">
+                      <div style="display:flex;gap:0.4rem;justify-content:flex-end;">
+                        ${b.status !== 'confirmed' ? `<button class="btn btn-sm btn-success" onclick="updateHotelBookingStatus(${b.id}, 'confirmed')">Confirm</button>` : ''}
+                        ${b.status !== 'rejected' ? `<button class="btn btn-sm btn-danger" onclick="updateHotelBookingStatus(${b.id}, 'rejected')">Reject</button>` : ''}
+                        ${b.status === 'confirmed' ? `<button class="btn btn-sm btn-secondary" onclick="updateHotelBookingStatus(${b.id}, 'completed')">Complete</button>` : ''}
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (err) {
+        document.getElementById('hotelBookingsList').innerHTML = `<div style="color:var(--danger);padding:1rem;">Failed to load bookings: ${err.message}</div>`;
+      }
+    }
+
+    async function updateHotelBookingStatus(bookingId, status) {
+      try {
+        await api('PUT', `/api/partner/hotels/${hotelId}/bookings/${bookingId}/status`, { status });
+        toast(`Booking status set to ${status}`, 'success');
+        loadBookings();
+      } catch (err) {
+        toast(`Failed: ${err.message}`, 'error');
+      }
     }
   </script>
   <script src=/i18n.js></script>

@@ -1517,7 +1517,7 @@
     </div></div>`).join('');
     }
     function setupRF() { document.querySelectorAll('.rfb').forEach(b => { b.addEventListener('click', function () { document.querySelectorAll('.rfb').forEach(x => x.classList.remove('active')); this.classList.add('active'); rf = this.dataset.f; renderRooms(); }); }); }
-    function bkR(rid) { if (!H) return; t('🏨 Redirecting to booking…'); setTimeout(() => location.href = `booking.html?hotel_id=${H.id}&room_id=${rid}`, 800); }
+    function bkR(rid) { if (!H) return; openHotelBookingModal(rid); }
     function initMap() {
       if (!H?.latitude || !H?.longitude) { document.getElementById('hotelMap').innerHTML = '<div class="lc" style="color:var(--txt3)">No location data</div>'; return; }
       ymaps.ready(() => {
@@ -1600,8 +1600,142 @@
     }
     function shareH() { if (!H) return; const d = { title: H.name, text: `Check out ${H.name} on Discover Travel Uzbekistan!`, url: location.href }; if (navigator.share) navigator.share(d).catch(() => { }); else navigator.clipboard?.writeText(location.href).then(() => t('🔗 Link copied!')).catch(() => t('⚠️ Could not copy')); }
     function dd(a, b, c, d) { const R = 6371, dL = (c - a) * Math.PI / 180, dN = (d - b) * Math.PI / 180; const x = Math.sin(dL / 2) ** 2 + Math.cos(a * Math.PI / 180) * Math.cos(c * Math.PI / 180) * Math.sin(dN / 2) ** 2; return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)); }
-    (function () { const id = new URLSearchParams(location.search).get('id'); if (!id) return; const sid = sessionStorage.getItem('_as') || ('s' + Date.now() + Math.random().toString(36).substr(2, 8)); sessionStorage.setItem('_as', sid); const t0 = Date.now(); let sent = false; function send() { if (sent) return; sent = true; const d = { page_type: 'hotel', page_id: parseInt(id), partner_id: parseInt(id), time_spent: Math.floor((Date.now() - t0) / 1000), session_id: sid }; navigator.sendBeacon ? navigator.sendBeacon(`${API}/api/analytics/track`, new Blob([JSON.stringify(d)], { type: 'application/json' })) : fetch(`${API}/api/analytics/track`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d), keepalive: true }).catch(() => { }); } window.addEventListener('beforeunload', send); document.addEventListener('visibilitychange', () => { if (document.hidden) send(); }); })();
+    function openHotelBookingModal(rid) {
+      if (!H) return;
+      const room = rooms.find(r => r.id === rid);
+      document.getElementById('hbRoomType').value = room ? room.room_type : '';
+      const today = new Date().toISOString().split('T')[0];
+      const checkinEl = document.getElementById('hbCheckin');
+      if (checkinEl && !checkinEl.value) checkinEl.value = today;
+      document.getElementById('hotelBookingModal').classList.add('active');
+    }
+    function closeHotelBookingModal() {
+      document.getElementById('hotelBookingModal').classList.remove('active');
+    }
+    async function submitHotelBooking(e) {
+      e.preventDefault();
+      if (!H) return;
+      const data = {
+        guest_name: document.getElementById('hbName').value.trim(),
+        email: document.getElementById('hbEmail').value.trim(),
+        phone: document.getElementById('hbPhone').value.trim(),
+        check_in_date: document.getElementById('hbCheckin').value,
+        arrival_time: document.getElementById('hbArrival').value,
+        stay_days: parseInt(document.getElementById('hbDays').value) || 1,
+        guests_count: parseInt(document.getElementById('hbGuests').value) || 1,
+        room_type: document.getElementById('hbRoomType').value.trim(),
+        special_requests: document.getElementById('hbNotes').value.trim()
+      };
+      if (!data.guest_name || !data.email || !data.phone || !data.check_in_date) {
+        t('⚠️ Please fill in all required fields (*)');
+        return;
+      }
+      try {
+        const res = await fetch(`${API}/api/hotels/${H.id}/book`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const resData = await res.json();
+        if (!res.ok) throw new Error(resData.detail || 'Failed to submit booking');
+        closeHotelBookingModal();
+        t('🎉 Booking request sent! Hotel team will contact you shortly.');
+        document.getElementById('hotelBookingForm').reset();
+      } catch (err) {
+        t('⚠️ ' + err.message);
+      }
+    }
   </script>
+
+  <!-- Hotel Booking Modal -->
+  <style>
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+      z-index: 10000; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 1rem;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-card {
+      background: #18191c; border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 18px; width: 100%; max-width: 500px; max-height: 90vh;
+      overflow-y: auto; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+      color: #fff; padding: 1.8rem; transform: translateY(20px); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-card { transform: translateY(0); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.8rem; }
+    .modal-title { font-size: 1.3rem; font-weight: 700; color: #ffd166; font-family: 'Inter', sans-serif; }
+    .modal-close { background: transparent; border: none; color: #aaa; font-size: 1.5rem; cursor: pointer; }
+    .modal-close:hover { color: #fff; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.82rem; margin-bottom: 0.35rem; color: rgba(255, 255, 255, 0.75); font-weight: 500; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 0.65rem 0.85rem; background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 8px; color: #fff; font-size: 0.9rem; outline: none; box-sizing: border-box;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #ffd166; background: rgba(255, 255, 255, 0.12); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    .btn-submit-modal {
+      width: 100%; padding: 0.8rem; background: linear-gradient(135deg, #ffd166, #f39c12);
+      border: none; border-radius: 8px; color: #000; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 0.5rem; transition: all 0.2s;
+    }
+    .btn-submit-modal:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,209,102,0.4); }
+  </style>
+
+  <div class="modal-overlay" id="hotelBookingModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-hotel"></i> Book Room</div>
+        <button class="modal-close" onclick="closeHotelBookingModal()">&times;</button>
+      </div>
+      <form id="hotelBookingForm" onsubmit="submitHotelBooking(event)">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="hbName" placeholder="e.g. John Doe" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="hbEmail" placeholder="name@example.com" required>
+          </div>
+          <div class="form-group">
+            <label>Phone / WhatsApp *</label>
+            <input type="tel" id="hbPhone" placeholder="+998 90 123 45 67" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Check-in Date *</label>
+            <input type="date" id="hbCheckin" required>
+          </div>
+          <div class="form-group">
+            <label>Estimated Arrival Time</label>
+            <input type="time" id="hbArrival" value="14:00">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Length of Stay (Days)</label>
+            <input type="number" id="hbDays" min="1" value="1" required>
+          </div>
+          <div class="form-group">
+            <label>Number of Guests</label>
+            <input type="number" id="hbGuests" min="1" value="1" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Room Type</label>
+          <input type="text" id="hbRoomType" placeholder="Standard Single / Suite">
+        </div>
+        <div class="form-group">
+          <label>Special Requests / Notes</label>
+          <textarea id="hbNotes" rows="3" placeholder="Airport transfer needed, quiet room, late check-in..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit-modal"><i class="fa-solid fa-paper-plane"></i> Submit Booking Request</button>
+      </form>
+    </div>
+  </div>
+
   <script src=/i18n.js></script>
 </body>
 

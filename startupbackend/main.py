@@ -5,11 +5,16 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from database import engine, Base
+import models  # Ensure all SQLAlchemy models are registered
+
+Base.metadata.create_all(bind=engine)
+
 from routers import (
     restaurants, hotels, attractions, likes, admin,
     partner_restaurants, partner_auth, admin_approval, partner_hotels,
-    travel_agency, partner_agency, partner_application, subscription ,news, attractions_admin,
-    guides
+    travel_agency, partner_agency, partner_application, subscription, news, attractions_admin,
+    guides, bookings
 )
 
 app = FastAPI(title="Discover Uzbekistan API")
@@ -42,6 +47,7 @@ app.include_router(subscription.router)
 app.include_router(news.router)
 app.include_router(attractions_admin.router)
 app.include_router(guides.router)
+app.include_router(bookings.router)
 
 
 # ── STATIC FILES ──────────────────────────────────────────────

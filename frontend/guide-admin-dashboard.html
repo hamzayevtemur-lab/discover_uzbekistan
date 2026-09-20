@@ -746,6 +746,9 @@
                     <i class="fas fa-chart-bar"></i><span>Dashboard</span>
                 </button>
                 <div class="nav-section">Profile</div>
+                <button class="nav-item" onclick="showSection('bookings',this)">
+                    <i class="fas fa-compass"></i><span>Bookings & Hire</span> <span id="gbPendingBadge" style="background:#e11d48;color:#fff;border-radius:20px;padding:2px 8px;font-size:0.75rem;margin-left:auto;display:none;">0</span>
+                </button>
                 <button class="nav-item" onclick="showSection('profile',this)">
                     <i class="fas fa-user"></i><span>My Profile</span>
                 </button>
@@ -798,6 +801,17 @@
                             <p>Loading…</p>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- BOOKINGS -->
+            <div id="section-bookings" class="section">
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                        <h3 style="font-size:1.2rem;font-weight:700;"><i class="fas fa-compass" style="color:var(--primary)"></i> Guide Hire & Tour Requests</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="loadGuideBookings()"><i class="fas fa-sync"></i> Refresh</button>
+                    </div>
+                    <div id="guideBookingsList"><div style="text-align:center;padding:2rem;color:var(--muted)">Loading bookings...</div></div>
                 </div>
             </div>
 
@@ -1072,6 +1086,7 @@
             document.getElementById('section-' + name).classList.add('active');
             if (btn) btn.classList.add('active');
             if (name === 'dashboard') loadDashboard();
+            if (name === 'bookings') loadGuideBookings();
             if (name === 'profile') loadProfile();
             if (name === 'reviews') loadReviews();
             if (name === 'subscription') loadSubscription();
@@ -1392,6 +1407,81 @@
             el.innerHTML = `<span>${{ success: '✅', error: '❌', info: 'ℹ️' }[type]}</span> ${msg}`;
             c.appendChild(el);
             setTimeout(() => el.remove(), 4000);
+        }
+        async function loadGuideBookings() {
+            try {
+                const bookings = await api('GET', `/api/partner/guides/${guideId}/bookings`);
+                const pendingCount = bookings.filter(b => b.status === 'pending').length;
+                const badge = document.getElementById('gbPendingBadge');
+                if (badge) {
+                    badge.textContent = pendingCount;
+                    badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+                }
+                const container = document.getElementById('guideBookingsList');
+                if (!bookings.length) {
+                    container.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--muted);"><i class="fas fa-compass" style="font-size:2.5rem;margin-bottom:1rem;display:block;"></i>No guide booking requests received yet.</div>`;
+                    return;
+                }
+                function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+                container.innerHTML = `
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+                            <thead>
+                                <tr style="border-bottom:2px solid var(--border);text-align:left;color:var(--muted);">
+                                    <th style="padding:0.75rem;">Tourist</th>
+                                    <th style="padding:0.75rem;">Contact</th>
+                                    <th style="padding:0.75rem;">Tour Date</th>
+                                    <th style="padding:0.75rem;">Duration & Group</th>
+                                    <th style="padding:0.75rem;">Notes / Target Cities</th>
+                                    <th style="padding:0.75rem;">Status</th>
+                                    <th style="padding:0.75rem;text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${bookings.map(b => `
+                                    <tr style="border-bottom:1px solid var(--border);">
+                                        <td style="padding:0.75rem;font-weight:700;">${esc(b.tourist_name)}</td>
+                                        <td style="padding:0.75rem;">
+                                            <div>📞 <a href="tel:${esc(b.phone)}" style="color:var(--primary);text-decoration:none;font-weight:600;">${esc(b.phone)}</a></div>
+                                            <div style="font-size:0.8rem;color:var(--muted);">✉️ <a href="mailto:${esc(b.email)}" style="color:inherit;">${esc(b.email)}</a></div>
+                                        </td>
+                                        <td style="padding:0.75rem;">📅 ${esc(b.tour_date)}</td>
+                                        <td style="padding:0.75rem;">
+                                            <div>⏳ ${b.duration_days} day(s)</div>
+                                            <div style="font-size:0.8rem;color:var(--muted);">👥 ${b.travelers_count} traveler(s)</div>
+                                        </td>
+                                        <td style="padding:0.75rem;max-width:200px;font-size:0.82rem;color:var(--muted);">${esc(b.notes || '—')}</td>
+                                        <td style="padding:0.75rem;">
+                                            <span class="badge badge-${b.status === 'confirmed' ? 'success' : b.status === 'rejected' ? 'danger' : b.status === 'completed' ? 'primary' : 'warning'}">
+                                                ${b.status.toUpperCase()}
+                                            </span>
+                                        </td>
+                                        <td style="padding:0.75rem;text-align:right;">
+                                            <div style="display:flex;gap:0.4rem;justify-content:flex-end;">
+                                                ${b.status !== 'confirmed' ? `<button class="btn btn-sm btn-success" onclick="updateGuideBookingStatus(${b.id}, 'confirmed')">Confirm</button>` : ''}
+                                                ${b.status !== 'rejected' ? `<button class="btn btn-sm btn-danger" onclick="updateGuideBookingStatus(${b.id}, 'rejected')">Reject</button>` : ''}
+                                                ${b.status === 'confirmed' ? `<button class="btn btn-sm btn-secondary" onclick="updateGuideBookingStatus(${b.id}, 'completed')">Complete</button>` : ''}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById('guideBookingsList').innerHTML = `<div style="color:var(--danger);padding:1rem;">Failed to load bookings: ${err.message}</div>`;
+            }
+        }
+
+        async function updateGuideBookingStatus(bookingId, status) {
+            try {
+                await api('PUT', `/api/partner/guides/${guideId}/bookings/${bookingId}/status`, { status });
+                toast(`Booking status updated to ${status}`, 'success');
+                loadGuideBookings();
+            } catch (err) {
+                toast(`Failed: ${err.message}`, 'error');
+            }
         }
     </script>
   <script src=/i18n.js></script>

@@ -3,6 +3,7 @@ from .hotel import Hotel, HotelRoom, HotelReview
 from .attraction import Attraction, AttractionTimeline, AttractionReview, AttractionGallery
 from .like import Like
 from .travel_agency import TravelAgency, Tour, AgencyReview, TourItinerary, TourDestination
+from .booking import HotelBooking, RestaurantOrder, AgencyBooking, GuideBooking
 
 __all__ = [
     # Restaurant models
@@ -27,6 +28,12 @@ __all__ = [
     "AgencyReview",
     "TourItinerary",
     "TourDestination",
+    
+    # Booking models
+    "HotelBooking",
+    "RestaurantOrder",
+    "AgencyBooking",
+    "GuideBooking",
     
     # Like models
     "Like",
