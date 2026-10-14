@@ -1,3 +1,20 @@
 /* Global reset: page styles are scoped, so the browser's default body margin must be cleared here */
 html { scroll-behavior: smooth; }
 body { margin: 0; background: #0b0b10; }
+
+/* Site-wide fonts (same as the hero/header): Manrope for text, Unbounded for headlines.
+   Page stylesheets are scoped and set their own font-family, so they are overridden here. */
+:root {
+  --font-body: 'Manrope', Arial, Helvetica, sans-serif;
+  --font-display: 'Unbounded', 'Manrope', Arial, Helvetica, sans-serif;
+}
+body,
+button, input, select, textarea,
+.pg-home, .pg-attractions-list, .uz-root, .dest {
+  font-family: var(--font-body);
+}
+h1, h2 {
+  font-family: var(--font-display);
+}
+/* Unbounded is wide: keep long headings from overflowing */
+h1, h2 { overflow-wrap: anywhere; }
