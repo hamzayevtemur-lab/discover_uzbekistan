@@ -1,79 +1,14 @@
 import type { CSSProperties } from "react";
+import { useI18n, type Tr } from "../lib/i18n-context";
+import { DESTINATIONS, type Destination } from "../data/destinations";
 import "./DestinationsBlock.css";
 
-export interface Destination {
-  id: string;
-  name: string;
-  description: string;
-  href: string;
-  unesco?: boolean;
-  /** Path to a real photo, e.g. "/img/samarkand.jpg". Falls back to the gradient if omitted. */
-  image?: string;
-  /** CSS background shown until a photo is provided. */
-  fallback: string;
-}
-
-export const DESTINATIONS: Destination[] = [
-  {
-    id: "samarkand",
-    image: "/images/Shah-i-Zinda.jpg",
-    name: "Samarkand",
-    description: "The Registan at sunset, turquoise domes and the heart of Timur's empire.",
-    href: "/cities/samarkand",
-    unesco: true,
-    fallback:
-      "radial-gradient(circle at 70% 25%, #2c8fa8 0, transparent 38%), linear-gradient(160deg, #16405a, #0b1b2b 60%, #2a1a0c)",
-  },
-  {
-    id: "bukhara",
-    image: "/images/bukhara.jpg",
-    name: "Bukhara",
-    description: "Trading domes and a living old town.",
-    href: "/cities/bukhara",
-    unesco: true,
-    fallback: "linear-gradient(160deg, #a8651f, #4a2410 70%)",
-  },
-  {
-    id: "khiva",
-    image: "/images/itchanqala.jpg",
-    name: "Khiva",
-    description: "A walled city frozen in clay and tile.",
-    href: "/cities/khiva",
-    unesco: true,
-    fallback: "linear-gradient(160deg, #c48a3a, #5a3414 70%)",
-  },
-  {
-    id: "tashkent",
-    image: "/images/chorsu.jpg",
-    name: "Tashkent",
-    description: "Metro art, bazaars and the modern capital.",
-    href: "/cities/tashkent",
-    fallback: "linear-gradient(160deg, #2b6f6a, #0f2a2c 75%)",
-  },
-  {
-    id: "shahrisabz",
-    image: "/images/hisor.jpg",
-    name: "Shahrisabz",
-    description: "Timur's birthplace and Ak-Saray ruins.",
-    href: "/cities/shahrisabz",
-    unesco: true,
-    fallback: "linear-gradient(160deg, #7a3b2a, #2a1210 75%)",
-  },
-  {
-    id: "fergana",
-    image: "/images/RishtanCeramicsCenter.jpg",
-    name: "Fergana",
-    description: "Valley of silk, ceramics and orchards.",
-    href: "/cities/fergana",
-    fallback: "linear-gradient(160deg, #4f6b3a, #1a2616 75%)",
-  },
-];
 
 interface DestinationsBlockProps {
   destinations?: Destination[];
-  eyebrow?: string;
-  title?: string;
-  subtitle?: string;
+  eyebrow?: Tr;
+  title?: Tr;
+  subtitle?: Tr;
   allHref?: string;
 }
 
@@ -97,19 +32,24 @@ function ArrowIcon() {
 
 export default function DestinationsBlock({
   destinations = DESTINATIONS,
-  eyebrow = "Start with a city",
-  title = "Where will the Silk Road take you?",
-  subtitle = "Six cities, six different moods. Pick one and see its sites, stays and tables in one place.",
+  eyebrow = { en: "Start with a city", uz: "Shahardan boshlang", ru: "Начните с города" },
+  title = { en: "Where will the Silk Road take you?", uz: "Ipak yo'li sizni qayerga olib boradi?", ru: "Куда вас приведёт Шёлковый путь?" },
+  subtitle = {
+    en: "Six cities, six different moods. Pick one and see its sites, stays and tables in one place.",
+    uz: "Oltita shahar, oltita kayfiyat. Birini tanlang va uning diqqatga sazovor joylari, mehmonxonalari va restoranlarini bir joyda ko'ring.",
+    ru: "Шесть городов — шесть настроений. Выберите один и увидьте его достопримечательности, жильё и рестораны в одном месте.",
+  },
   allHref = "/regions",
 }: DestinationsBlockProps) {
+  const { tr } = useI18n();
   return (
     <section className="dest" aria-labelledby="dest-title">
       <div className="dest__head">
-        <p className="dest__eyebrow">{eyebrow}</p>
+        <p className="dest__eyebrow">{tr(eyebrow)}</p>
         <h2 id="dest-title" className="dest__title">
-          {title}
+          {tr(title)}
         </h2>
-        <p className="dest__subtitle">{subtitle}</p>
+        <p className="dest__subtitle">{tr(subtitle)}</p>
       </div>
 
       <div className="dest__grid">
@@ -125,9 +65,9 @@ export default function DestinationsBlock({
               {d.unesco && <span className="dest__badge">UNESCO</span>}
               <div className="dest__body">
                 <h3>{d.name}</h3>
-                <p>{d.description}</p>
+                <p>{tr(d.description)}</p>
                 <span className="dest__go">
-                  Explore city <ArrowIcon />
+                  {tr({ en: "Explore city", uz: "Shaharni kashf eting", ru: "Открыть город" })} <ArrowIcon />
                 </span>
               </div>
             </a>
@@ -137,7 +77,7 @@ export default function DestinationsBlock({
 
       <div className="dest__more">
         <a className="dest__btn" href={allHref}>
-          View all regions
+          {tr({ en: "View all regions", uz: "Barcha hududlar", ru: "Все регионы" })}
         </a>
       </div>
     </section>

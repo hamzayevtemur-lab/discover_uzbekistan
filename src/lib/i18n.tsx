@@ -1,31 +1,17 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Lang } from '../types'
 import { DICTIONARY } from './dictionary'
+import { I18nContext, type I18nValue } from './i18n-context'
 
-export const LANGUAGES: { code: Lang; name: string; flag: string }[] = [
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'uz', name: "O'zbekcha", flag: '🇺🇿' },
-  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-]
-
-/** Inline translations, the React equivalent of data-en / data-uz / data-ru attributes */
-export type Tr = Partial<Record<Lang, string>> & { en: string }
-
-interface I18nValue {
-  lang: Lang
-  setLang: (l: Lang) => void
-  /** look up a key in the shared dictionary */
-  t: (key: string) => string
-  /** pick from inline translations, falling back to English */
-  tr: (text: Tr) => string
-}
-
-const I18nContext = createContext<I18nValue | null>(null)
 const STORAGE_KEY = 'preferred_lang'
 
 function initialLang(): Lang {
-  const saved = localStorage.getItem(STORAGE_KEY)
-  return saved === 'en' || saved === 'uz' || saved === 'ru' ? saved : 'en'
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved === 'en' || saved === 'uz' || saved === 'ru' ? saved : 'en'
+  } catch {
+    return 'en'
+  }
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -36,7 +22,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [lang])
 
   const setLang = useCallback((l: Lang) => {
-    localStorage.setItem(STORAGE_KEY, l)
+    try {
+      localStorage.setItem(STORAGE_KEY, l)
+    } catch {
+      /* storage can be blocked (private mode); the choice still applies for this session */
+    }
     setLangState(l)
   }, [])
 
@@ -51,10 +41,4 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   )
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
-}
-
-export function useI18n(): I18nValue {
-  const ctx = useContext(I18nContext)
-  if (!ctx) throw new Error('useI18n must be used inside <I18nProvider>')
-  return ctx
 }

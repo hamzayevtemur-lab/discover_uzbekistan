@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
+import { LANGUAGES, useI18n } from '../lib/i18n-context'
 
-/** Compact header used on inner pages (logo only, like the original list pages). */
+/** Compact header used on inner pages (logo + language switcher, like the original list pages). */
 export function PageHeader() {
+  const { lang, setLang } = useI18n()
   return (
     <header>
       <div className="header-content">
@@ -17,7 +19,18 @@ export function PageHeader() {
           />
           <span>DISCOVER TRAVEL UZBEKISTAN</span>
         </Link>
-        <div className="header-right" />
+        <div className="header-right">
+          <select
+            aria-label="Language"
+            value={lang}
+            onChange={(e) => setLang(e.target.value as typeof lang)}
+            style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.code} value={l.code} style={{ color: '#000' }}>{l.flag} {l.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
     </header>
   )

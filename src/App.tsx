@@ -4,7 +4,7 @@ import Home from './pages/Home'
 import ComingSoon from './pages/ComingSoon'
 import AttractionsList from './pages/AttractionsList'
 
-const todo = (title: string, source: string) => <ComingSoon title={title} source={source} />
+const todo = (title: string, source?: string) => <ComingSoon title={title} source={source} />
 
 export default function App() {
   return (
@@ -26,7 +26,10 @@ export default function App() {
         <Route path="/cities/:city" element={todo('City', 'not in the original site')} />
         <Route path="/regions" element={todo('Regions', 'not in the original site')} />
         <Route path="/tips" element={todo('Tips', 'tips.html')} />
-        <Route path="*" element={todo('Page not found', '-')} />
+        <Route path="/about" element={todo('About Us', 'not in the original site')} />
+        <Route path="/privacy" element={todo('Privacy Policy', 'not in the original site')} />
+        <Route path="/terms" element={todo('Terms of Service', 'not in the original site')} />
+        <Route path="*" element={todo('Page not found')} />
       </Routes>
     </Suspense>
   )

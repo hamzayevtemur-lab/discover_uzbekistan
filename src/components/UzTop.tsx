@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { Link } from 'react-router-dom'
 import { UzLogo } from './UzLogo'
 import { FLAGS } from './UzFlags'
-import { useI18n } from '../lib/i18n'
+import { useI18n } from '../lib/i18n-context'
 import type { Lang } from '../types'
 import '../styles/uz-top.css'
 
@@ -205,7 +205,7 @@ export function UzTop() {
 
       <main>
         <section className="hero" id="home">
-          <video ref={videoRef} className="hero-video" autoPlay muted loop playsInline preload="auto" aria-hidden="true">
+          <video ref={videoRef} className="hero-video" autoPlay muted loop playsInline preload="metadata" poster="/images/uzb2.jpg" aria-hidden="true">
             <source src={VIDEO_SRC} type="video/mp4" />
           </video>
           <div className="hero-content">

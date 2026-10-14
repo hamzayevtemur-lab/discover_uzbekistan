@@ -9,9 +9,10 @@ export class ApiError extends Error {
 }
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  // spread init first so a caller-supplied `headers` is merged with the defaults instead of replacing them
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
     ...init,
+    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
   })
   if (!res.ok) throw new ApiError(res.status, `Request failed: ${res.status} ${path}`)
   return res.json() as Promise<T>
