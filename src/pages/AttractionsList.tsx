@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PageHeader } from '../components/PageHeader'
+import { ChevronDown, ChevronUp, Gift01, Grid01, InfoCircle, List, Map01, NavigationPointer01, SearchLg } from '@untitledui/icons'
+import { Button } from '@/components/base/buttons/button'
+import { Input } from '@/components/base/input/input'
+import { Select } from '@/components/base/select/select'
+import { SiteHeader } from '../components/SiteHeader'
 import { AttractionsMap, type MapAttraction } from '../components/AttractionsMap'
 import { get } from '../lib/api'
 import { assetUrl } from '../lib/config'
@@ -35,6 +39,13 @@ const CATEGORIES: { value: string; label: Tr }[] = [
   { value: 'Architectural Wonder', label: { en: 'Architectural Wonder', uz: "Me'moriy durdona", ru: 'Архитектурное чудо' } },
   { value: 'Cultural Center', label: { en: 'Cultural Center', uz: 'Madaniyat markazi', ru: 'Культурный центр' } },
 ]
+
+/** Select items for a translated option list, with an "All ..." entry in front. */
+const toItems = (all: string, options: { value: string; label: Tr }[], tr: (t: Tr) => string) => [
+  { id: 'all', label: all },
+  ...options.map((o) => ({ id: o.value, label: tr(o.label) })),
+]
+
 type GeoStatus = 'detecting' | 'unsupported' | 'denied' | 'ready'
 type Sort = 'default' | 'distance' | 'rating' | 'name'
 
@@ -80,6 +91,18 @@ export default function AttractionsList() {
   const withDistance: MapAttraction[] = useMemo(
     () => all.map((a) => ({ ...a, _distance: position ? distanceKm(position, { lat: a.latitude, lng: a.longitude }) : undefined })),
     [all, position],
+  )
+
+  const cityItems = useMemo(() => toItems(tr({ en: 'All Cities', uz: 'Barcha shaharlar', ru: 'Все города' }), CITIES, tr), [tr])
+  const categoryItems = useMemo(() => toItems(tr({ en: 'All Categories', uz: 'Barcha kategoriyalar', ru: 'Все категории' }), CATEGORIES, tr), [tr])
+  const sortItems = useMemo(
+    () => [
+      { id: 'default', label: tr({ en: 'Default', uz: 'Odatiy', ru: 'По умолчанию' }) },
+      { id: 'distance', label: tr({ en: 'Distance', uz: 'Masofa', ru: 'Расстояние' }) },
+      { id: 'rating', label: tr({ en: 'Top Rated', uz: 'Eng yuqori baho', ru: 'Лучшие по рейтингу' }) },
+      { id: 'name', label: tr({ en: 'Name (A–Z)', uz: 'Nomi (A–Z)', ru: 'Название (А–Я)' }) },
+    ],
+    [tr],
   )
 
   const { list, statusText } = useMemo(() => {
@@ -129,8 +152,10 @@ export default function AttractionsList() {
   }
 
   return (
+    <>
+    {/* outside .pg-attractions-list so that page's old `header` styles can't leak into the shared header */}
+    <SiteHeader />
     <div className="pg-attractions-list">
-      <PageHeader />
 
       <div className="hero-strip">
         <div className="hero-inner">
@@ -139,7 +164,7 @@ export default function AttractionsList() {
         </div>
       </div>
 
-      <div className="container">
+      <div className="al-container">
         <div className="location-status">
           <div className={`loc-dot${position ? ' active' : ''}`} />
           <span>{geo === 'detecting' ? tr({ en: 'Detecting your location…', uz: 'Joylashuvingiz aniqlanmoqda…', ru: 'Определяем ваше местоположение…' }) : geo === 'unsupported' ? tr({ en: 'Location not supported', uz: "Joylashuv qo'llab-quvvatlanmaydi", ru: 'Геолокация не поддерживается' }) : statusText}</span>
@@ -147,39 +172,65 @@ export default function AttractionsList() {
 
         <div className="toolbar">
           <div className="search-wrap">
-            <i className="fas fa-search" />
-            <input type="text" className="search-input" placeholder={tr({ en: 'Search attractions…', uz: 'Qidirish…', ru: 'Поиск…' })} value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input
+              size="md"
+              icon={SearchLg}
+              aria-label={tr({ en: 'Search attractions…', uz: 'Qidirish…', ru: 'Поиск…' })}
+              placeholder={tr({ en: 'Search attractions…', uz: 'Qidirish…', ru: 'Поиск…' })}
+              value={search}
+              onChange={setSearch}
+            />
           </div>
           <div className="filter-group">
-            <label className="filter-label">{tr({ en: 'City', uz: 'Shahar', ru: 'Город' })}</label>
-            <select className="filter-select" value={city} onChange={(e) => setCity(e.target.value)}>
-              <option value="all">{tr({ en: 'All Cities', uz: 'Barcha shaharlar', ru: 'Все города' })}</option>
-              {CITIES.map((c) => <option key={c.value} value={c.value}>{tr(c.label)}</option>)}
-            </select>
+            <Select
+              label={tr({ en: 'City', uz: 'Shahar', ru: 'Город' })}
+              size="md"
+              selectedKey={city}
+              onSelectionChange={(key) => key != null && setCity(String(key))}
+              items={cityItems}
+            >
+              {(item) => <Select.Item id={item.id} label={item.label} />}
+            </Select>
           </div>
           <div className="filter-group">
-            <label className="filter-label">{tr({ en: 'Category', uz: 'Kategoriya', ru: 'Категория' })}</label>
-            <select className="filter-select" value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="all">{tr({ en: 'All Categories', uz: 'Barcha kategoriyalar', ru: 'Все категории' })}</option>
-              {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{tr(c.label)}</option>)}
-            </select>
+            <Select
+              label={tr({ en: 'Category', uz: 'Kategoriya', ru: 'Категория' })}
+              size="md"
+              selectedKey={category}
+              onSelectionChange={(key) => key != null && setCategory(String(key))}
+              items={categoryItems}
+            >
+              {(item) => <Select.Item id={item.id} label={item.label} />}
+            </Select>
           </div>
           <div className="filter-group">
-            <label className="filter-label">{tr({ en: 'Sort By', uz: 'Saralash', ru: 'Сортировка' })}</label>
-            <select className="filter-select" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
-              <option value="default">{tr({ en: 'Default', uz: 'Odatiy', ru: 'По умолчанию' })}</option>
-              <option value="distance">{tr({ en: 'Distance', uz: 'Masofa', ru: 'Расстояние' })}</option>
-              <option value="rating">{tr({ en: 'Top Rated', uz: 'Eng yuqori baho', ru: 'Лучшие по рейтингу' })}</option>
-              <option value="name">{tr({ en: 'Name (A–Z)', uz: 'Nomi (A–Z)', ru: 'Название (А–Я)' })}</option>
-            </select>
+            <Select
+              label={tr({ en: 'Sort By', uz: 'Saralash', ru: 'Сортировка' })}
+              size="md"
+              selectedKey={sort}
+              onSelectionChange={(key) => key != null && setSort(String(key) as Sort)}
+              items={sortItems}
+            >
+              {(item) => <Select.Item id={item.id} label={item.label} />}
+            </Select>
           </div>
           <div className="quick-btns">
-            <button className={`quick-btn${nearMe ? ' active' : ''}`} onClick={toggleNearMe} title={tr({ en: 'Show only attractions within 50 km', uz: "Faqat 50 km ichidagilar", ru: 'Только в радиусе 50 км' })}>
-              <i className="fas fa-location-arrow" /> {tr({ en: 'Near Me', uz: 'Yaqin atrofda', ru: 'Рядом' })}
-            </button>
-            <button className={`quick-btn${freeOnly ? ' active' : ''}`} onClick={() => setFreeOnly(!freeOnly)} title={tr({ en: 'Show free entry attractions', uz: "Bepul kirish", ru: 'Бесплатный вход' })}>
-              <i className="fas fa-gift" /> {tr({ en: 'Free Entry', uz: 'Bepul kirish', ru: 'Бесплатно' })}
-            </button>
+            <Button
+              size="md"
+              color={nearMe ? 'primary' : 'secondary'}
+              iconLeading={NavigationPointer01}
+              onPress={toggleNearMe}
+            >
+              {tr({ en: 'Near Me', uz: 'Yaqin atrofda', ru: 'Рядом' })}
+            </Button>
+            <Button
+              size="md"
+              color={freeOnly ? 'primary' : 'secondary'}
+              iconLeading={Gift01}
+              onPress={() => setFreeOnly(!freeOnly)}
+            >
+              {tr({ en: 'Free Entry', uz: 'Bepul kirish', ru: 'Бесплатно' })}
+            </Button>
           </div>
         </div>
 
@@ -188,17 +239,35 @@ export default function AttractionsList() {
             {status === 'loading' ? tr({ en: 'Loading…', uz: 'Yuklanmoqda…', ru: 'Загрузка…' }) : status === 'ready' ? <><strong>{list.length}</strong> {tr({ en: list.length === 1 ? 'attraction found' : 'attractions found', uz: 'ta joy topildi', ru: 'найдено' })}</> : ''}
           </div>
           <div className="view-toggle">
-            <button className={`view-btn-toggle${view === 'grid' ? ' active' : ''}`} onClick={() => setView('grid')} title={tr({ en: 'Grid view', uz: 'To\'r ko\'rinishi', ru: 'Сетка' })}><i className="fas fa-th" /></button>
-            <button className={`view-btn-toggle${view === 'list' ? ' active' : ''}`} onClick={() => setView('list')} title={tr({ en: 'List view', uz: 'Ro\'yxat ko\'rinishi', ru: 'Список' })}><i className="fas fa-list" /></button>
+            <Button
+              size="sm"
+              color={view === 'grid' ? 'primary' : 'secondary'}
+              iconLeading={Grid01}
+              aria-label={tr({ en: 'Grid view', uz: "To'r ko'rinishi", ru: 'Сетка' })}
+              onPress={() => setView('grid')}
+            />
+            <Button
+              size="sm"
+              color={view === 'list' ? 'primary' : 'secondary'}
+              iconLeading={List}
+              aria-label={tr({ en: 'List view', uz: "Ro'yxat ko'rinishi", ru: 'Список' })}
+              onPress={() => setView('list')}
+            />
           </div>
         </div>
 
-        <div className={`map-toggle-bar${mapOpen ? ' open' : ''}`} onClick={() => setMapOpen(!mapOpen)}>
-          <span className="bar-label">
-            <i className="fas fa-map-marked-alt" style={{ color: 'var(--teal)' }} /> {mapOpen ? tr({ en: 'Hide Map', uz: 'Xaritani yashirish', ru: 'Скрыть карту' }) : tr({ en: 'Show Attractions on Map', uz: "Xaritada ko'rsatish", ru: 'Показать на карте' })}
+        <Button
+          size="lg"
+          color="secondary"
+          className="mb-3.5 w-full justify-between"
+          iconTrailing={mapOpen ? ChevronUp : ChevronDown}
+          onPress={() => setMapOpen(!mapOpen)}
+        >
+          <span className="flex items-center gap-2">
+            <Map01 aria-hidden="true" className="size-5 text-fg-quaternary" />
+            {mapOpen ? tr({ en: 'Hide Map', uz: 'Xaritani yashirish', ru: 'Скрыть карту' }) : tr({ en: 'Show Attractions on Map', uz: "Xaritada ko'rsatish", ru: 'Показать на карте' })}
           </span>
-          <i className="fas fa-chevron-down chevron" />
-        </div>
+        </Button>
         <div className={`map-panel${mapOpen ? '' : ' collapsed'}`}>
           {mapOpen && status === 'ready' && (
             <AttractionsMap attractions={withDistance} userPosition={position} onSelect={select} onOpen={open} />
@@ -241,9 +310,12 @@ export default function AttractionsList() {
                   {a.review_count ? <div className="meta-item"><i className="fas fa-comment" /> {a.review_count} {tr({ en: 'reviews', uz: 'sharh', ru: 'отзывов' })}</div> : null}
                 </div>
                 {a.duration && <div className="duration-row"><i className="fas fa-clock" /> {a.duration}</div>}
-                <button className="view-btn" onClick={(e) => { e.stopPropagation(); open(a.id) }}>
-                  <i className="fas fa-info-circle" /> {tr({ en: 'View Details', uz: "Batafsil", ru: 'Подробнее' })}
-                </button>
+                {/* the wrapper keeps the click from also triggering the card's own onClick */}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Button size="sm" color="primary" className="w-full" iconLeading={InfoCircle} onPress={() => open(a.id)}>
+                    {tr({ en: 'View Details', uz: 'Batafsil', ru: 'Подробнее' })}
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
@@ -252,5 +324,6 @@ export default function AttractionsList() {
 
       <div className={`toast${toast ? ' show' : ''}`}>{toast}</div>
     </div>
+    </>
   )
 }

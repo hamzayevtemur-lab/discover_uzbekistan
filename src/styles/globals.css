@@ -1,0 +1,107 @@
+/*
+ * Tailwind CSS v4 + Untitled UI.
+ *
+ * Tailwind is loaded WITHOUT its global reset ("preflight") and with explicit cascade layers,
+ * so it cannot restyle the existing pages (home, header, footer ...), whose CSS is un-layered
+ * and therefore always wins over anything inside a layer.
+ *
+ * Layer order (lowest -> highest priority):
+ *   theme < base < legacy < components < utilities
+ * `legacy` is where old page stylesheets are wrapped (e.g. attractions-list.css) so that
+ * Tailwind utilities on Untitled UI components can still override their `* { padding: 0 }` resets.
+ *
+ * This file must be imported BEFORE the other stylesheets (see main.tsx).
+ */
+@layer theme, base, legacy, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./theme.css";
+
+@plugin "tailwindcss-animate";
+@plugin "tailwindcss-react-aria-components";
+
+@custom-variant dark (&:where(.dark-mode, .dark-mode *));
+@custom-variant label (& [data-label]);
+@custom-variant focus-input-within (&:has(input:focus));
+
+@utility scrollbar-hide {
+    /* For Webkit-based browsers (Chrome, Safari and Opera) */
+    &::-webkit-scrollbar {
+        display: none;
+        -webkit-appearance: none;
+    }
+
+    /* For IE, Edge and Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+@utility transition-inherit-all {
+    transition-property: inherit;
+    transition-duration: inherit;
+    transition-timing-function: inherit;
+}
+
+/*
+ * Minimal reset the Untitled UI components rely on (a trimmed-down version of Tailwind's preflight).
+ * It lives in `@layer base`, i.e. below every un-layered legacy rule, so existing pages keep their look.
+ */
+@layer base {
+    *,
+    ::before,
+    ::after {
+        box-sizing: border-box;
+        border: 0 solid;
+    }
+
+    button,
+    input,
+    select,
+    optgroup,
+    textarea {
+        font: inherit;
+        letter-spacing: inherit;
+        color: inherit;
+        background-color: transparent;
+        border-radius: 0;
+    }
+
+    button,
+    [role="button"] {
+        cursor: pointer;
+    }
+
+    :disabled {
+        cursor: default;
+    }
+
+    /* No default underline on links (the browser default). Rules that ask for one still win, e.g. `.news-loc a` in news.css. */
+    a {
+        text-decoration: none;
+    }
+
+    [hidden]:where(:not([hidden="until-found"])) {
+        display: none !important;
+    }
+}
+
+/* Hide the default expand arrow on Safari. */
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+/* Hide default arrows from number inputs. */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Hide the default clear button (X) from search inputs. */
+input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}

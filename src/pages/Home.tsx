@@ -1,22 +1,15 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { UzTop } from '../components/UzTop'
+import { ServicesSection } from '../components/ServicesSection'
 import { Footer } from '../components/Footer'
 import { NewsSection } from '../components/NewsSection'
 import DestinationsBlock from '../components/DestinationsBlock'
 import CategoryCarousel from '../components/CategoryCarousel'
-import { useI18n, type Tr } from '../lib/i18n-context'
+import { useI18n } from '../lib/i18n-context'
 import '../styles/home.css'
-
-const SERVICES: { to: string; icon: string; title: Tr; desc: Tr }[] = [
-  { to: '/routes', icon: '📍', title: { en: 'Location-Based Discovery', uz: "Joylashuv bo'yicha qidiruv", ru: 'Поиск рядом с вами' }, desc: { en: 'Find attractions, restaurants near you instantly', uz: 'Yaqin atrofdagi joylarni toping', ru: 'Мгновенно находите достопримечательности и рестораны рядом' } },
-  { to: '/routes', icon: '🗺️', title: { en: 'Smart Route Planning', uz: 'Aqlli marshrutlar', ru: 'Умное планирование маршрутов' }, desc: { en: 'Get optimized travel routes between cities', uz: "Eng yaxshi yo'nalishlarni oling", ru: 'Оптимальные маршруты между городами' } },
-  { to: '/attractions', icon: '📚', title: { en: 'Historical Context', uz: "Tarixiy ma'lumot", ru: 'Исторический контекст' }, desc: { en: 'Learn the story behind every monument', uz: 'Har bir yodgorlik tarixini bilib oling', ru: 'Узнайте историю каждого памятника' } },
-  { to: '/tips', icon: '💡', title: { en: 'Local Tips & Advice', uz: 'Mahalliy maslahatlar', ru: 'Советы местных жителей' }, desc: { en: 'Insider knowledge tourists usually miss', uz: 'Mahalliy bilimlar va maslahatlar', ru: 'То, что туристы обычно упускают' } },
-]
 
 export default function Home() {
   const { tr } = useI18n()
-  const navigate = useNavigate()
   return (
     <>
       <UzTop />
@@ -32,23 +25,9 @@ export default function Home() {
         <DestinationsBlock />
       </div>
 
-      <div className="pg-home">
+      <ServicesSection />
 
-      <section className="services" id="services">
-        <div className="section-header">
-          <p className="section-subtitle">{tr({ en: 'How we help', uz: 'Biz sizga qanday yordam beramiz', ru: 'Чем мы помогаем' })}</p>
-          <h2 className="section-title">{tr({ en: 'Our Services', uz: 'Bizning xizmatlar', ru: 'Наши услуги' })}</h2>
-        </div>
-        <div className="services-grid">
-          {SERVICES.map((s) => (
-            <div key={s.title.en} className="service-item" onClick={() => navigate(s.to)}>
-              <div className="service-icon">{s.icon}</div>
-              <div className="service-title">{tr(s.title)}</div>
-              <div className="service-desc">{tr(s.desc)}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <div className="pg-home">
 
       <section className="contact-cta" id="contact">
         <img src="/images/assistant.jpg" alt="" />

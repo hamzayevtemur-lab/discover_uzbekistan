@@ -167,3 +167,15 @@
 
 /* keep language names vertically centred next to the flag and check icon */
 .uz-root .lang-menu button .name { display: block; line-height: 1; }
+
+
+/* Inner pages: same header as the home page, but a sticky dark bar instead of an overlay on the hero */
+.uz-root.uz-root--bar { height: auto; background: transparent; position: sticky; top: 0; z-index: 1000; }
+.uz-root--bar header {
+  position: relative;
+  background: rgba(8, 8, 8, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.uz-root--bar header.compact nav ul { background: rgba(8, 8, 8, 0.97); }

@@ -18,3 +18,14 @@ h1, h2 {
 }
 /* Unbounded is wide: keep long headings from overflowing */
 h1, h2 { overflow-wrap: anywhere; }
+
+/* Desktop: hide the page's vertical scrollbar. Scrolling still works (wheel, trackpad, keyboard, touch). */
+@media (hover: hover) and (pointer: fine) {
+  html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* old Edge */
+  }
+  html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+}
