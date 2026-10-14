@@ -16,6 +16,7 @@ export interface Destination {
 export const DESTINATIONS: Destination[] = [
   {
     id: "samarkand",
+    image: "/images/Shah-i-Zinda.jpg",
     name: "Samarkand",
     description: "The Registan at sunset, turquoise domes and the heart of Timur's empire.",
     href: "/cities/samarkand",
@@ -25,6 +26,7 @@ export const DESTINATIONS: Destination[] = [
   },
   {
     id: "bukhara",
+    image: "/images/bukhara.jpg",
     name: "Bukhara",
     description: "Trading domes and a living old town.",
     href: "/cities/bukhara",
@@ -33,6 +35,7 @@ export const DESTINATIONS: Destination[] = [
   },
   {
     id: "khiva",
+    image: "/images/itchanqala.jpg",
     name: "Khiva",
     description: "A walled city frozen in clay and tile.",
     href: "/cities/khiva",
@@ -41,6 +44,7 @@ export const DESTINATIONS: Destination[] = [
   },
   {
     id: "tashkent",
+    image: "/images/chorsu.jpg",
     name: "Tashkent",
     description: "Metro art, bazaars and the modern capital.",
     href: "/cities/tashkent",
@@ -48,6 +52,7 @@ export const DESTINATIONS: Destination[] = [
   },
   {
     id: "shahrisabz",
+    image: "/images/hisor.jpg",
     name: "Shahrisabz",
     description: "Timur's birthplace and Ak-Saray ruins.",
     href: "/cities/shahrisabz",
@@ -56,6 +61,7 @@ export const DESTINATIONS: Destination[] = [
   },
   {
     id: "fergana",
+    image: "/images/RishtanCeramicsCenter.jpg",
     name: "Fergana",
     description: "Valley of silk, ceramics and orchards.",
     href: "/cities/fergana",
@@ -110,7 +116,7 @@ export default function DestinationsBlock({
         {destinations.map((d) => {
           const style = {
             "--fallback": d.fallback,
-            ...(d.image ? { "--img": `url("${d.image}")` } : {}),
+            ...(d.image ? { "--img": `url("${encodeURI(d.image)}")` } : {}),
           } as CSSProperties;
 
           return (
