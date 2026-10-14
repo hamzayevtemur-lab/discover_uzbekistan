@@ -1,0 +1,3 @@
+/* Global reset: page styles are scoped, so the browser's default body margin must be cleared here */
+html { scroll-behavior: smooth; }
+body { margin: 0; background: #0b0b10; }
