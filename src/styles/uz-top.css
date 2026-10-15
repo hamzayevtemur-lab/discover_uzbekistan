@@ -16,11 +16,11 @@
   /* Header */
   .uz-root header {
     position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-    padding: 14px 24px;
+    padding: 14px var(--page-px);
     background: rgba(255,255,255,.1);
   }
   .uz-root .nav {
-    max-width: 1700px; margin: 0 auto;
+    max-width: var(--page-max-w); margin: 0 auto;
     display: flex; align-items: center; justify-content: space-between; gap: 24px;
   }
   .uz-root .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
@@ -41,7 +41,7 @@
   .uz-root header.compact nav { position: static; }
   .uz-root header.compact nav ul {
     display: flex; position: absolute; top: 100%; left: 0; right: 0;
-    flex-direction: column; gap: 0; padding: 8px 24px 16px;
+    flex-direction: column; gap: 0; padding: 8px var(--page-px) 16px;
     background: rgba(255,255,255,.1);
     /* closed state (also the closing animation: items leave last-to-first, then the panel lifts) */
     visibility: hidden; opacity: 0; clip-path: inset(0 0 100% 0);
@@ -125,7 +125,7 @@
   }
   .uz-root .hero-content {
     position: relative; z-index: 2;
-    width: 100%; max-width: 1700px; margin: 10vh auto 0; padding: 24px;
+    width: 100%; max-width: var(--page-max-w); margin: 10vh auto 0; padding: 24px var(--page-px);
   }
   .uz-root .hero-content h1, .uz-root .hero-content p { max-width: 640px; }
   .uz-root h1 {

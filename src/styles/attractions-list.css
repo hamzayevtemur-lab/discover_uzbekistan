@@ -41,7 +41,7 @@
         .pg-attractions-list header {
             background: rgba(8, 8, 8, 0.97);
             backdrop-filter: blur(20px);
-            padding: 14px 24px;
+            padding: 14px var(--page-px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
@@ -49,7 +49,7 @@
         }
 
         .pg-attractions-list .header-content {
-            max-width: 1400px;
+            max-width: var(--page-max-w);
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -98,7 +98,7 @@
         .pg-attractions-list .hero-strip {
             background: linear-gradient(135deg, #00111a 0%, #0d0d0d 65%);
             border-bottom: 1px solid var(--border);
-            padding: 38px 24px;
+            padding: 38px var(--page-px);
             position: relative;
             overflow: hidden;
         }
@@ -115,7 +115,7 @@
         }
 
         .pg-attractions-list .hero-inner {
-            max-width: 1400px;
+            max-width: var(--page-max-w);
             margin: 0 auto;
         }
 
@@ -139,7 +139,7 @@
         .pg-attractions-list .al-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 30px 24px;
+            padding: 30px var(--page-px);
         }
 
         /* ── LOCATION STATUS ── */

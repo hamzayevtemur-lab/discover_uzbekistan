@@ -9,9 +9,9 @@
   --cat-gap: 18px;
 
   box-sizing: border-box;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 88px 24px;
+  /* Full-width section — padding expands as viewport grows so content never
+     exceeds --page-max-w. Aligns with every other section's left/right edge. */
+  padding: 88px max(var(--page-px), calc((100% - var(--page-max-w)) / 2));
   color: var(--cat-text);
   background: var(--cat-bg);
 }
@@ -211,7 +211,8 @@
 
 @media (max-width: 560px) {
   .cat {
-    padding: 56px 16px;
+    padding-top: 56px;
+    padding-bottom: 56px;
   }
   .cat__card {
     height: 360px;

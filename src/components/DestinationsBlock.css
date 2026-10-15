@@ -7,9 +7,8 @@
   --dest-serif: var(--font-display);
 
   box-sizing: border-box;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 96px 24px;
+  /* Full-width section — same alignment trick as .cat */
+  padding: 96px max(var(--page-px), calc((100% - var(--page-max-w)) / 2));
   color: var(--dest-text);
   background: var(--dest-bg);
 }
@@ -182,7 +181,7 @@
 
 /* Phone */
 @media (max-width: 560px) {
-  .dest { padding: 64px 16px; }
+  .dest { padding-top: 64px; padding-bottom: 64px; }
   .dest__grid { grid-template-columns: 1fr; }
   .dest__card:nth-child(n) { grid-column: span 1; }
   .dest__card:nth-child(1) { grid-row: span 1; }
