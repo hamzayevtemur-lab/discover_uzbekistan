@@ -1,0 +1,58 @@
+/* Global reset & smooth scrolling (Discover New Zealand style) */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 86px;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: #FAF8F5;
+  color: #17332A;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Site-wide fonts: Manrope for text, Unbounded for headlines */
+:root {
+  --font-body: 'Manrope', Arial, Helvetica, sans-serif;
+  --font-display: 'Unbounded', 'Manrope', Arial, Helvetica, sans-serif;
+  --font-accent: 'Manrope', sans-serif;
+  --page-px: 24px;
+  --page-max-w: 1400px;
+}
+@media (max-width: 560px) {
+  :root { --page-px: 16px; }
+}
+
+body,
+button, input, select, textarea,
+.pg-home, .pg-attractions-list, .uz-root, .dest {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  overflow-wrap: break-word;
+  letter-spacing: -0.015em;
+}
+
+/* Refined, modern subtle scrollbar matching luxury editorial travel platforms */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+::-webkit-scrollbar-thumb {
+  background: #C8D8CC;
+  border-radius: 999px;
+  border: 2px solid #FAF8F5;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0E6B3A;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #C8D8CC #FAF8F5;
+}

@@ -1,0 +1,864 @@
+/* Wrapped in the `legacy` layer (see globals.css) so Tailwind utilities on Untitled UI components win over the
+   `.pg-attractions-list * { margin:0; padding:0 }` reset below. */
+@layer legacy {
+
+        .pg-attractions-list {
+            --accent: #ff6b35;
+            --accent-dim: rgba(255, 107, 53, 0.13);
+            --accent-glow: rgba(255, 107, 53, 0.35);
+            --bg: #080808;
+            --bg2: #101010;
+            --bg3: #161616;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.52);
+            --green: #00e676;
+            --gold: #ffd740;
+            --teal: #00bcd4;
+            --radius: 16px;
+            --card-radius: 20px;
+        }
+
+        .pg-attractions-list * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .pg-attractions-list {
+            scroll-behavior: smooth;
+        }
+
+        .pg-attractions-list {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── HEADER ── */
+        .pg-attractions-list header {
+            background: rgba(8, 8, 8, 0.97);
+            backdrop-filter: blur(20px);
+            padding: 14px var(--page-px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .pg-attractions-list .header-content {
+            max-width: var(--page-max-w);
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pg-attractions-list .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .pg-attractions-list .logo-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .pg-attractions-list .back-btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pg-attractions-list .back-btn:hover {
+            background: rgba(255, 255, 255, 0.13);
+            color: var(--text);
+        }
+
+        /* ── HERO ── */
+        .pg-attractions-list .hero-strip {
+            background: linear-gradient(135deg, #00111a 0%, #0d0d0d 65%);
+            border-bottom: 1px solid var(--border);
+            padding: 38px var(--page-px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pg-attractions-list .hero-strip::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 360px;
+            height: 360px;
+            background: radial-gradient(circle, rgba(0, 188, 212, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .pg-attractions-list .hero-inner {
+            max-width: var(--page-max-w);
+            margin: 0 auto;
+        }
+
+        .pg-attractions-list .hero-inner h1 {
+            font-size: clamp(26px, 5vw, 44px);
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .pg-attractions-list .hero-inner h1 span {
+            color: var(--teal);
+        }
+
+        .pg-attractions-list .hero-inner p {
+            color: var(--text-dim);
+            font-size: 15px;
+        }
+
+        /* ── CONTAINER ── */
+        .pg-attractions-list .al-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px var(--page-px);
+        }
+
+        /* ── LOCATION STATUS ── */
+        .pg-attractions-list .location-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 22px;
+        }
+
+        .pg-attractions-list .loc-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #444;
+            flex-shrink: 0;
+            transition: background 0.4s, box-shadow 0.4s;
+        }
+
+        .pg-attractions-list .loc-dot.active {
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: pulseDot 2s ease infinite;
+        }
+
+        @keyframes pulseDot {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
+
+        /* ── TOOLBAR ── */
+        .pg-attractions-list .toolbar {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .pg-attractions-list .search-wrap {
+            flex: 2;
+            min-width: 220px;
+            position: relative;
+        }
+
+        .pg-attractions-list .search-wrap i {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .pg-attractions-list .search-input {
+            width: 100%;
+            padding: 11px 13px 11px 36px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.25s, background 0.25s;
+        }
+
+        .pg-attractions-list .search-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .pg-attractions-list .search-input:focus {
+            border-color: var(--teal);
+            background: rgba(255, 255, 255, 0.09);
+        }
+
+        .pg-attractions-list .filter-group {
+            flex: 1;
+            min-width: 155px;
+        }
+
+        .pg-attractions-list .filter-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .pg-attractions-list .filter-select {
+            width: 100%;
+            padding: 11px 32px 11px 13px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.25s;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .pg-attractions-list .filter-select:focus {
+            border-color: var(--teal);
+        }
+
+        .pg-attractions-list .filter-select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        
+        .pg-attractions-list .radius-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .pg-attractions-list .radius-pills {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 3px;
+            border-radius: 12px;
+            gap: 2px;
+        }
+
+        .pg-attractions-list .rad-pill {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .pg-attractions-list .rad-pill:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .pg-attractions-list .rad-pill.active {
+            background: var(--accent, #00e5ff);
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 229, 255, 0.35);
+        }
+
+        .pg-attractions-list .quick-btns {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .pg-attractions-list .quick-btn {
+            padding: 11px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-dim);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.25s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pg-attractions-list .quick-btn:hover,
+        .pg-attractions-list .quick-btn.active {
+            background: rgba(0, 188, 212, 0.12);
+            border-color: var(--teal);
+            color: var(--teal);
+        }
+
+        /* ── RESULTS BAR ── */
+        .pg-attractions-list .results-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pg-attractions-list .results-count {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        .pg-attractions-list .results-count strong {
+            color: var(--text);
+        }
+
+        .pg-attractions-list .view-toggle {
+            display: flex;
+            gap: 6px;
+        }
+
+        .pg-attractions-list .view-btn-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .pg-attractions-list .view-btn-toggle.active,
+        .pg-attractions-list .view-btn-toggle:hover {
+            background: rgba(0, 188, 212, 0.12);
+            border-color: var(--teal);
+            color: var(--teal);
+        }
+
+        /* ── MAP TOGGLE BAR ── */
+        .pg-attractions-list .map-toggle-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            padding: 13px 18px;
+            border-radius: var(--radius);
+            margin-bottom: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .pg-attractions-list .map-toggle-bar:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .pg-attractions-list .map-toggle-bar .bar-label {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pg-attractions-list .map-toggle-bar .chevron {
+            font-size: 12px;
+            color: var(--text-dim);
+            transition: transform 0.3s;
+        }
+
+        .pg-attractions-list .map-toggle-bar.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        /* ── MAP PANEL ── */
+        .pg-attractions-list .map-panel {
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            max-height: 420px;
+            transition: max-height 0.45s ease, opacity 0.35s ease, margin 0.35s;
+            opacity: 1;
+        }
+
+        .pg-attractions-list .map-panel.collapsed {
+            max-height: 0;
+            opacity: 0;
+            border: none;
+            margin-bottom: 0;
+            pointer-events: none;
+        }
+
+        .pg-attractions-list #attractionMap {
+            width: 100%;
+            height: 400px;
+            background: var(--bg2);
+            display: block;
+        }
+
+        /* Leaflet dark theme */
+        .pg-attractions-list .leaflet-container {
+            background: #111 !important;
+            font-family: 'Segoe UI', sans-serif !important;
+        }
+
+        .pg-attractions-list .leaflet-control-zoom a {
+            background: #1c1c1c !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        }
+
+        .pg-attractions-list .leaflet-control-zoom a:hover {
+            background: #282828 !important;
+            border-color: var(--teal) !important;
+        }
+
+        .pg-attractions-list .leaflet-popup-content-wrapper {
+            background: rgba(16, 16, 16, 0.97) !important;
+            color: white !important;
+            border-radius: 14px !important;
+            border: 1px solid rgba(0, 188, 212, 0.3) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .pg-attractions-list .leaflet-popup-tip {
+            background: rgba(16, 16, 16, 0.97) !important;
+        }
+
+        /* ── GRID ── */
+        .pg-attractions-list .attractions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 22px;
+        }
+
+        .pg-attractions-list .attractions-grid.list-view {
+            grid-template-columns: 1fr;
+        }
+
+        /* ── CARD ── */
+        .pg-attractions-list .attraction-card {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+            position: relative;
+            animation: cardIn 0.4s ease both;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .pg-attractions-list .attraction-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+            border-color: rgba(0, 188, 212, 0.28);
+        }
+
+        .pg-attractions-list .attraction-card.highlighted {
+            border-color: var(--teal) !important;
+            box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.35), 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+        }
+
+        /* List view */
+        .pg-attractions-list .list-view .attraction-card {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .pg-attractions-list .list-view .attraction-image {
+            width: 190px;
+            min-width: 190px;
+            height: auto;
+            min-height: 150px;
+            border-radius: 0;
+        }
+
+        .pg-attractions-list .list-view .attraction-info {
+            flex: 1;
+        }
+
+        .pg-attractions-list .attraction-image {
+            height: 210px;
+            background: linear-gradient(135deg, #001520 0%, #002030 100%);
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .pg-attractions-list .attraction-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 45%, rgba(0, 0, 0, 0.55) 100%);
+        }
+
+        .pg-attractions-list .attraction-image>span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Chips */
+        .pg-attractions-list .chip-distance {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(8px);
+            color: var(--green);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 230, 118, 0.2);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pg-attractions-list .chip-free {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(16, 185, 129, 0.85);
+            backdrop-filter: blur(8px);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .pg-attractions-list .chip-price {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 107, 53, 0.85);
+            backdrop-filter: blur(8px);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .pg-attractions-list .chip-partner {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(156, 39, 176, 0.85);
+            backdrop-filter: blur(8px);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .pg-attractions-list .attraction-info {
+            padding: 18px 20px 20px;
+        }
+
+        .pg-attractions-list .attraction-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .pg-attractions-list .category-tag {
+            display: inline-block;
+            background: rgba(0, 188, 212, 0.12);
+            color: var(--teal);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            letter-spacing: 0.3px;
+        }
+
+        .pg-attractions-list .attraction-meta {
+            display: flex;
+            gap: 14px;
+            font-size: 13px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pg-attractions-list .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-dim);
+        }
+
+        .pg-attractions-list .meta-item.rating {
+            color: var(--gold);
+        }
+
+        .pg-attractions-list .meta-item.dist {
+            color: var(--green);
+        }
+
+        .pg-attractions-list .duration-row {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pg-attractions-list .view-btn {
+            width: 100%;
+            padding: 11px;
+            background: var(--accent);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+
+        .pg-attractions-list .view-btn:hover {
+            background: #ff5722;
+            transform: translateY(-1px);
+        }
+
+        /* ── STATES ── */
+        .pg-attractions-list .empty-state,
+        .pg-attractions-list .loading-state {
+            text-align: center;
+            padding: 80px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .pg-attractions-list .empty-icon {
+            font-size: 54px;
+            margin-bottom: 16px;
+        }
+
+        .pg-attractions-list .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .pg-attractions-list .empty-state p {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        .pg-attractions-list .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.07);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg)
+            }
+
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        /* ── TOAST ── */
+        .pg-attractions-list .toast {
+            position: fixed;
+            bottom: 26px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(16, 16, 16, 0.97);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            transition: transform 0.35s cubic-bezier(.175, .885, .32, 1.275), opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .pg-attractions-list .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .pg-attractions-list .hero-inner h1 {
+                font-size: 24px;
+            }
+
+            .pg-attractions-list .toolbar {
+                flex-direction: column;
+            }
+
+            .pg-attractions-list .filter-group,
+            .pg-attractions-list .search-wrap {
+                width: 100%;
+                flex: none;
+            }
+
+            
+        .pg-attractions-list .radius-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .pg-attractions-list .radius-pills {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 3px;
+            border-radius: 12px;
+            gap: 2px;
+        }
+
+        .pg-attractions-list .rad-pill {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .pg-attractions-list .rad-pill:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .pg-attractions-list .rad-pill.active {
+            background: var(--accent, #00e5ff);
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 229, 255, 0.35);
+        }
+
+        .pg-attractions-list .quick-btns {
+                width: 100%;
+            }
+
+            .pg-attractions-list .quick-btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .pg-attractions-list .attractions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pg-attractions-list .list-view .attraction-card {
+                flex-direction: column;
+            }
+
+            .pg-attractions-list .list-view .attraction-image {
+                width: 100%;
+                height: 180px;
+            }
+
+            .pg-attractions-list #attractionMap {
+                height: 280px;
+            }
+        }
+}

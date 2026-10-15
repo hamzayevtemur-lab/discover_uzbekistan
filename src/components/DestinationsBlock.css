@@ -1,0 +1,196 @@
+.dest {
+  --dest-bg: #FAF8F5;
+  --dest-text: #0E4D2E;
+  --dest-muted: #4A5A50;
+  --dest-gold: #0E6B3A;
+  --dest-line: #E2ECE5;
+  --dest-serif: var(--font-display);
+
+  box-sizing: border-box;
+  /* Full-width section — same alignment trick as .cat */
+  padding: 96px max(var(--page-px), calc((100% - var(--page-max-w)) / 2));
+  color: var(--dest-text);
+  background: var(--dest-bg);
+}
+.dest *,
+.dest *::before,
+.dest *::after {
+  box-sizing: inherit;
+}
+
+/* Header */
+.dest__head {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.dest__eyebrow {
+  margin: 0 0 14px;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dest-gold);
+}
+.dest__title {
+  margin: 0 0 16px;
+  font-family: var(--dest-serif);
+  font-weight: 500;
+  font-size: clamp(24px, 4vw, 40px);
+  line-height: 1.1;
+}
+.dest__subtitle {
+  max-width: 560px;
+  margin: 0 auto;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--dest-muted);
+}
+
+/* Grid */
+.dest__grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 230px;
+  gap: 16px;
+}
+.dest__card:nth-child(1) { grid-column: span 6; grid-row: span 2; }
+.dest__card:nth-child(2),
+.dest__card:nth-child(3) { grid-column: span 3; grid-row: span 2; }
+.dest__card:nth-child(n + 4) { grid-column: span 4; }
+
+/* Card: text sits on a photo with a dark overlay, so it keeps light-on-dark colours */
+.dest__card {
+  --dest-text: #f5f1ea;
+  --dest-gold: #8FE0A8;
+  --dest-line: rgba(255, 255, 255, 0.14);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--dest-line);
+  border-radius: 22px;
+  color: var(--dest-text);
+  text-decoration: none;
+}
+.dest__photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: var(--img, none), var(--fallback);
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.dest__card:hover .dest__photo,
+.dest__card:focus-visible .dest__photo {
+  transform: scale(1.07);
+}
+/* Gradient keeps text readable on any photo */
+.dest__card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.88) 0%,
+    rgba(0, 0, 0, 0.45) 42%,
+    rgba(0, 0, 0, 0) 72%
+  );
+}
+.dest__card:focus-visible {
+  outline: 2px solid var(--dest-gold);
+  outline-offset: 3px;
+}
+
+.dest__badge {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  padding: 6px 11px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--dest-line);
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+}
+
+.dest__body {
+  width: 100%;
+  padding: 24px;
+}
+.dest__body h3 {
+  margin: 0 0 6px;
+  font-family: var(--dest-serif);
+  font-weight: 600;
+  font-size: 19px;
+}
+.dest__card:nth-child(1) h3 { font-size: 32px; }
+.dest__body p {
+  max-width: 420px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #d9d3ca;
+}
+
+/* "Explore city" link only on the featured card */
+.dest__go {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dest-gold);
+}
+.dest__card:nth-child(1) .dest__go { display: inline-flex; }
+.dest__go svg { transition: transform 0.25s; }
+.dest__card:hover .dest__go svg { transform: translateX(5px); }
+
+/* Footer button */
+.dest__more {
+  margin-top: 44px;
+  text-align: center;
+}
+.dest__btn {
+  display: inline-block;
+  padding: 14px 28px;
+  font-size: 15px;
+  color: var(--dest-text);
+  text-decoration: none;
+  border: 1px solid #0E6B3A;
+  border-radius: 99px;
+  background: #fff;
+  transition: background 0.2s, color 0.2s;
+}
+.dest__btn:hover {
+  background: #0E6B3A;
+  color: #fff;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .dest__grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 240px;
+  }
+  .dest__card:nth-child(n) { grid-column: span 1; grid-row: span 1; }
+  .dest__card:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+  .dest__card:nth-child(1) h3 { font-size: 26px; }
+}
+
+/* Phone */
+@media (max-width: 560px) {
+  .dest { padding-top: 64px; padding-bottom: 64px; }
+  .dest__grid { grid-template-columns: 1fr; }
+  .dest__card:nth-child(n) { grid-column: span 1; }
+  .dest__card:nth-child(1) { grid-row: span 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dest__photo,
+  .dest__go svg { transition: none; }
+}
